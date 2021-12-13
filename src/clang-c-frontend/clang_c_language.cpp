@@ -112,6 +112,8 @@ void clang_c_languaget::build_compiler_args(const std::string &tmp_dir)
     compiler_args.emplace_back("-target");
     compiler_args.emplace_back("mips64c128-unknown-linux");
     compiler_args.emplace_back("--sysroot=/usr/mips64-unknown-linux-gnu");
+    compiler_args.emplace_back(
+      "-D__builtin_cheri_length_get(p)=__esbmc_cheri_length_get(p)");
   }
 
   for(auto const &inc : config.ansi_c.include_paths)
@@ -390,6 +392,9 @@ int __ESBMC_sync_fetch_and_add(int*, int);
     __ESBMC_atomic_store(__atomic_store_ptr, &__atomic_store_tmp, (MO));       \
   })
     )";
+
+  if (config.ansi_c.cheri)
+    intrinsics += "__SIZE_TYPE__ __esbmc_cheri_length_get(void *__capability);";
 
   return intrinsics;
 }
