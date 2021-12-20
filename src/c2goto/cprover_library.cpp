@@ -6,6 +6,7 @@ Author: Daniel Kroening, kroening@kroening.com
 
 \*******************************************************************/
 
+#include <ac_config.h>
 #include <c2goto/cprover_library.h>
 #include <cstdlib>
 #include <goto-programs/read_goto_binary.h>
@@ -24,15 +25,25 @@ extern "C"
   extern const unsigned int clib32_fp_buf_size;
   extern const unsigned int clib64_fp_buf_size;
 
-  extern uint8_t clib32_cheri_buf[1];
-  extern uint8_t clib64_cheri_buf[1];
-  extern unsigned int clib32_cheri_buf_size;
-  extern unsigned int clib64_cheri_buf_size;
+  extern const uint8_t clib32_cherih_buf[];
+  extern const uint8_t clib64_cherih_buf[];
+  extern const unsigned int clib32_cherih_buf_size;
+  extern const unsigned int clib64_cherih_buf_size;
 
-  extern uint8_t clib32_fp_cheri_buf[1];
-  extern uint8_t clib64_fp_cheri_buf[1];
-  extern unsigned int clib32_fp_cheri_buf_size;
-  extern unsigned int clib64_fp_cheri_buf_size;
+  extern const uint8_t clib32_fp_cherih_buf[];
+  extern const uint8_t clib64_fp_cherih_buf[];
+  extern const unsigned int clib32_fp_cherih_buf_size;
+  extern const unsigned int clib64_fp_cherih_buf_size;
+
+  extern const uint8_t clib32_cherip_buf[];
+  extern const uint8_t clib64_cherip_buf[];
+  extern const unsigned int clib32_cherip_buf_size;
+  extern const unsigned int clib64_cherip_buf_size;
+
+  extern const uint8_t clib32_fp_cherip_buf[];
+  extern const uint8_t clib64_fp_cherip_buf[];
+  extern const unsigned int clib32_fp_cherip_buf_size;
+  extern const unsigned int clib64_fp_cherip_buf_size;
 }
 
 namespace
@@ -54,14 +65,28 @@ static const struct buffer
     },
   },
   {
+#ifdef ESBMC_CHERI_HYBRID_SYSROOT
     {
-      {NULL, 0}, // {&clib32_cheri_buf[0], clib32_cheri_buf_size},
-      {&clib64_cheri_buf[0], clib64_cheri_buf_size},
+      {NULL, 0}, // {&clib32_cherih_buf[0], clib32_cherih_buf_size},
+      {&clib64_cherih_buf[0], clib64_cherih_buf_size},
     },
     {
-      {NULL, 0}, // {&clib32_fp_cheri_buf[0], clib32_fp_cheri_buf_size},
-      {&clib64_fp_cheri_buf[0], clib64_fp_cheri_buf_size},
+      {NULL, 0}, // {&clib32_fp_cherih_buf[0], clib32_fp_cherih_buf_size},
+      {&clib64_fp_cherih_buf[0], clib64_fp_cherih_buf_size},
     },
+#endif
+  },
+  {
+#ifdef ESBMC_CHERI_PURECAP_SYSROOT
+    {
+      {NULL, 0}, // {&clib32_cherip_buf[0], clib32_cherip_buf_size},
+      {&clib64_cherip_buf[0], clib64_cherip_buf_size},
+    },
+    {
+      {NULL, 0}, // {&clib32_fp_cherip_buf[0], clib32_fp_cherip_buf_size},
+      {&clib64_fp_cherip_buf[0], clib64_fp_cherip_buf_size},
+    },
+#endif
   }};
 } // namespace
 

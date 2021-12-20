@@ -61,7 +61,7 @@ const struct group_opt_templ all_cmd_options[] = {
     {"sysroot",
      boost::program_options::value<std::string>()->value_name("<path>"),
      "set the sysroot for the frontend; necessary for CHERI-C support on "
-     "non-mips64-unknown-linux-gnu platforms, optional otherwise"},
+     "non-mips64-unknown-freebsd platforms, optional otherwise"},
     {"force,f", boost::program_options::value<std::vector<std::string>>(), ""},
     {"preprocess", NULL, "stop after preprocessing"},
     {"no-inlining", NULL, "disable inlining function calls"},

@@ -23,6 +23,9 @@ const struct group_opt_templ c2goto_options[] = {
     {"cheri",
      boost::program_options::value<std::string>()->value_name("mode"),
      "enable CHERI-C mode (default is off)"},
+    {"cheri-uncompressed",
+     NULL,
+     "use full CHERI capabilites instead of the concentrate format"},
     {"fixedbv", NULL, "encode floating-point as fixed bit-vectors"},
     {"floatbv",
      NULL,
@@ -37,7 +40,11 @@ const struct group_opt_templ c2goto_options[] = {
     {"define,D",
      boost::program_options::value<std::vector<std::string>>()->value_name(
        "macro"),
-     "define preprocessor macro"}
+     "define preprocessor macro"},
+    {"sysroot",
+     boost::program_options::value<std::string>()->value_name("<path>"),
+     "set the sysroot for the frontend; necessary for CHERI-C support on "
+     "non-mips64-unknown-freebsd platforms, optional otherwise"},
 
    }},
   {"end", {{"", NULL, "end of options"}}},
@@ -56,7 +63,9 @@ public:
   {
     goto_functionst goto_functions;
 
-    config.set(cmdline, msg);
+    if (config.set(cmdline, msg))
+      exit(1);
+    config.options.cmdline(cmdline);
 
     if(!cmdline.isset("output"))
     {
