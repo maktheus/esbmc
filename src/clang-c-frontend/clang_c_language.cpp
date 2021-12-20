@@ -49,6 +49,13 @@ clang_c_languaget::clang_c_languaget(const messaget &msg) : languaget(msg)
   // Dump clang headers on the temporary folder
   dump_clang_headers(p.path());
 #endif
+
+#if 0
+  fprintf(stderr, "clang invocation:");
+  for (const std::string &s : compiler_args)
+    fprintf(stderr, " '%s'", s.c_str());
+  fprintf(stderr, "\n");
+#endif
 }
 
 void clang_c_languaget::build_compiler_args(const std::string &tmp_dir)
@@ -101,6 +108,9 @@ void clang_c_languaget::build_compiler_args(const std::string &tmp_dir)
 
   for(auto const &def : config.ansi_c.defines)
     compiler_args.push_back("-D" + def);
+
+  compiler_args.emplace_back("-v");
+  compiler_args.emplace_back("-dM");
 
   compiler_args.emplace_back("-target");
   compiler_args.emplace_back(config.ansi_c.target.to_string());
