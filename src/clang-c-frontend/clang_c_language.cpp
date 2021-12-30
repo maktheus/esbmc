@@ -115,7 +115,7 @@ void clang_c_languaget::build_compiler_args(const std::string &tmp_dir)
   compiler_args.emplace_back("-target");
   compiler_args.emplace_back(config.ansi_c.target.to_string());
 
-  std::string sysroot = config.options.get_option("sysroot");
+  std::string sysroot;
 
   if(config.ansi_c.cheri)
   {
@@ -136,19 +136,18 @@ void clang_c_languaget::build_compiler_args(const std::string &tmp_dir)
       break;
     case configt::ansi_ct::CHERI_HYBRID:
 #ifdef ESBMC_CHERI_HYBRID_SYSROOT
-      if(sysroot.empty())
-        sysroot = ESBMC_CHERI_HYBRID_SYSROOT;
+      sysroot = ESBMC_CHERI_HYBRID_SYSROOT;
 #endif
       break;
     case configt::ansi_ct::CHERI_PURECAP:
 #ifdef ESBMC_CHERI_PURECAP_SYSROOT
-      if(sysroot.empty())
-        sysroot = ESBMC_CHERI_PURECAP_SYSROOT;
+      sysroot = ESBMC_CHERI_PURECAP_SYSROOT;
 #endif
       break;
     }
   }
 
+  config.options.get_option("sysroot", sysroot);
   if (!sysroot.empty())
     compiler_args.push_back("--sysroot=" + sysroot);
 
