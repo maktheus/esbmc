@@ -87,7 +87,8 @@ static const struct buffer
       {&clib64_fp_cherip_buf[0], clib64_fp_cherip_buf_size},
     },
 #endif
-  }};
+  },
+};
 } // namespace
 
 static void generate_symbol_deps(
