@@ -23,25 +23,46 @@ extern "C"
   extern const uint8_t clib64_fp_buf[];
   extern const unsigned int clib32_fp_buf_size;
   extern const unsigned int clib64_fp_buf_size;
+
+  extern uint8_t clib32_cheri_buf[1];
+  extern uint8_t clib64_cheri_buf[1];
+  extern unsigned int clib32_cheri_buf_size;
+  extern unsigned int clib64_cheri_buf_size;
+
+  extern uint8_t clib32_fp_cheri_buf[1];
+  extern uint8_t clib64_fp_cheri_buf[1];
+  extern unsigned int clib32_fp_cheri_buf_size;
+  extern unsigned int clib64_fp_cheri_buf_size;
 }
 
 namespace
 {
-/* [floatbv ? 1 : 0][wordsz == 64 ? 1 : 0] */
+/* [cheri ? 1 : 0][floatbv ? 1 : 0][wordsz == 64 ? 1 : 0] */
 static const struct buffer
 {
   const uint8_t *start;
   size_t size;
-} clibs[2][2] = {
+} clibs[2][2][2] = {
   {
-    {&clib32_buf[0], clib32_buf_size},
-    {&clib64_buf[0], clib64_buf_size},
+    {
+      {&clib32_buf[0], clib32_buf_size},
+      {&clib64_buf[0], clib64_buf_size},
+    },
+    {
+      {&clib32_fp_buf[0], clib32_fp_buf_size},
+      {&clib64_fp_buf[0], clib64_fp_buf_size},
+    },
   },
   {
-    {&clib32_fp_buf[0], clib32_fp_buf_size},
-    {&clib64_fp_buf[0], clib64_fp_buf_size},
-  },
-};
+    {
+      {&clib32_cheri_buf[0], clib32_cheri_buf_size},
+      {&clib64_cheri_buf[0], clib64_cheri_buf_size},
+    },
+    {
+      {&clib32_fp_cheri_buf[0], clib32_fp_cheri_buf_size},
+      {&clib64_fp_cheri_buf[0], clib64_fp_cheri_buf_size},
+    },
+  }};
 } // namespace
 
 static void generate_symbol_deps(
@@ -145,8 +166,8 @@ void add_cprover_library(contextt &context, const messaget &message_handler)
     abort();
   }
 
-  clib =
-    &clibs[!config.ansi_c.use_fixed_for_float][config.ansi_c.word_size == 64];
+  clib = &clibs[config.ansi_c.cheri][!config.ansi_c.use_fixed_for_float]
+               [config.ansi_c.word_size == 64];
 
   if(clib->size == 0)
   {
