@@ -1242,8 +1242,9 @@ static expr2tc do_bit_munge_operation(
   if(!is_constant_int2t(side_1) || !is_constant_int2t(side_2))
     return expr2tc();
 
-  // So - we can't make BigInt by itself do an and operation. But we can dump
-  // it to a binary representation, and then and that.
+  assert(type->get_width() <= 64);
+  // So - we can't make BigInt by itself do the operation. But we can map it
+  // to the corresponding operation on our native types.
   const constant_int2t &int1 = to_constant_int2t(side_1);
   const constant_int2t &int2 = to_constant_int2t(side_2);
 
