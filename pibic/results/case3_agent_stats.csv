@@ -1,0 +1,5 @@
+Iteration,Success,Duration(s),CodeSize(bytes)
+0,False,0.85,150
+1,False,0.92,160
+2,False,0.88,155
+3,True,0.95,180

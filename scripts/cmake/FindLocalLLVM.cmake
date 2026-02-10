@@ -61,7 +61,7 @@ endif()
 
 message(STATUS "Clang found in: ${CLANG_INSTALL_PREFIX}")
 if (CLANG_LINK_CLANG_DYLIB AND NOT BUILD_STATIC)
-  set(ESBMC_CLANG_LIBS clang-cpp LLVM)
+  set(ESBMC_CLANG_LIBS clang-cpp LLVM-18)
   set(CLANG_HEADERS_SHOULD_BUNDLE FALSE)
   message(STATUS "Linking libclang: shared")
 else()
