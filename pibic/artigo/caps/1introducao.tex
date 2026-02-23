@@ -15,3 +15,12 @@ O objetivo principal deste projeto é investigar e implementar metodologias de v
 
 \section{Específicos}
 
+Para atingir o objetivo geral, a pesquisa foi estruturada em três níveis de complexidade crescente:
+
+\begin{itemize}
+    \item \textbf{Nível 1 — Verificação de Segurança em Redes Neurais}: Desenvolver modelos em C e Python para componentes básicos de redes neurais, garantindo que a saída do modelo permaneça dentro de uma região segura (\textit{post-condition}) para um conjunto de entradas delimitado. Isso inclui a implementação de suportes para funções matemáticas e de ativação (como ReLU e Sigmoid) no ESBMC.
+    
+    \item \textbf{Nível 2 — Verificação de Controladores Neurais}: Expandir a análise para redes neurais especificamente projetadas para controle de sistemas dinâmicos, verificando propriedades locais de corretude e segurança do código do controlador.
+    
+    \item \textbf{Nível 3 — Verificação de Propriedades de Sistema (Malha Fechada)}: Realizar a verificação formal de propriedades de alto nível do sistema completo (planta + controlador neural). Isso envolve a modelagem do comportamento dinâmico do sistema e a verificação de propriedades como estabilidade e limites de erro de rastreamento, tratando o controlador não apenas como código isolado, mas como parte integrante de um sistema físico-cibernético.
+\end{itemize}
