@@ -5,4 +5,17 @@
 \providecommand{\abntbstabout}[1]{}
 \abntbstabout{v<VERSION> }
 
+\bibitem[Gopinath \textit{et al.} 2021]{gopinath2021verifying}
+\abntrefinfo{Gopinath \textit{et al.}}{Gopinath \textit{et al.}}{2021}
+{GOPINATH, D. \textit{et al.} Verifying quantized neural networks using
+  smt-based model checking. In:  IEEE. \textbf{Proceedings of the 2021 36th
+  IEEE/ACM International Conference on Automated Software Engineering (ASE)}.
+  [S.l.], 2021. p. 1--13.}
+
+\bibitem[Huang \textit{et al.} 2017]{huang2017robustness}
+\abntrefinfo{Huang \textit{et al.}}{Huang \textit{et al.}}{2017}
+{HUANG, X. \textit{et al.} Safety verification of deep neural networks.
+\textbf{International Conference on Computer Aided Verification}, Springer, p.
+  3--29, 2017.}
+
 \end{thebibliography}

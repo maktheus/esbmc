@@ -46,7 +46,8 @@ A abordagem adotada emprega entradas simbólicas não-determinísticas ($\texttt
 
 Adicionalmente, um kernel de multiplicação de matrizes (\textit{GEMM}) com \textit{tiling} foi implementado (\texttt{matmul\_kernel.cpp}) para análise de escalabilidade, variando a dimensão $N \in \{2, 3, 4, 5, 6\}$.
 
-O comando utilizado foi: \texttt{esbmc attention\_kernel.cpp -{}-multi-property -{}-memory-leak-check -{}-overflow-check}.
+O comando utilizado foi o \texttt{esbmc} com os parâmetros: \\
+\texttt{attention\_kernel.cpp -{}-multi-property -{}-memory-leak-check -{}-overflow-check}.
 
 \section{Caso 3 — Loop Neuro-Simbólico (Agente LLM + ESBMC)}
 

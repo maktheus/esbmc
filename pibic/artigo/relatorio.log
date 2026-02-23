@@ -1503,7 +1503,7 @@ File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 (./caps/3metodologia.tex [7
 
 {/usr/share/texmf/fonts/enc/dvips/lm/lm-ts1.enc}]
-<./figs/fluxo-yolo.png, id=108, 495.0495pt x 138.5175pt>
+<./figs/fluxo-yolo.png, id=114, 495.0495pt x 138.5175pt>
 File: ./figs/fluxo-yolo.png Graphic file (type png)
 <use ./figs/fluxo-yolo.png>
 Package pdftex.def Info: ./figs/fluxo-yolo.png  used on input line 13.
@@ -1521,15 +1521,15 @@ Package microtype Info: Loading generic protrusion settings for font family
  [8
 
  <./figs/fluxo-yolo.png>]
-Overfull \hbox (94.06409pt too wide) in paragraph at lines 49--50
-[]\T1/lmr/m/n/12 (-20) O co-mando uti-li-zado foi: \T1/lmtt/m/n/12 esbmc attent
-ion_kernel.cpp --multi-property --memory-leak-check
+Overfull \hbox (2.86948pt too wide) in paragraph at lines 49--51
+\T1/lmtt/m/n/12 attention_kernel.cpp --multi-property --memory-leak-check --ove
+rflow-check\T1/lmr/m/n/12 (-20) . 
  []
 
 [9{/usr/share/texmf/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/share/texmf/fonts/en
 c/dvips/lm/lm-rm.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-mathsy.enc}])
 (./caps/4resultados.tex [10]
-<./figs/case2_plot.png, id=142, 578.16pt x 361.35pt>
+<./figs/case2_plot.png, id=148, 578.16pt x 361.35pt>
 File: ./figs/case2_plot.png Graphic file (type png)
 <use ./figs/case2_plot.png>
 Package pdftex.def Info: ./figs/case2_plot.png  used on input line 46.
@@ -1537,7 +1537,7 @@ Package pdftex.def Info: ./figs/case2_plot.png  used on input line 46.
  [11
 
 ] [12 <./figs/case2_plot.png>]
-<./figs/case3_plot.png, id=158, 578.16pt x 361.35pt>
+<./figs/case3_plot.png, id=164, 578.16pt x 361.35pt>
 File: ./figs/case3_plot.png Graphic file (type png)
 <use ./figs/case3_plot.png>
 Package pdftex.def Info: ./figs/case3_plot.png  used on input line 67.
@@ -1586,9 +1586,6 @@ Overfull \hbox (13.54684pt too wide) in paragraph at lines 94--94
 
 
 bibitemlist
-
-LaTeX Warning: Empty `thebibliography' environment on input line 8.
-
 ) [16
 
 
@@ -1608,14 +1605,14 @@ LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2020/03/25>
  ***********
 Package rerunfilecheck Info: File `relatorio.brf' has not changed.
-(rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
+(rerunfilecheck)             Checksum: 42BA8848AF5B8A859789D1ABDDD75F1C;104.
  ) 
 Here is how much of TeX's memory you used:
- 34768 strings out of 476162
- 625694 string characters out of 5794814
+ 34792 strings out of 476162
+ 626244 string characters out of 5794814
  1935975 words of memory out of 5000000
- 55885 multiletter control sequences out of 15000+600000
- 618219 words of font info for 149 fonts, out of 8000000 for 9000
+ 55903 multiletter control sequences out of 15000+600000
+ 618477 words of font info for 151 fonts, out of 8000000 for 9000
  16 hyphenation exceptions out of 8191
  99i,12n,117p,1264b,641s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texmf/fonts/type1/public/lm/lmbx12.pfb></usr/share/texmf/fonts/ty
@@ -1626,10 +1623,10 @@ ublic/lm/lmr12.pfb></usr/share/texmf/fonts/type1/public/lm/lmr8.pfb></usr/share
 /lmri12.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy10.pfb></usr/share/texm
 f/fonts/type1/public/lm/lmsy8.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt1
 2.pfb>
-Output written on relatorio.pdf (17 pages, 381585 bytes).
+Output written on relatorio.pdf (17 pages, 383100 bytes).
 PDF statistics:
- 335 PDF objects out of 1000 (max. 8388607)
- 281 compressed objects within 3 object streams
- 67 named destinations out of 1000 (max. 500000)
+ 343 PDF objects out of 1000 (max. 8388607)
+ 289 compressed objects within 3 object streams
+ 69 named destinations out of 1000 (max. 500000)
  32497 words of extra memory for PDF output out of 35830 (max. 10000000)
 
