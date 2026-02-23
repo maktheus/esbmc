@@ -1,11 +1,13 @@
 % ----------------------------------------------------------
-% Introdução (exemplo de capítulo sem numeração, mas presente no Sumário)
+% Introdução
 % ----------------------------------------------------------
-%\chapter*[Introdução]{Introdução}
 \chapter{Introdução}
-%\addcontentsline{toc}{chapter}{INTRODUÇÃO}
-% ----------------------------------------------------------
-A aplicação de técnicas de verificação formal em sistemas baseados em Inteligência Artificial (IA) tem se tornado crucial para garantir a confiabilidade desses modelos em ambientes críticos \cite{huang2017robustness}. Este trabalho apresenta uma abordagem utilizando o ESBMC (\textit{Efficient SMT-Based Context-Bounded Model Checker}) para a verificação de propriedades de segurança em redes neurais \cite{gopinath2021verifying} e sistemas de controle neuro-simbólicos.
+
+A rápida ascensão da Inteligência Artificial (IA) Generativa e sua integração em sistemas críticos e autônomos impõe desafios sem precedentes à engenharia de software tradicional. Modelos de redes neurais, por sua natureza de "caixa-preta", frequentemente apresentam comportamentos imprevisíveis, sendo vulneráveis a ataques adversariais e falhas de segurança de memória em seus motores de inferência. Nesse contexto, a aplicação de técnicas de verificação formal torna-se crucial para garantir que esses sistemas operem dentro de limites seguros e previsíveis \cite{huang2017robustness}.
+
+Este trabalho explora o uso do ESBMC (\textit{Efficient SMT-Based Context-Bounded Model Checker}), um verificador de modelos de vanguarda, para prover garantias matemáticas sobre a execução de componentes de IA. A pesquisa aborda desde a verificação de propriedades lógicas em modelos Python até a análise de segurança de kernels em C++, fundamentais para a infraestrutura de inferência moderna \cite{gopinath2021verifying}.
+
+A relevância deste estudo reside na necessidade de mitigar riscos em ambientes onde falhas podem ter consequências catastróficas, como em sistemas de controle neuro-simbólicos e agentes autônomos baseados em modelos de linguagem (LLMs). Ao longo deste relatório, detalha-se uma estratégia de verificação em três níveis, cobrindo modelos isolados, controladores neurais e a análise sistêmica em malha fechada.
 
 \chapter{Objetivos}
 

@@ -1,4 +1,4 @@
 \babel@toc {brazil}{}\relax 
-\contentsline {figure}{\numberline {1}{\ignorespaces Pipeline de verificação formal com o ESBMC.}}{8}{figure.caption.6}%
-\contentsline {figure}{\numberline {2}{\ignorespaces Tempo de verificação vs dimensão da matriz (GEMM com tiling).}}{12}{figure.caption.8}%
-\contentsline {figure}{\numberline {3}{\ignorespaces Tempo de verificação por iteração do agente neuro-simbólico.}}{13}{figure.caption.9}%
+\contentsline {figure}{\numberline {1}{\ignorespaces Pipeline de verificação formal com o ESBMC.}}{10}{figure.caption.6}%
+\contentsline {figure}{\numberline {2}{\ignorespaces Tempo de verificação vs dimensão da matriz (GEMM com tiling).}}{14}{figure.caption.8}%
+\contentsline {figure}{\numberline {3}{\ignorespaces Tempo de verificação por iteração do agente neuro-simbólico.}}{15}{figure.caption.9}%
