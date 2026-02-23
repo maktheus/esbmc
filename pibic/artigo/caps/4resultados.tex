@@ -1,0 +1,99 @@
+\chapter{Resultado Parcial}
+\label{cap:resultados}
+
+Este capítulo apresenta os resultados parciais obtidos, organizados por caso de uso. Os experimentos foram conduzidos utilizando o ESBMC versão compilada a partir do código-fonte com suporte ao solver Z3.
+
+\section{Caso 1 — Verificação de Modelo Python}
+
+A verificação formal do neurônio com ativação ReLU (\texttt{neuron.py}) resultou em \textbf{VERIFICAÇÃO BEM-SUCEDIDA} para ambas as propriedades especificadas. O ESBMC provou matematicamente, via k-indução, que para qualquer entrada $x_1, x_2 \in [0.0, 1.0]$, a saída do neurônio satisfaz $\text{out} \geq 0.0$ e $\text{out} \leq 0.6$.
+
+O principal desafio identificado foi a exigência de tipagem estática rigorosa no \textit{frontend} Python do ESBMC. Construções dinâmicas comuns em \textit{frameworks} de ML — como listas heterogêneas e funções de ordem superior — exigem refatoração substancial antes de serem verificáveis, limitando a aplicabilidade direta a modelos já treinados com PyTorch ou TensorFlow.
+
+Os resultados do log de verificação foram armazenados em \texttt{results/case1\_mlp.log}.
+
+\section{Caso 2 — Verificação de Kernels de Inferência}
+
+\subsection{Kernel de Atenção}
+
+A verificação do kernel \texttt{attention\_kernel.cpp} confirmou a ausência de \textit{buffer overflows} e vazamentos de memória para $\texttt{seq\_len} \in [1, 10]$. O ESBMC explorou simbolicamente todas as trajetórias possíveis dentro do laço, provando que os acessos \texttt{query[i]} e \texttt{key[i]} são sempre válidos, dado que os vetores são alocados com tamanho proporcional a \texttt{seq\_len}.
+
+\subsection{Escalabilidade do GEMM}
+
+Para o kernel de multiplicação de matrizes com \textit{tiling}, foi realizada uma análise de escalabilidade variando a dimensão $N$. Os resultados estão sumarizados na \autoref{tab:gemm_tempo} e visualizados na \autoref{fig:case2_plot}.
+
+\begin{table}[htb]
+\caption{Tempo de verificação do kernel GEMM em função da dimensão da matriz.}
+\label{tab:gemm_tempo}
+\begin{center}
+\begin{tabular}{c|c}
+\hline
+\textbf{Dimensão N} & \textbf{Tempo (s)} \\
+\hline
+2 & $<$ 1 \\
+3 & $\approx$ 2 \\
+4 & $\approx$ 5 \\
+5 & $\approx$ 8 \\
+6 & $\approx$ 15 \\
+\hline
+\end{tabular}
+\end{center}
+\legend{Fonte: Elaborada pelo autor, 2025.}
+\end{table}
+
+\begin{figure}[htb]
+    \caption{\label{fig:case2_plot}Tempo de verificação vs dimensão da matriz (GEMM com tiling).}
+    \begin{center}
+        \includegraphics[width=0.80\textwidth]{case2_plot.png}
+    \end{center}
+    \legend{Fonte: Elaborada pelo autor, 2025.}
+\end{figure}
+
+O crescimento exponencial do tempo de verificação com o tamanho da matriz confirma que a verificação formal completa é inviável para matrizes de LLMs em escala real (ex.: dimensão 4096). Entretanto, a abordagem é \textbf{altamente eficaz} para verificar a corretude da lógica, especialmente do algoritmo de \textit{tiling}, em instâncias reduzidas — estratégia compatível com a \textit{Small Scope Hypothesis} da verificação formal.
+
+\section{Caso 3 — Loop Neuro-Simbólico}
+
+O agente simulado (\texttt{mock\_agent.py}) executou com sucesso as duas iterações previstos:
+
+\begin{alineas}
+    \item \textbf{Iteração 0}: O ESBMC detectou corretamente um \textit{buffer overflow} no código com \texttt{strcpy} em buffer de 16 bytes, produzindo um contra-exemplo detalhado indicando a condição de violação;
+    \item \textbf{Iteração 1}: O código corrigido com \texttt{strncpy} recebeu status \texttt{VERIFICATION SUCCESSFUL}.
+\end{alineas}
+
+O tempo de verificação por iteração manteve-se inferior a 1 segundo (\autoref{fig:case3_plot}), demonstrando que a integração ESBMC-LLM não introduz \textit{overhead} significativo no ciclo de refinamento para \textit{snippets} de código gerado.
+
+\begin{figure}[htb]
+    \caption{\label{fig:case3_plot}Tempo de verificação por iteração do agente neuro-simbólico.}
+    \begin{center}
+        \includegraphics[width=0.80\textwidth]{case3_plot.png}
+    \end{center}
+    \legend{Fonte: Elaborada pelo autor, 2025.}
+\end{figure}
+
+\section{Caso 4 — Controlador PID com Engenharia do Caos}
+
+O verificador formal provou que o controlador PID (\texttt{pid\_controller.c}) mantém $T < 150.0\,^{\circ}$C para todos os cenários de ruído de sensor possíveis no intervalo $[-5.0, +5.0]$ graus ao longo de 10 passos de simulação. A asserção \texttt{assert(temp < MAX\_SAFE\_TEMP)} foi satisfeita para todos os caminhos simbólicos explorados.
+
+O mecanismo crítico que garante a propriedade é o \textit{Safety Interlock}: quando a temperatura medida supera $120.0\,^{\circ}$C, a saída do controlador é forçada a zero, cortando o aquecimento independente do cálculo PID. O ESBMC validou formalmente que essa lógica é suficiente para a estabilidade dentro dos limites testados.
+
+\section{Análise Comparativa}
+
+A \autoref{tab:comparativo} apresenta uma síntese comparativa dos quatro casos de uso segundo as dimensões de foco, maturidade tecnológica e relação custo-benefício.
+
+\begin{table}[htb]
+\caption{Análise comparativa dos casos de uso ESBMC em GenAI.}
+\label{tab:comparativo}
+\begin{center}
+\begin{tabular}{p{2.8cm}|p{2.5cm}|p{2.5cm}|p{2.8cm}|p{2.8cm}}
+\hline
+\textbf{Dimensão} & \textbf{Caso 1 (Modelo)} & \textbf{Caso 2 (Infra)} & \textbf{Caso 3 (Agente)} & \textbf{Caso 4 (Controle)} \\
+\hline
+\textbf{Foco} & Corretude Matemática & Segurança de Memória & Segurança de Software & Robustez sob Caos \\
+\hline
+\textbf{Maturidade} & Baixa (Experimental) & Alta (Industrial) & Alta (Emergente) & Alta (Crítica) \\
+\hline
+\textbf{Custo/Benefício} & Baixo & Alto & Muito Alto & Alto \\
+\hline
+\end{tabular}
+\end{center}
+\legend{Fonte: Elaborada pelo autor, 2025.}
+\end{table}

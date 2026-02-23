@@ -1,0 +1,67 @@
+\chapter{Metodologia}
+\label{cap:metodologia}
+
+Este capítulo descreve os procedimentos metodológicos adotados para verificação formal de sistemas de Inteligência Artificial Generativa (GenAI) utilizando o verificador de modelos ESBMC (\textit{Efficient SMT-Based Context-Bounded Model Checker}). A investigação foi estruturada em quatro estudos de caso complementares, cada um explorando uma camada distinta do ecossistema de IA Generativa.
+
+\section{Visão Geral da Abordagem}
+
+A metodologia geral segue o ciclo de verificação formal baseado em SMT, conforme ilustrado na \autoref{fig:pipeline_esbmc}. O ESBMC opera convertendo o código-fonte para uma representação intermediária (\textit{GOTO-Programs}), realizando execução simbólica e codificando as restrições em fórmulas SMT (\textit{Satisfiability Modulo Theories}). O solver SMT (Z3 ou Bitwuzla) então determina se existe uma atribuição de valores de entrada capaz de violar as propriedades especificadas — produzindo um contra-exemplo em caso afirmativo, ou uma prova de corretude dentro dos limites verificados.
+
+\begin{figure}[htb]
+    \caption{\label{fig:pipeline_esbmc}Pipeline de verificação formal com o ESBMC.}
+    \begin{center}
+        \includegraphics[width=0.85\textwidth]{fluxo-yolo.png}
+    \end{center}
+    \legend{Fonte: Elaborada pelo autor, 2025.}
+\end{figure}
+
+Para cada caso de uso, foram definidas:
+\begin{alineas}
+    \item \textbf{Pré-condições}: restrições sobre os valores de entrada (ex.: intervalo de valores, tamanho de buffers);
+    \item \textbf{Propriedades de Segurança}: asserções formais que o sistema deve satisfazer para todo valor de entrada válido;
+    \item \textbf{Métricas de Avaliação}: tempo de verificação, escalabilidade e eficácia na detecção de falhas.
+\end{alineas}
+
+\section{Caso 1 — Verificação Direta de Modelos Python (Frontend Experimental)}
+
+O primeiro caso de uso explorou o \textit{frontend} experimental do ESBMC para código Python. Um neurônio artificial com função de ativação ReLU foi implementado em \texttt{neuron.py} com anotações de tipo estático, requisito obrigatório para que o ESBMC consiga inferir os tipos durante a análise.
+
+As entradas $x_1, x_2 \in [0.0, 1.0]$ foram tratadas como variáveis simbólicas não-determinísticas, e as seguintes propriedades foram verificadas formalmente:
+\begin{alineas}
+    \item Saída não-negativa: $\text{out} \geq 0.0$ (propriedade da ReLU);
+    \item Saída limitada superiormente: $\text{out} \leq 0.6$ (limite teórico dado os pesos fixos).
+\end{alineas}
+
+O ESBMC foi executado com os flags \texttt{-{}-floatbv -{}-k-induction} para habilitar aritmética de ponto flutuante e indução-k.
+
+\section{Caso 2 — Verificação do Motor de Inferência (Kernels C++)}
+
+O segundo caso focou na verificação de segurança de memória em kernels C++ análogos aos utilizados em motores de inferência como \texttt{llama.cpp}. Foi implementado um kernel simplificado de atenção \textit{dot-product} (\texttt{attention\_kernel.cpp}) com alocação dinâmica de memória e laços de acesso a arrays.
+
+A abordagem adotada emprega entradas simbólicas não-determinísticas ($\texttt{seq\_len} \in [1, 10]$) e verifica:
+\begin{alineas}
+    \item Ausência de \textit{buffer overflows} nos acessos \texttt{query[i]} e \texttt{key[i]};
+    \item Ausência de vazamentos de memória (\textit{memory leaks}).
+\end{alineas}
+
+Adicionalmente, um kernel de multiplicação de matrizes (\textit{GEMM}) com \textit{tiling} foi implementado (\texttt{matmul\_kernel.cpp}) para análise de escalabilidade, variando a dimensão $N \in \{2, 3, 4, 5, 6\}$.
+
+O comando utilizado foi: \texttt{esbmc attention\_kernel.cpp -{}-multi-property -{}-memory-leak-check -{}-overflow-check}.
+
+\section{Caso 3 — Loop Neuro-Simbólico (Agente LLM + ESBMC)}
+
+O terceiro caso simulou um ciclo de verificação contínua voltado a código gerado por modelos de linguagem (LLMs). O script \texttt{mock\_agent.py} implementa um agente que itera sobre versões de código C fornecidas por um LLM simulado e submete cada versão ao ESBMC automaticamente.
+
+O fluxo do agente é:
+\begin{alineas}
+    \item \textbf{Iteração 0}: código com \texttt{strcpy} em buffer de tamanho fixo — vulnerável a \textit{overflow};
+    \item \textbf{Iteração 1}: código corrigido usando \texttt{strncpy} — verificado com sucesso.
+\end{alineas}
+
+O tempo de verificação por iteração foi medido para avaliar o \textit{overhead} introduzido pela integração ESBMC-LLM.
+
+\section{Caso 4 — Controlador PID com Injeção de Caos}
+
+O quarto caso aplicou princípios de \textit{Engenharia do Caos} à verificação de sistemas de controle críticos. Um controlador PID digital (\texttt{pid\_controller.c}) responsável por regular a temperatura de uma planta térmica foi submetido à injeção de ruído não-determinístico nos sensores (±5.0 graus) a cada iteração.
+
+A propriedade de segurança verificada foi: $T_{\text{sistema}} < T_{\text{MAX}} = 150.0\,^{\circ}$C para todos os valores de ruído possíveis ao longo de 10 passos de simulação. O verificador realizou análise por limitação de passos (\textit{bounded model checking}) com desenrolamento de 10 iterações do laço de controle.
