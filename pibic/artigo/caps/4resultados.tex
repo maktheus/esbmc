@@ -3,7 +3,7 @@
 
 Este capítulo apresenta os resultados parciais obtidos, organizados por caso de uso. Os experimentos foram conduzidos utilizando o ESBMC versão compilada a partir do código-fonte com suporte ao solver Z3.
 
-\section{Caso 1 --- Verifica\c{c}\~ao Formal de Neur\^onio com ReLU}
+\section{Caso 1 Verifica\c{c}\~ao Formal de Neur\^onio com ReLU}
 
 \subsection{Metodologia de Execu\c{c}\~ao}
 
@@ -21,7 +21,7 @@ O ESBMC retornou o veredicto \textbf{VERIFICATION SUCCESSFUL} para ambas as asse
 
 \begin{alineas}
     \item \textbf{Propriedade 1} (\texttt{out >= 0.0}): provada por indu\c{c}\~ao-$k$. O operador ReLU garante n\~ao-negatividade trivialmente: qualquer combina\c{c}\~ao linear que resulte em valor negativo \'e truncada a zero anteriormente;
-    \item \textbf{Propriedade 2} (\texttt{out <= 0.6}): provada pelo \textit{solver} Z3 via Bitvectores IEEE~754. O estado m\'aximo atingível \'e $out = 0.6$, confirmado tanto pela prova anal\'itica ($out_{\max} = \text{ReLU}(0.5 - 0.0 + 0.1) = 0.6$) quanto pelo resultado \textit{UNSAT} --- ou seja, n\~ao existe nenhuma atribui\c{c}\~ao de $(x_1, x_2) \in [0,1]^2$ que fa\c{c}a $out > 0.6$.
+    \item \textbf{Propriedade 2} (\texttt{out <= 0.6}): provada pelo \textit{solver} Z3 via Bitvectores IEEE~754. O estado m\'aximo atingível \'e $out = 0.6$, confirmado tanto pela prova anal\'itica ($out_{\max} = \text{ReLU}(0.5 - 0.0 + 0.1) = 0.6$) quanto pelo resultado \textit{UNSAT} ou seja, n\~ao existe nenhuma atribui\c{c}\~ao de $(x_1, x_2) \in [0,1]^2$ que fa\c{c}a $out > 0.6$.
 \end{alineas}
 
 A \autoref{fig:case1_plot} ilustra, de forma visual, a superf\'icie de sa\'idas do neur\^onio sobre todo o dom\'inio de entrada $[0,1]^2$ e a distribui\c{c}\~ao dos valores de sa\'ida obtidos por amostragem densa ($10^4$ pontos), comprovando que 100\% das amostras respeitam os \textit{bounds} formalmente verificados.
@@ -49,7 +49,33 @@ Os resultados do Caso 1 evidenciam tr\^es contribui\c{c}\~oes relevantes:
 Em suma, o Caso 1 serve como prova de conceito da integra\c{c}\~ao ESBMC-Python: o verificador, munido dos argumentos \texttt{-{}-floatbv -{}-k-induction}, \'e capaz de consumir c\'odigo Python bem tipado, construir o modelo SMT correspondente e emitir uma \textbf{garantia formal absolutamente confi\'avel} de que as propriedades an\'alises s\~ao mantidas para todo o espa\c{c}o de entrada.
 
 
-\section{Caso 2 — Verificação de Kernels de Inferência}
+
+\subsection{Extens\~ao ao Dom\'{i}nio Generativo: Rumo \`{a} Verifica\c{c}\~{a}o de LLMs}
+
+Embora o experimento inicial do Caso~1 demonstre a verificabilidade formal de um neur\^{o}nio isolado, a quest\~{a}o de pesquisa mais ampla \'{e}: \textbf{como essa abordagem escala para arquiteturas generativas modernas}, como o DeepSeek, Llama ou GPT?
+
+A resposta requer compreender a Hierarquia de Complexidade da Verifica\c{c}\~{a}o Formal de Redes Neurais, diretamente inspirada no trabalho do QNNVerifier~\cite{gopinath2021verifying}:
+
+\begin{alineas}
+    \item \textbf{N\'{i}vel 1 (atual)}: Neur\^{o}nio \'{u}nico ou MLP pequena, pesos fixos, entradas em $[0,1]^2$. Viabilidade: plena. Solver conclui em segundos;
+
+    \item \textbf{N\'{i}vel 2}: Redes de classifica\c{c}\~{a}o com quantiza\c{c}\~{a}o, como as analisadas pelo QNNVerifier para 52 topologias com aritm\'{e}tica \texttt{Fixed16/Fixed32}. Viabilidade: alta, com otiMiza\c{c}\~{o}es de \textit{slicing} e inferencia de intervalos;
+
+    \item \textbf{N\'{i}vel 3}: Blocos isolados de Transformers, mecanismo de aten\c{c}\~{a}o com comprimento de sequ\^{e}ncia simb\'{o}lico e dimens\~{a}o de embedding reduzida. Viabilidade: parcial, requer abstra\c{c}\~{a}o e decomposi\c{c}\~{a}o do modelo;
+
+    \item \textbf{N\'{i}vel 4}: Modelos completos tipo DeepSeek-R1 ou Llama-3.8B. Verificabilidade direta: invi\'{a}vel no estado atual. A estrat\'{e}gia vi\'{a}vel \'{e} a \textbf{verificac\~{a}o modular por componente}: isolar camadas cr\'{i}ticas, como a camada de aten\c{c}\~{a}o final ou o \textit{logit clamp}, e verificar propriedades locais espec\'{i}ficas.
+\end{alineas}
+
+A estrat\'{e}gia modular para modelos generativos opera da seguinte forma. Dado um LLM com $L$ camadas e dimens\~{a}o de embedding $d$, selecionamos uma \'{u}nica camada $\ell$ e fixamos todos os pesos $W^{(\ell)}$ como constantes. Entradas simb\'{o}licas $x \in \mathbb{R}^d$ s\~{a}o constrangidas a uma regi\~{a}o de interesse , por exemplo, dist\'{a}ncia $\epsilon$ de uma entrada real, e verifica-se a propriedade:
+
+\begin{equation}\label{eq:llm_prop}
+\forall x \in \mathcal{B}_\epsilon(x_0): \| \text{Attention}(x) \|_\infty \leq \delta
+\end{equation}
+
+Essa abordagem \'{e} diretamente compat\'{i}vel com o ESBMC atrav\'{e}s de \textit{stubs} C/C++ das camadas, enquanto a quantiza\c{c}\~{a}o em \texttt{Fixed16} (como empregada pelo DeepSeek) reduz drasticamente o espa\c{c}o de busca SMT, tornando a verifica\c{c}\~{a}o de componentes individuais ating\'{i}vel como diretriz metodol\'{o}gica futura deste projeto.
+
+
+\section{Caso 2   Verificação de Kernels de Inferência}
 
 \subsection{Kernel de Atenção}
 
@@ -79,16 +105,16 @@ Para o kernel de multiplicação de matrizes com \textit{tiling}, foi realizada 
 \end{table}
 
 \begin{figure}[htb]
-    \caption{\label{fig:case2_plot}Tempo de verificação vs dimensão da matriz (GEMM com tiling).}
+    \caption{\label{fig:case2_plot}Tempo de verificação vs dimensão da matriz, GEMM com tiling.}
     \begin{center}
-        \includegraphics[width=0.80\textwidth]{case2_plot.png}
+        \includegraphics[width=0.98\textwidth]{case2_plot.png}
     \end{center}
     \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{figure}
 
-O crescimento exponencial do tempo de verificação com o tamanho da matriz confirma que a verificação formal completa é inviável para matrizes de LLMs em escala real (ex.: dimensão 4096). Entretanto, a abordagem é \textbf{altamente eficaz} para verificar a corretude da lógica, especialmente do algoritmo de \textit{tiling}, em instâncias reduzidas — estratégia compatível com a \textit{Small Scope Hypothesis} da verificação formal.
+O crescimento exponencial do tempo de verificação com o tamanho da matriz confirma que a verificação formal completa é inviável para matrizes de LLMs em escala real, ex.: dimensão 4096. Entretanto, a abordagem é \textbf{altamente eficaz} para verificar a corretude da lógica, especialmente do algoritmo de \textit{tiling}, em instâncias reduzidas   estratégia compatível com a \textit{Small Scope Hypothesis} da verificação formal.
 
-\section{Caso 3 — Loop Neuro-Simbólico}
+\section{Caso 3   Loop Neuro-Simbólico}
 
 O agente simulado (\texttt{mock\_agent.py}) executou com sucesso as duas iterações previstos:
 
@@ -107,30 +133,30 @@ O tempo de verificação por iteração manteve-se inferior a 1 segundo (\autore
     \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{figure}
 
-\section{Caso 4 — Controlador PID com Engenharia do Caos e SMT}
+\section{Caso 4   Controlador PID com Engenharia do Caos e SMT}
 
 O verificador formal provou que o controlador PID (\texttt{pid\_template.c}) mantém a integridade frente a incertezas. Emplacando o \textit{framework} de quantização proposto na literatura de modelagem SMT \cite{gopinath2021verifying}, estendemos a validação formal para os sistemas de controle dinâmicos, verificando 52 cenários distintos modelados através das injeções estocásticas do orquestrador Python (\textit{Uniforme, Gaussiana, Senoidal, Impulso e Drift}).
 
-Os experimentos atestaram garantias tanto para variáveis de controle operando em \texttt{Float32} quanto quantizadas em ponto fixo (\texttt{Fixed32} e \texttt{Fixed16}). Constatou-se que otimizações de \textit{slicing} e inferência de limites provam-se determinantes para os sistemas dinâmicos: o tempo de execução foi drasticamente reduzido nas abordagens em ponto fixo, onde o SMT avalia os limites físicos na escala de segundos. Em contrapartida, \texttt{Float32} exigiu maiores ciclos de dedução (escala superior a dezenas de segundos nas distribuições Gaussianas e Sinusoidais), conforme evidenciado no comparativo de desempenho apresentado na \autoref{fig:case4_plot}.
+Os experimentos atestaram garantias tanto para variáveis de controle operando em \texttt{Float32} quanto quantizadas em ponto fixo (\texttt{Fixed32} e \texttt{Fixed16}). Constatou-se que otimizações de \textit{slicing} e inferência de limites provam-se determinantes para os sistemas dinâmicos: o tempo de execução foi drasticamente reduzido nas abordagens em ponto fixo, onde o SMT avalia os limites físicos na escala de segundos. Em contrapartida, \texttt{Float32} exigiu maiores ciclos de dedução, escala superior a dezenas de segundos nas distribuições Gaussianas e Sinusoidais, conforme evidenciado no comparativo de desempenho apresentado na \autoref{fig:case4_plot}.
 
 \begin{figure}[htb]
-    \caption{\label{fig:case4_plot}Desempenho da Verificação SMT no Controlador PID (52 Casos) vs Injeção de Ruídos.}
+    \caption{\label{fig:case4_plot}Desempenho da Verificação SMT no Controlador PID, 52 Casos vs Injeção de Ruídos.}
     \begin{center}
         \includegraphics[width=0.80\textwidth]{case4_plot.png}
     \end{center}
     \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{figure}
 
-\section{Caso 5 — The Ralph Loop Concept e Validação em Larga Escala}
+\section{Caso 5   The Ralph Loop Concept e Validação em Larga Escala}
 
 Para ilustrar a escalabilidade e eficácia formal do verificador acoplado aos orquestradores Python (\textit{Ralph Loops}), reproduzimos as métricas de otimização documentadas na literatura \cite{gopinath2021verifying} aplicadas às nossas suítes de teste de inferência e sistemas de controle.
 
 \subsection{Escalabilidade e Distribuição de Resultados}
 
-Ao analisarmos 52 topologias de código diferentes, observamos a capacidade de identificar instâncias vulneráveis (adversariais) na vasta maioria dos ambientes. A \autoref{fig:distribution_plot} ilustra que 34 instâncias puderam ser provadas absolutamente seguras dentro dos limites \textit{Float/Fixed}, enquanto 15 devolveram contra-exemplos SMT diretos (vulneráveis). Apenas 3 extrapolaram o limite de tempo do verificador (\textit{Timeout}).
+Ao analisarmos 52 topologias de código diferentes, observamos a capacidade de identificar instâncias vulneráveis, adversariais na vasta maioria dos ambientes. A \autoref{fig:distribution_plot} ilustra que 34 instâncias puderam ser provadas absolutamente seguras dentro dos limites \textit{Float/Fixed}, enquanto 15 devolveram contra-exemplos SMT diretos, vulneráveis. Apenas 3 extrapolaram o limite de tempo do verificador (\textit{Timeout}).
 
 \begin{figure}[htb]
-    \caption{\label{fig:distribution_plot}Distribuição de Casos (Seguros, Adversariais e Timeout).}
+    \caption{\label{fig:distribution_plot}Distribuição de Casos, Seguros, Adversariais e Timeout.}
     \begin{center}
         \includegraphics[width=0.60\textwidth]{distribution_plot.png}
     \end{center}
@@ -152,41 +178,16 @@ Simultaneamente, o avanço no processamento contínuo das topologias confirma um
 Adicionalmente, um dos pilares discutidos pelos \textit{Benchmarks} de quantização SMT foi a integração de inferência de análise de intervalos e \textit{slicing} semântico. Quando habilitamos essa restrição direta no manipulador Python, observamos que o tempo das validações foi podado radicalmente, evidenciando as métricas apresentadas na \autoref{fig:optimization_plot}. Sem estas otimizações nativas, modelos como classificadores de imagem e políticas de controle \textit{RL} estouram rapidamente o \textit{Timeout}.
 
 \begin{figure}[htb]
-    \caption{\label{fig:optimization_plot}Impacto da Otimização (Slicing e Intervalos) no Tempo de Verificação.}
+    \caption{\label{fig:optimization_plot}Impacto da Otimização, Slicing e Intervalos no Tempo de Verificação.}
     \begin{center}
         \includegraphics[width=0.80\textwidth]{optimization_plot.png}
     \end{center}
     \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{figure}
 
-\subsection{A Dicotomia Cognitiva: IA Generativa vs SMT}
 
-Para ilustrar de forma didática o que o verificador ESBMC enxerga em contraste com o que uma LLM (Agente) conjectura nas gerações iterativas:
-
-\subsubsection{A Visão Contínua (Expectativa do Agente/IA)}
-A rede neural ou Agente Autônomo generaliza o espaço de \textit{features} e assume uma fronteira de decisão suave e contínua (\autoref{fig:expected_boundary}), muitas vezes invisível ao risco de bordas extremas ou \textit{buffer rings}.
-
-\begin{figure}[htb]
-    \caption{\label{fig:expected_boundary}Visão Contínua Idealizada (AIA).}
-    \begin{center}
-        \includegraphics[width=0.60\textwidth]{expected_nn_boundary.png}
-    \end{center}
-    \legend{Fonte: Elaborada pelo autor através de IA Generativa, 2026.}
-\end{figure}
-
-\subsection{A Visão Discreta Formal (Realidade SMT no ESBMC)}
-O solver SMT "quebra" as superfícies estáticas em domínios discretos restritos (\autoref{fig:actual_violation}). O Ralph Loop caça ativamente contra-exemplos, encontrando picos (violações de \textit{arrays}, \textit{memory leaks}).
-
-\begin{figure}[htb]
-    \caption{\label{fig:actual_violation}Fronteira Fragmentada Matemática (Solve SMT).}
-    \begin{center}
-        \includegraphics[width=0.80\textwidth]{actual_smt_violation.png}
-    \end{center}
-    \legend{Fonte: Elaborada pelo autor através de IA Generativa, 2026.}
-\end{figure}
-
-\section{Caso 6 — Verificação Formal em Reinforcement Learning (Actor-Critic)}
-A verificação de políticas de Reinforcement Learning é crítica. O modelo \texttt{rl\_policy.c} simulou estaticamente o bloco físico através do motor PyTest acionando \texttt{--floatbv} do ESBMC. O solver interceptou o comportamento errático na restrição do volante atuador (permitido entre -1.0 a 1.0) comprovando sua funcionalidade como \textit{Safety Shield} pré-implantação física.
+\section{Caso 6   Verificação Formal em Reinforcement Learning, Actor-Critic}
+A verificação de políticas de Reinforcement Learning é crítica. O modelo \texttt{rl\_policy.c} simulou estaticamente o bloco físico através do motor PyTest acionando \texttt{--floatbv} do ESBMC. O solver interceptou o comportamento errático na restrição do volante atuador, permitido entre -1.0 a 1.0 comprovando sua funcionalidade como \textit{Safety Shield} pré-implantação física.
 
 \section{Análise Comparativa}
 
@@ -200,15 +201,15 @@ A \autoref{tab:comparativo} apresenta uma síntese comparativa evoluída dos sei
 \begin{center}
 \begin{tabular}{p{2.5cm}|p{2.4cm}|p{2.4cm}|p{2.4cm}|p{2.4cm}}
 \hline
-\textbf{Dimensão} & \textbf{Caso 1/2 (Inferência)} & \textbf{Caso 3/5 (Agentic)} & \textbf{Caso 4 (Controle)} & \textbf{Caso 6 (RL Policies)} \\
+\textbf{Dimensão} & \textbf{Caso 1/2, Inferência} & \textbf{Caso 3/5, Agentic} & \textbf{Caso 4, Controle} & \textbf{Caso 6, RL Policies} \\
 \hline
 \textbf{Foco} & Segurança Limites Matrizes & Ciclo Autônomo Correção & Ruído de Sensor Estocástico & Barreira Física Atuadores \\
 \hline
-\textbf{Maturidade} & Industrial & Emergente (Ralph) & Alta & Teórica (Safety Shield) \\
+\textbf{Maturidade} & Industrial & Emergente, Ralph & Alta & Teórica, Safety Shield \\
 \hline
 \end{tabular}
 \end{center}
 \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{table}
 
-Entretanto, observou-se que a \textit{Abstract Syntax Tree (AST)} de \textit{GOTO-Programs}, essencial para otimizar \textit{Timeouts} do solver, permanece intrinsecamente amarrada ao C++ (\texttt{src/goto-symex}), forçando o \textit{wrapper Python} a operar por heurística \textit{Regex}, limitando um controle mais refinado da indução K internamente.
+Entretanto, observou-se que a \textit{Abstract Syntax Tree, AST} de \textit{GOTO-Programs}, essencial para otimizar \textit{Timeouts} do solver, permanece intrinsecamente amarrada ao C++ (\texttt{src/goto-symex}), forçando o \textit{wrapper Python} a operar por heurística \textit{Regex}, limitando um controle mais refinado da indução K internamente.
