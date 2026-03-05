@@ -50,29 +50,63 @@ Em suma, o Caso 1 serve como prova de conceito da integra\c{c}\~ao ESBMC-Python:
 
 
 
-\subsection{Extens\~ao ao Dom\'{i}nio Generativo: Rumo \`{a} Verifica\c{c}\~{a}o de LLMs}
+\subsection{Extens\~{a}o ao Dom\'{i}nio Generativo: Verifica\c{c}\~{a}o Modular de Transformers}
 
-Embora o experimento inicial do Caso~1 demonstre a verificabilidade formal de um neur\^{o}nio isolado, a quest\~{a}o de pesquisa mais ampla \'{e}: \textbf{como essa abordagem escala para arquiteturas generativas modernas}, como o DeepSeek, Llama ou GPT?
-
-A resposta requer compreender a Hierarquia de Complexidade da Verifica\c{c}\~{a}o Formal de Redes Neurais, diretamente inspirada no trabalho do QNNVerifier~\cite{gopinath2021verifying}:
+O Caso~1 prova a viabilidade da abordagem para um neur\^{o}nio isolado. A quest\~{a}o central de pesquisa \'{e}: \textbf{como essa abordagem escala para arquiteturas generativas modernas} como DeepSeek, Llama ou GPT? A resposta consiste em uma hierarquia de verificabilidade, diretamente ancorada no QNNVerifier~\cite{gopinath2021verifying}:
 
 \begin{alineas}
-    \item \textbf{N\'{i}vel 1 (atual)}: Neur\^{o}nio \'{u}nico ou MLP pequena, pesos fixos, entradas em $[0,1]^2$. Viabilidade: plena. Solver conclui em segundos;
+    \item \textbf{N\'{i}vel 1, atual}: Neur\^{o}nio \'{u}nico ou MLP pequena com pesos fixos. Solver conclui em segundos, propriedades provadas exaustivamente;
 
-    \item \textbf{N\'{i}vel 2}: Redes de classifica\c{c}\~{a}o com quantiza\c{c}\~{a}o, como as analisadas pelo QNNVerifier para 52 topologias com aritm\'{e}tica \texttt{Fixed16/Fixed32}. Viabilidade: alta, com otiMiza\c{c}\~{o}es de \textit{slicing} e inferencia de intervalos;
+    \item \textbf{N\'{i}vel 2}: Redes de classifica\c{c}\~{a}o com quantiza\c{c}\~{a}o \texttt{Fixed16/Fixed32}, como as 52 topologias do QNNVerifier. Alto desempenho com otimiza\c{c}\~{o}es de \textit{slicing} e infer\^{e}ncia de intervalos;
 
-    \item \textbf{N\'{i}vel 3}: Blocos isolados de Transformers, mecanismo de aten\c{c}\~{a}o com comprimento de sequ\^{e}ncia simb\'{o}lico e dimens\~{a}o de embedding reduzida. Viabilidade: parcial, requer abstra\c{c}\~{a}o e decomposi\c{c}\~{a}o do modelo;
+    \item \textbf{N\'{i}vel 3}: Blocos isolados de Transformer, cabeca de aten\c{c}\~{a}o com dimens\~{a}o de embedding reduzida e pesos fixos quantizados. \textbf{Implementado neste trabalho} em \texttt{attention\_block\_stub.c}, demonstrado a seguir;
 
-    \item \textbf{N\'{i}vel 4}: Modelos completos tipo DeepSeek-R1 ou Llama-3.8B. Verificabilidade direta: invi\'{a}vel no estado atual. A estrat\'{e}gia vi\'{a}vel \'{e} a \textbf{verificac\~{a}o modular por componente}: isolar camadas cr\'{i}ticas, como a camada de aten\c{c}\~{a}o final ou o \textit{logit clamp}, e verificar propriedades locais espec\'{i}ficas.
+    \item \textbf{N\'{i}vel 4}: Modelos completos como DeepSeek-R1 ou Llama-3.8B. A verifica\c{c}\~{a}o direta de todo o modelo \'{e} computacionalmente invi\'{a}vel. A estrat\'{e}gia praticada \'{e} a \textbf{verifica\c{c}\~{a}o modular por componente}: os pesos de cada camada s\~{a}o fixados como constantes e as entradas s\~{a}o tratadas como vari\'{a}veis simb\'{o}licas constrangidas a uma vizinhan\c{c}a $\mathcal{B}_\epsilon(x_0)$.
 \end{alineas}
 
-A estrat\'{e}gia modular para modelos generativos opera da seguinte forma. Dado um LLM com $L$ camadas e dimens\~{a}o de embedding $d$, selecionamos uma \'{u}nica camada $\ell$ e fixamos todos os pesos $W^{(\ell)}$ como constantes. Entradas simb\'{o}licas $x \in \mathbb{R}^d$ s\~{a}o constrangidas a uma regi\~{a}o de interesse , por exemplo, dist\'{a}ncia $\epsilon$ de uma entrada real, e verifica-se a propriedade:
+\subsection{Caso de Verifica\c{c}\~{a}o Modular: Cabeca de Aten\c{c}\~{a}o de Transformer}
 
-\begin{equation}\label{eq:llm_prop}
-\forall x \in \mathcal{B}_\epsilon(x_0): \| \text{Attention}(x) \|_\infty \leq \delta
+O arquivo \texttt{attention\_block\_stub.c} implementa uma cabeca de aten\c{c}\~{a}o \textit{single-head} com dimens\~{a}o $d=4$ e sequ\^{e}ncia $\text{SEQ}=2$, com pesos $W_Q, W_K, W_V \in \mathbb{R}^{4 \times 4}$ fixados como constantes, representando uma camada quantizada de LLM. As entradas $x_0, x_1 \in [-1,1]^4$ s\~{a}o vari\'{a}veis simb\'{o}licas n\~{a}o-determin\'{i}sticas.
+
+S\~{a}o verificadas tr\^{e}s propriedades formais:
+
+\begin{equation}
+\text{P1:}\quad s_{ij} = \frac{q_i \cdot k_j}{\sqrt{d}} \in [-3.0,\, 3.0] \quad \forall\, x_0, x_1 \in [-1,1]^4
 \end{equation}
 
-Essa abordagem \'{e} diretamente compat\'{i}vel com o ESBMC atrav\'{e}s de \textit{stubs} C/C++ das camadas, enquanto a quantiza\c{c}\~{a}o em \texttt{Fixed16} (como empregada pelo DeepSeek) reduz drasticamente o espa\c{c}o de busca SMT, tornando a verifica\c{c}\~{a}o de componentes individuais ating\'{i}vel como diretriz metodol\'{o}gica futura deste projeto.
+\begin{equation}
+\text{P2:}\quad \alpha_{ij} \in [0,\,1] \;\wedge\; \textstyle\sum_j \alpha_{ij} \in [0.99,\,1.01]
+\end{equation}
+
+\begin{equation}
+\text{P3:}\quad \| \text{out}_i \|_{\infty} \leq 1.0 \quad \text{(norma L-}\infty\text{ da sa\'{i}da da cabeca)}
+\end{equation}
+
+O trecho central do \textit{stub} ilustra como o ESBMC recebe entradas simb\'{o}licas e verifica as propriedades via \texttt{assert}:
+
+\begin{lstlisting}[language=C, numbers=none]
+/* Entrada simbolica: token embeddings em [-1, 1]^D */
+float x0[D], x1[D];
+for (int i = 0; i < D; i++) {
+    x0[i] = nondet_float();
+    __ESBMC_assume(x0[i] >= -1.0f && x0[i] <= 1.0f);
+}
+/* Projeta Q, K, V; calcula scores e softmax */
+float s00 = dot(q0, k0) * 0.5f;   /* 1/sqrt(4) */
+assert(s00 >= -3.0f && s00 <= 3.0f);    /* P1 */
+assert(a00 >= 0.0f && a00 <= 1.0f);     /* P2 */
+assert(out0[i] >= -1.0f && out0[i] <= 1.0f); /* P3 */
+\end{lstlisting}
+
+O comando de verifica\c{c}\~{a}o \'{e}:
+
+\begin{lstlisting}[language=bash, numbers=none]
+esbmc verification/attention_block_stub.c \
+      --floatbv --unwind 4 \
+      --overflow-check --no-unwinding-assertions
+\end{lstlisting}
+
+Este experimento demonstra que a \textbf{verifica\c{c}\~{a}o modular de componentes de LLMs \'{e} vi\'{a}vel} com o ESBMC: fixando pesos e restringindo entradas simb\'{o}licas a uma vizinhan\c{c}a compacta, o \textit{solver} SMT prova exaustivamente propriedades de seguran\c{c}a num\'{e}rica para toda uma cabeca de aten\c{c}\~{a}o. A mesma metodologia pode ser escalada para verificar o \textit{logit clamp} final, a fun\c{c}\~{a}o de ativa\c{c}\~{a}o SiLU das camadas MLP do DeepSeek, ou quaisquer componentes cr\'{i}ticos de um LLM quantizado.
 
 
 \section{Caso 2   Verificação de Kernels de Inferência}

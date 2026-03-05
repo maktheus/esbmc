@@ -7,4 +7,4 @@
 \contentsline {figure}{\numberline {6}{\ignorespaces Caso~4: Evolu\c {c}\~{a}o da Temperatura, Sinal de Controle PID e Erro de Rastreamento sob Cinco Perfis de Ru\'{i}do de Sensor.}}{27}{figure.caption.12}%
 \contentsline {figure}{\numberline {7}{\ignorespaces Distribuição de Casos, Seguros, Adversariais e Timeout.}}{28}{figure.caption.13}%
 \contentsline {figure}{\numberline {8}{\ignorespaces Escalabilidade SMT: Tempo de Verificação vs Tamanho da Rede Neural.}}{29}{figure.caption.14}%
-\contentsline {figure}{\numberline {9}{\ignorespaces Impacto da Otimização, Slicing e Intervalos no Tempo de Verificação.}}{29}{figure.caption.15}%
+\contentsline {figure}{\numberline {9}{\ignorespaces Impacto da Otimização, Slicing e Intervalos no Tempo de Verificação.}}{30}{figure.caption.15}%
