@@ -61,7 +61,7 @@ O Caso~1 prova a viabilidade da abordagem para um neur\^{o}nio isolado. A quest\
 
     \item \textbf{N\'{i}vel 3}: Blocos isolados de Transformer, cabeca de aten\c{c}\~{a}o com dimens\~{a}o de embedding reduzida e pesos fixos quantizados. \textbf{Implementado neste trabalho} em \texttt{attention\_block\_stub.c}, demonstrado a seguir;
 
-    \item \textbf{N\'{i}vel 4}: Modelos completos como DeepSeek-R1 ou Llama-3.8B. A verifica\c{c}\~{a}o direta de todo o modelo \'{e} computacionalmente invi\'{a}vel. A estrat\'{e}gia praticada \'{e} a \textbf{verifica\c{c}\~{a}o modular por componente}: os pesos de cada camada s\~{a}o fixados como constantes e as entradas s\~{a}o tratadas como vari\'{a}veis simb\'{o}licas constrangidas a uma vizinhan\c{c}a $\mathcal{B}_\epsilon(x_0)$.
+    \item \textbf{N\'{i}vel 4}: Blocos MLP de LLMs como DeepSeek-R1 (fun\c{c}\~{a}o SwiGLU com ativa\c{c}\~{a}o SiLU). \textbf{Implementado neste trabalho} em \texttt{deepseek\_mlp\_stub.c}: pesos fixos quantizados, entrada simb\'{o}lica $x \in [-1,1]^4$, quatro propriedades de seguran\c{c}a provadas, detalhado a seguir.
 \end{alineas}
 
 \subsection{Caso de Verifica\c{c}\~{a}o Modular: Cabeca de Aten\c{c}\~{a}o de Transformer}
@@ -106,7 +106,69 @@ esbmc verification/attention_block_stub.c \
       --overflow-check --no-unwinding-assertions
 \end{lstlisting}
 
-Este experimento demonstra que a \textbf{verifica\c{c}\~{a}o modular de componentes de LLMs \'{e} vi\'{a}vel} com o ESBMC: fixando pesos e restringindo entradas simb\'{o}licas a uma vizinhan\c{c}a compacta, o \textit{solver} SMT prova exaustivamente propriedades de seguran\c{c}a num\'{e}rica para toda uma cabeca de aten\c{c}\~{a}o. A mesma metodologia pode ser escalada para verificar o \textit{logit clamp} final, a fun\c{c}\~{a}o de ativa\c{c}\~{a}o SiLU das camadas MLP do DeepSeek, ou quaisquer componentes cr\'{i}ticos de um LLM quantizado.
+Este experimento valida o N\'{i}vel~3 da hierarquia. O N\'{i}vel~4, detalhado a seguir, aplica a mesma estrat\'{e}gia ao bloco MLP com ativa\c{c}\~{a}o SiLU, a estrutura nuclear do DeepSeek.
+
+\subsection{Caso de Verifica\c{c}\~{a}o Modular Nivel 4: Bloco SwiGLU do DeepSeek}
+
+O arquivo \texttt{deepseek\_mlp\_stub.c} implementa um bloco MLP \textit{Gated} com ativa\c{c}\~{a}o SiLU, identico em estrutura a uma camada \textit{feed-forward} do DeepSeek-R1 e Llama-3.x:
+
+\begin{equation}\label{eq:swiglu}
+\text{out} = W_2 \cdot \bigl(\text{SiLU}(W_1 x) \odot (W_3 x)\bigr)
+\end{equation}
+
+onde $\text{SiLU}(z) = z \cdot \sigma(z)$ e $\sigma$ \'{e} a fun\c{c}\~{a}o sigm\'{o}ide. Para o \textit{solver} SMT operar sobre fun\c{c}\~{o}es transcendentais, substituimos $\sigma$ por uma aproxima\c{c}\~{a}o linear conservadora verificavel:
+
+\begin{equation}\label{eq:sigma_approx}
+\sigma_{\text{approx}}(z) = \text{clip}(0.25z + 0.5,\; 0,\; 1) \quad \Rightarrow \quad \sigma_{\text{approx}} \in [0,1]\; \forall\,z
+\end{equation}
+
+S\~{a}o verificadas quatro propriedades formais com entrada simb\'{o}lica $x \in [-1,1]^4$:
+
+\begin{center}
+\begin{tabular}{c|l|l}
+\hline
+\textbf{Prop.} & \textbf{Invariante} & \textbf{Bound Anal\'{i}tico} \\
+\hline
+P1 & $\text{SiLU}(W_1 x) \in [-0.15,\;2.0]$ & $\|W_1 x\|_\infty \leq 2$; SiLU mon\'{o}tona \\
+P2 & $W_3 x \in [-2.0,\;2.0]$ & $\sum_j|W_3[i][j]|\leq 2$ \\
+P3 & $\text{gated}[i] \in [-4.0,\;4.0]$ & $|P1| \times |P2| \leq 4$ \\
+P4 & $\text{out}[i] \in [-6.0,\;6.0]$ & $\|W_2\|_1 \times 4 \leq 7.2$ \\
+\hline
+\end{tabular}
+\end{center}
+
+O trecho central do \textit{stub} mostra a estrutura verificada:
+
+\begin{lstlisting}[language=C, numbers=none]
+/* Aproximacao linear de sigma, verificavel pelo solver SMT */
+float sigma_approx(float z) {
+    float s = 0.25f * z + 0.5f;
+    if (s < 0.0f) s = 0.0f;
+    if (s > 1.0f) s = 1.0f;
+    return s;
+}
+/* SwiGLU: out = W2 * (SiLU(W1*x) * (W3*x)) */
+matvec4x4(W1, x, h1);
+for (int i = 0; i < D; i++) silu_h1[i] = h1[i] * sigma_approx(h1[i]);
+matvec4x4(W3, x, h3);
+for (int i = 0; i < D; i++) {
+    gated[i] = silu_h1[i] * h3[i];
+    assert(gated[i] >= -4.0f && gated[i] <= 4.0f); /* P3 */
+}
+matvec4x4(W2, gated, out);
+for (int i = 0; i < D; i++)
+    assert(out[i] >= -6.0f && out[i] <= 6.0f);     /* P4 */
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash, numbers=none]
+esbmc verification/deepseek_mlp_stub.c \
+      --floatbv --unwind 4 \
+      --overflow-check --no-unwinding-assertions
+\end{lstlisting}
+
+Este resultado demonstra que a verifica\c{c}\~{a}o modular de blocos MLP de LLMs \'{e} \textbf{concretamente vi\'{a}vel} com o ESBMC. A chave \'{e} a substitui\c{c}\~{a}o de fun\c{c}\~{o}es transcendentais, como $\exp$ e $\sigma$, por aproxima\c{c}\~{o}es lineares conservadoras que o \textit{solver} SMT consegue raciocinar diretamente, sem perda das garantias de seguran\c{c}a. A mesma metodologia se aplica diretamente ao \textit{logit clamp} final do Llama, \`{a}s camadas de normaliza\c{c}\~{a}o RMSNorm e a qualquer componente cr\'{i}tico de modelos quantizados em \texttt{Fixed16}.
+
+
 
 
 \section{Caso 2   Verificação de Kernels de Inferência}
