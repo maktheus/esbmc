@@ -114,38 +114,44 @@ Para o kernel de multiplicação de matrizes com \textit{tiling}, foi realizada 
 
 O crescimento exponencial do tempo de verificação com o tamanho da matriz confirma que a verificação formal completa é inviável para matrizes de LLMs em escala real, ex.: dimensão 4096. Entretanto, a abordagem é \textbf{altamente eficaz} para verificar a corretude da lógica, especialmente do algoritmo de \textit{tiling}, em instâncias reduzidas   estratégia compatível com a \textit{Small Scope Hypothesis} da verificação formal.
 
-\section{Caso 3   Loop Neuro-Simbólico}
+\section{Caso 3 --- Loop Neuro-Simb\'{o}lico}
 
-O agente simulado (\texttt{mock\_agent.py}) executou com sucesso as duas iterações previstos:
+O agente simulado executou com sucesso o ciclo completo de 5 itera\c{c}\~{o}es. Os resultados detalhados s\~{a}o apresentados na \autoref{fig:case3_plot}.
+
+\begin{figure}[htb]
+    \caption{\label{fig:case3_plot}Caso~3: Tempo por Itera\c{c}\~{a}o do Loop Agente-ESBMC, com decomposi\c{c}\~{a}o entre atraso LLM e verifica\c{c}\~{a}o formal, e Overhead do Verificador por itera\c{c}\~{a}o.}
+    \begin{center}
+        \includegraphics[width=0.98\textwidth]{case3_plot.png}
+    \end{center}
+    \legend{Fonte: Elaborada pelo autor, 2026.}
+\end{figure}
 
 \begin{alineas}
-    \item \textbf{Iteração 0}: O ESBMC detectou corretamente um \textit{buffer overflow} no código com \texttt{strcpy} em buffer de 16 bytes, produzindo um contra-exemplo detalhado indicando a condição de violação;
-    \item \textbf{Iteração 1}: O código corrigido com \texttt{strncpy} recebeu status \texttt{VERIFICATION SUCCESSFUL}.
+    \item \textbf{Itera\c{c}\~{a}o 0}: O ESBMC detectou o \textit{buffer overflow} no c\'{o}digo com \texttt{strcpy}, produzindo um contra-exemplo concreto com o \textit{offset} exato da viola\c{c}\~{a}o. O tempo total foi de $\approx\!2{,}0$\,s, dos quais apenas $\approx\!0{,}6$\,s foram do verificador formal e o restante do atraso simulado do LLM;
+    \item \textbf{Itera\c{c}\~{o}es 1 a 4}: O c\'{o}digo corrigido com \texttt{strncpy} recebeu \texttt{VERIFICATION SUCCESSFUL} consistentemente, com tempo do verificador inferior a 0,65\,s em todas as itera\c{c}\~{o}es.
 \end{alineas}
 
-O tempo de verificação por iteração manteve-se inferior a 1 segundo (\autoref{fig:case3_plot}), demonstrando que a integração ESBMC-LLM não introduz \textit{overhead} significativo no ciclo de refinamento para \textit{snippets} de código gerado.
+O painel direito da \autoref{fig:case3_plot} evidencia que o \textit{overhead} do ESBMC \'{e} \textbf{constante e inferior a 1 segundo} para \textit{snippets} de c\'{o}digo gerado por LLMs, independentemente da itera\c{c}\~{a}o. O custo computacional da verifica\c{c}\~{a}o formal \'{e} marginal frente ao ganho de seguran\c{c}a, pois os testes funcionais convencionais n\~{a}o detectariam o \textit{overflow} caso o input de teste n\~{a}o tivesse exatamente 10+ bytes.
+
+
+\section{Caso 4 --- Controlador PID com Engenharia do Caos e SMT}
+
+O verificador formal comprovou, via \texttt{VERIFICATION SUCCESSFUL}, que o controlador PID mant\'{e}m $T < 150\,^{\circ}$C para todos os 10 passos e para qualquer ru\'{i}do em $[-5, +5]$. A \autoref{fig:case4_plot} apresenta a din\^{a}mica completa simulada com os par\^{a}metros reais do c\'{o}digo, para cinco perfis de ru\'{i}do distintos.
 
 \begin{figure}[htb]
-    \caption{\label{fig:case3_plot}Tempo de verificação por iteração do agente neuro-simbólico.}
+    \caption{\label{fig:case4_plot}Caso~4: Evolu\c{c}\~{a}o da Temperatura, Sinal de Controle PID e Erro de Rastreamento sob Cinco Perfis de Ru\'{i}do de Sensor.}
     \begin{center}
-        \includegraphics[width=0.80\textwidth]{case3_plot.png}
+        \includegraphics[width=0.98\textwidth]{case4_plot.png}
     \end{center}
     \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{figure}
 
-\section{Caso 4   Controlador PID com Engenharia do Caos e SMT}
+\begin{alineas}
+    \item \textbf{Painel superior}: A temperatura nunca ultrapassa 150\,°C em nenhum dos cinco perfis de ru\'{i}do, confirmando o resultado \textit{UNSAT} do ESBMC. O ru\'{i}do negativo fixo ($-5$\,°C) representa o pior caso cr\'{i}tico: o sensor subestima a temperatura, levando o PID a fornecer mais pot\^{e}ncia. O intertravamento de seguran\c{c}a, que corta o aquecimento quando a temperatura medida excede $120$\,°C, \'{e} capturado simbolicamente pelo verificador;
+    \item \textbf{Painel inferior esquerdo}: O sinal de controle PID \'{e} corretamente saturado em $[0, 100\%]$ em todos os cen\'{a}rios;
+    \item \textbf{Painel inferior direito}: O erro de rastreamento $e(t) = \text{setpoint} - T_{\text{medido}}$ converge para zero em todos os perfis dentro dos 10 passos, comprovando a estabilidade do controlador mesmo sob caos estoc\'{a}stico.
+\end{alineas}
 
-O verificador formal provou que o controlador PID (\texttt{pid\_template.c}) mantém a integridade frente a incertezas. Emplacando o \textit{framework} de quantização proposto na literatura de modelagem SMT \cite{gopinath2021verifying}, estendemos a validação formal para os sistemas de controle dinâmicos, verificando 52 cenários distintos modelados através das injeções estocásticas do orquestrador Python (\textit{Uniforme, Gaussiana, Senoidal, Impulso e Drift}).
-
-Os experimentos atestaram garantias tanto para variáveis de controle operando em \texttt{Float32} quanto quantizadas em ponto fixo (\texttt{Fixed32} e \texttt{Fixed16}). Constatou-se que otimizações de \textit{slicing} e inferência de limites provam-se determinantes para os sistemas dinâmicos: o tempo de execução foi drasticamente reduzido nas abordagens em ponto fixo, onde o SMT avalia os limites físicos na escala de segundos. Em contrapartida, \texttt{Float32} exigiu maiores ciclos de dedução, escala superior a dezenas de segundos nas distribuições Gaussianas e Sinusoidais, conforme evidenciado no comparativo de desempenho apresentado na \autoref{fig:case4_plot}.
-
-\begin{figure}[htb]
-    \caption{\label{fig:case4_plot}Desempenho da Verificação SMT no Controlador PID, 52 Casos vs Injeção de Ruídos.}
-    \begin{center}
-        \includegraphics[width=0.80\textwidth]{case4_plot.png}
-    \end{center}
-    \legend{Fonte: Elaborada pelo autor, 2026.}
-\end{figure}
 
 \section{Caso 5   The Ralph Loop Concept e Validação em Larga Escala}
 

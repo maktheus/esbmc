@@ -110,51 +110,74 @@ Adicionalmente, um kernel de multiplicação de matrizes (\textit{GEMM}) com \te
 O comando utilizado foi o \texttt{esbmc} com os parâmetros: \\
 \texttt{attention\_kernel.cpp -{}-multi-property -{}-memory-leak-check -{}-overflow-check}.
 
-\section{Caso 3   Loop Neuro-Simbólico, Agente LLM + ESBMC}
+\section{Caso 3 --- Loop Neuro-Simb\'{o}lico, Agente LLM + ESBMC}
 
-O terceiro caso simulou um ciclo de verificação contínua voltado a código gerado por modelos de linguagem, LLMs. O script \texttt{mock\_agent.py} implementa um agente que itera sobre versões de código C fornecidas por um LLM simulado e submete cada versão ao ESBMC automaticamente.
+O terceiro caso simula um ciclo aut\^{o}nomo de gera\c{c}\~{a}o e verifica\c{c}\~{a}o de c\'{o}digo, modelando o fluxo \textbf{Ralph Loop}: o agente requisita ao LLM um trecho de c\'{o}digo C, submete ao ESBMC e, caso o verificador produza um contra-exemplo, repassa o diagn\'{o}stico ao LLM para refinamento imediato. O script principal \'{e} \texttt{mock\_agent.py}.
 
-O fluxo do agente é:
+\subsection{Arquitetura do Agente}
+
+O agente executa at\'{e} 5 itera\c{c}\~{o}es. Cada itera\c{c}\~{a}o \'{e} composta por tr\^{e}s etapas:
+
 \begin{alineas}
-    \item \textbf{Iteração 0}: código com \texttt{strcpy} em buffer de tamanho fixo   vulnerável a \textit{overflow};
-    \item \textbf{Iteração 1}: código corrigido usando \texttt{strncpy}   verificado com sucesso.
+    \item \textbf{Gera\c{c}\~{a}o LLM}: simula atraso de 0,5 a 2,0 segundos e retorna um trecho de c\'{o}digo C. Na itera\c{c}\~{a}o 0, o c\'{o}digo cont\'{e}m deliberadamente um \textit{buffer overflow} via \texttt{strcpy} num buffer de 10 bytes com entrada de 20 bytes; a partir da itera\c{c}\~{a}o 1, o c\'{o}digo \'{e} corrigido com \texttt{strncpy};
+    \item \textbf{Verifica\c{c}\~{a}o ESBMC}: o verificador \'{e} invocado com \texttt{--overflow-check --memory-leak-check}. A sa\'{i}da \'{e} analisada em busca de \texttt{VERIFICATION SUCCESSFUL};
+    \item \textbf{Feedback sem\^{a}ntico}: em caso de falha, o contra-exemplo do ESBMC, contendo o \textit{offset} exato da viola\c{c}\~{a}o e o estado do programa naquele ponto, \'{e} repassado como prompt de corre\c{c}\~{a}o ao LLM.
 \end{alineas}
 
-O tempo de verificação por iteração foi medido para avaliar o \textit{overhead} introduzido pela integração ESBMC-LLM.
+Os tempos e resultados de cada itera\c{c}\~{a}o s\~{a}o registrados em \texttt{case3\_agent\_stats.csv}:
 
-\section{Caso 4, Níveis 2 e 3   Controladores Neurais e Planta de Sistema, Malha Fechada}
+\begin{lstlisting}[language=Python, numbers=none]
+cmd = ["esbmc", filename,
+       "--overflow-check",
+       "--memory-leak-check",
+       "--no-pointer-check",
+       "--smtlib"]
+result = subprocess.run(cmd, capture_output=True, text=True)
+success = "VERIFICATION SUCCESSFUL" in result.stdout
+\end{lstlisting}
 
-O quarto caso operacionalizou a transição sistêmica referenciada pelos \textbf{Níveis 2 e 3} das reuniões orientativas, onde redes assumem papéis vitais em Sistemas Dinâmicos de Controle. Ao invés da mera classificação vetorial, o algoritmo, agora um Agente Controlador atua frente às perturbações não documentadas (\textit{Engine Chaos}). 
+\subsection{Propriedade Verificada}
 
-Modelou-se a abstração sistêmica rigorosa em "Malha Fechada" (\textit{Closed-Loop System}), entrelaçando o código iterativo da Planta Termal e a reação de resposta do Controlador. Subjugamos o \textit{feedback} inserindo uma incerteza paramétrica no sensor ruidoso $\tilde{s}$: $s_{\text{ruido}} \in [-5.0, 5.0]$. Os gargalos de instabilidade e o afunilamento de rastreamento do erro (\textit{tracking error} $e(t)$) foram inspecionados exaustivamente para atestar validade global.
+O ESBMC detecta que \texttt{strcpy(buffer, input)} com \texttt{sizeof(buffer)=10} e \texttt{sizeof(input)=20} constitui um acesso fora dos limites da mem\'{o}ria, produzindo um contra-exemplo concreto com o \textit{offset} exato da viola\c{c}\~{a}o que \'{e} devolvido como feedback ao agente LLM.
 
-A invariante imperiosa do sistema limitou-se ao topo termodinâmico: $T_{\text{sistema}}(t) < T_{\text{MAX}} = 150.0\,^{\circ}$C. O Model Checker realizou o \textit{Bounded Model Checking} com um laço simbólico cíclico de 10 cadências ($k=10$), comprovando proteção para $\forall t \in [0, k]$.
 
-O algoritmo a seguir revela a mecânica adaptada para avaliar, sob testes de caos metodológicos, a evolução do sistema (representada através do passo iterativo \texttt{pid\_step}) submetido a inserções de ruídos não-determinísticos (\texttt{nondet\_float}):
+\section{Caso 4 --- Controladores Neurais e Planta de Sistema em Malha Fechada}
+
+O quarto caso verifica formalmente a seguran\c{c}a de um controlador PID digital operando em malha fechada sobre uma planta t\'{e}rmica, sob condi\c{c}\~{o}es de ru\'{i}do n\~{a}o-determin\'{i}stico nos sensores. A implementa\c{c}\~{a}o (\texttt{pid\_controller.c}) mimetiza sistemas embarcados cr\'{i}ticos onde ru\'{i}dos de sensor comprometem a estabilidade.
+
+\subsection{Modelo da Planta e do Controlador}
+
+A planta t\'{e}rmica evolui conforme:
+
+\begin{equation}\label{eq:plant}
+T_{k+1} = \max\!\bigl(20,\; T_k + ,( u_k \cdot r_h - r_c ,) \cdot \Delta t\bigr)
+\end{equation}
+
+onde $r_h = 0,1\,^{\circ}\text{C/\%}$, $r_c = 2,0\,^{\circ}\text{C}$ e $\Delta t = 1$\,s. O controlador PID com $K_p = 1{,}0$, $K_i = 0{,}1$, $K_d = 0{,}5$ calcula:
+
+\begin{equation}\label{eq:pid}
+u_k = K_p\,e_k + K_i\!\sum_{j=0}^{k} e_j\,\Delta t + K_d\,\frac{e_k - e_{k-1}}{\Delta t}, \quad u_k \in [0, 100]
+\end{equation}
+
+\subsection{Inje\c{c}\~{a}o de Caos e Propriedade de Seguran\c{c}a}
+
+O sensor recebe ru\'{i}do n\~{a}o-determin\'{i}stico escolhido pelo pr\'{o}prio \textit{solver}:
 
 \begin{lstlisting}[language=C, numbers=none]
-void pid_step, float setpoint, float measured, float* intg, float* prev_e {
-    float kp = 0.5f, ki = 0.1f, kd = 0.05f;
-    float error = setpoint - measured;
-    *intg += error * 0.1f; 
-    float output = , kp * error + , ki * *intg + (kd * ((error - *prev_e) / 0.1f));
-    *prev_e = error;
-    // Teste de integridade e limite atuarial do controle:
-    __ESBMC_assert, output >= -100.0f && output <= 100.0f, "Output bound violado!";
-}
-
-int main() {
-    float setpoint = 10.0f, integral = 0.0f, prev_error = 0.0f;
-    float noise = nondet_float(); // Injecao de incerteza modelada pelo solver
-    __ESBMC_assume, noise >= -5.0f && noise <= 5.0f;
-    float measured_sensor = 0.0f + noise;
-    
-    for, int i = 0; i < 5; i++ {
-        pid_step, setpoint, measured_sensor, &integral, &prev_error;
-    }
-    return 0;
-}
+float noise = nondet_float();
+__ESBMC_assume(noise >= -5.0f && noise <= 5.0f);
+float measured = true_temp + noise; // Pior caso buscado pelo solver
+assert(temp < 150.0f);             // Invariante de seguranca
 \end{lstlisting}
+
+A invariante de seguran\c{c}a verificada para $\forall k \in [0, 10]$ e $\forall\,\text{noise} \in [-5, +5]$ \'{e}:
+
+\begin{equation}\label{eq:safety}
+T_k < T_{\text{MAX}} = 150\,^{\circ}\text{C}
+\end{equation}
+
+O ESBMC executa \textit{Bounded Model Checking} com \texttt{--unwind~11 --floatbv}, desenrolando simbolicamente todos os 10 passos do la\c{c}o e explorando exaustivamente o espa\c{c}o de ru\'{i}do para tentar violar a asser\c{c}\~{a}o.
+
 
 \section{A Dicotomia Arquitetural: Orquestracao Python vs. Core Nativo C/C++}
 
