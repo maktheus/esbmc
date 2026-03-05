@@ -59,12 +59,12 @@ O Caso~1 prova a viabilidade da abordagem para um neur\^{o}nio isolado. A quest\
 
     \item \textbf{N\'{i}vel 2}: Redes de classifica\c{c}\~{a}o com quantiza\c{c}\~{a}o \texttt{Fixed16/Fixed32}, como as 52 topologias do QNNVerifier. Alto desempenho com otimiza\c{c}\~{o}es de \textit{slicing} e infer\^{e}ncia de intervalos;
 
-    \item \textbf{N\'{i}vel 3}: Blocos isolados de Transformer, cabeca de aten\c{c}\~{a}o com dimens\~{a}o de embedding reduzida e pesos fixos quantizados. \textbf{Implementado neste trabalho} em \texttt{attention\_block\_stub.c}, demonstrado a seguir;
+    \item \textbf{N\'{i}vel 3, Blocos de Transformer}: Cabeca de aten\c{c}\~{a}o \textit{single-head} com dimens\~{a}o de embedding reduzida e pesos fixos quantizados. \textbf{Implementado neste trabalho} em \texttt{attention\_block\_stub.c}, demonstrado a seguir;
 
-    \item \textbf{N\'{i}vel 4}: Blocos MLP de LLMs como DeepSeek-R1 (fun\c{c}\~{a}o SwiGLU com ativa\c{c}\~{a}o SiLU). \textbf{Implementado neste trabalho} em \texttt{deepseek\_mlp\_stub.c}: pesos fixos quantizados, entrada simb\'{o}lica $x \in [-1,1]^4$, quatro propriedades de seguran\c{c}a provadas, detalhado a seguir.
+    \item \textbf{N\'{i}vel 4, Bloco MLP Gated}: Blocos MLP de LLMs como DeepSeek-R1 (fun\c{c}\~{a}o SwiGLU com ativa\c{c}\~{a}o SiLU). \textbf{Implementado neste trabalho} em \texttt{deepseek\_mlp\_stub.c}: pesos fixos quantizados, entrada simb\'{o}lica $x \in [-1,1]^4$, quatro propriedades de seguran\c{c}a provadas, detalhado a seguir.
 \end{alineas}
 
-\subsection{Caso de Verifica\c{c}\~{a}o Modular: Cabeca de Aten\c{c}\~{a}o de Transformer}
+\subsection{Nivel 3: Verifica\c{c}\~{a}o Modular da Cabeca de Aten\c{c}\~{a}o de Transformer}
 
 O arquivo \texttt{attention\_block\_stub.c} implementa uma cabeca de aten\c{c}\~{a}o \textit{single-head} com dimens\~{a}o $d=4$ e sequ\^{e}ncia $\text{SEQ}=2$, com pesos $W_Q, W_K, W_V \in \mathbb{R}^{4 \times 4}$ fixados como constantes, representando uma camada quantizada de LLM. As entradas $x_0, x_1 \in [-1,1]^4$ s\~{a}o vari\'{a}veis simb\'{o}licas n\~{a}o-determin\'{i}sticas.
 
@@ -108,7 +108,7 @@ esbmc verification/attention_block_stub.c \
 
 Este experimento valida o N\'{i}vel~3 da hierarquia. O N\'{i}vel~4, detalhado a seguir, aplica a mesma estrat\'{e}gia ao bloco MLP com ativa\c{c}\~{a}o SiLU, a estrutura nuclear do DeepSeek.
 
-\subsection{Caso de Verifica\c{c}\~{a}o Modular Nivel 4: Bloco SwiGLU do DeepSeek}
+\subsection{Nivel 4: Verifica\c{c}\~{a}o Modular do Bloco SwiGLU, DeepSeek}
 
 O arquivo \texttt{deepseek\_mlp\_stub.c} implementa um bloco MLP \textit{Gated} com ativa\c{c}\~{a}o SiLU, identico em estrutura a uma camada \textit{feed-forward} do DeepSeek-R1 e Llama-3.x:
 
@@ -160,6 +160,64 @@ for (int i = 0; i < D; i++)
     assert(out[i] >= -6.0f && out[i] <= 6.0f);     /* P4 */
 \end{lstlisting}
 
+\subsubsection{Como a SiLU \'e Organizada no Stub}
+
+A ativa\c{c}\~{a}o SiLU \'{e} definida como:
+
+\begin{equation}\label{eq:silu_def}
+\text{SiLU}(z) = z \cdot \sigma(z) = \frac{z}{1 + e^{-z}}
+\end{equation}
+
+Diferente da ReLU, que corta abruptamente em zero, a SiLU \'{e} suave e n\~{a}o-mon\'{o}tona: permite valores levemente negativos pr\'{o}ximos a $z \approx -1$, conferindo ao modelo maior expressividade. O bloco de c\'{o}digo verificado segue o fluxo ilustrado abaixo:
+
+\begin{center}
+\begin{tabular}{l}
+$x \in [-1,1]^4$ \\
+$\quad \downarrow\quad\quad\quad\quad\quad\downarrow$ \\
+$W_1 x \xrightarrow{\text{SiLU}} h_{\text{gate}}$ \quad $W_3 x \to h_{\text{linear}}$ \\
+$\quad\quad\quad\quad \downarrow\quad (\odot)$ \\
+$\quad\quad\text{gated} = h_{\text{gate}} \odot h_{\text{linear}}$ \\
+$\quad\quad\quad\quad\downarrow\quad W_2$ \\
+$\quad\quad\quad\quad \text{out}$ \\
+\end{tabular}
+\end{center}
+
+O desafio fundamental \'{e} que $\sigma(z) = 1/(1+e^{-z})$ \'{e} uma fun\c{c}\~{a}o transcendental: o \textit{solver} SMT n\~{a}o det\'{e}m axiomas internos para $\exp(\cdot)$, tratando-a como fun\c{c}\~{a}o n\~{a}o-interpretada e produzindo resultado \texttt{UNKNOWN}. A solu\c{c}\~{a}o adotada \'{e} substituir $\sigma$ por uma aproxima\c{c}\~{a}o linear conservadora, v\'{a}lida e verificavel:
+
+\begin{equation}\label{eq:sigma_linear}
+\sigma_{\text{approx}}(z) = \text{clip}\!\left(0.25z + 0.5,\; 0,\; 1\right) \;\in\; [0,1] \quad \forall\, z
+\end{equation}
+
+Essa express\~{a}o \'{e} a tangente de $\sigma$ em $z=0$ (exata nesse ponto) com \textit{clipping} que preserva os limites globais. O \textit{solver} SMT a resolve em opera\c{c}\~{o}es aritm\'{e}ticas primitivas, sem chamadas de biblioteca.
+
+\subsubsection{Limitac\~{o}es e Por Que Ocorrem}
+
+A Tabela~\ref{tab:niveis_limitacoes} sumariza os pontos que n\~{a}o s\~{a}o completamente solucion\'{a}veis no estado atual e a causa t\'{e}cnica de cada um.
+
+\begin{table}[htb]
+\caption{Limita\c{c}\~{o}es da Verifica\c{c}\~{a}o Modular de LLMs com ESBMC.}
+\label{tab:niveis_limitacoes}
+\begin{center}
+\begin{tabular}{p{2.8cm}|p{4.2cm}|p{4.5cm}}
+\hline
+\textbf{Limitac\~{a}o} & \textbf{Causa T\'{e}cnica} & \textbf{Impacto} \\
+\hline
+\texttt{exp()} n\~{a}o verific\'{a}vel & Z3/Bitwuzla trata $\exp$ como fun\c{c}\~{a}o n\~{a}o-interpretada; nenhum axioma SMT para ela & $\sigma$ exata gera \texttt{UNKNOWN}; aproxima\c{c}\~{a}o linear perde precis\~{a}o em $|z| > 2$ \\
+\hline
+Dimens\~{a}o $d=4$ vs $d=4096$ & BMC cresce com $D^2$ multiplica\c{c}\~{o}es simb\'{o}licas; $d=4096$ gera ${\sim}16$M opera\c{c}\~{o}es $\to$ \textit{timeout} & Verificamos fatia representativa, n\~{a}o o modelo completo \\
+\hline
+Sequ\^{e}ncia SEQ=2 & Cada token adicional duplica o grafo de execu\c{c}\~{a}o simb\'{o}lica & SEQ=512 \'{e} invi\'{a}vel sem indu\c{c}\~{a}o-$k$ sobre SEQ \\
+\hline
+Bounds conservadores & $\sigma_{\text{approx}}$ superestima $\sigma$ em valores extremos & P4 (\texttt{out $\in$ [-6,6]}) \'{e} v\'{a}lido mas n\~{a}o \textit{tight}; \texttt{--interval-analysis} aperta \\
+\hline
+Sem RMSNorm & Normaliza\c{c}\~{a}o divide por norma simb\'{o}lica (poss\'{i}vel zero) & Exige \texttt{\_\_ESBMC\_assume(norm > eps)} expl\'{i}cito \\
+\hline
+\end{tabular}
+\end{center}
+\legend{Fonte: Elaborada pelo autor, 2026.}
+\end{table}
+
+
 \begin{lstlisting}[language=bash, numbers=none]
 esbmc verification/deepseek_mlp_stub.c \
       --floatbv --unwind 4 \
@@ -179,7 +237,7 @@ A verificação do kernel \texttt{attention\_kernel.cpp} confirmou a ausência d
 
 \subsection{Escalabilidade do GEMM}
 
-Para o kernel de multiplicação de matrizes com \textit{tiling}, foi realizada uma análise de escalabilidade variando a dimensão $N$. Os resultados estão sumarizados na \autoref{tab:gemm_tempo} e visualizados na \autoref{fig:case2_plot}.
+Para o kernel de multiplicação de matrizes com \textit{tiling}, foi realizada uma análise de escalabilidade variando a dimensão $N$. Os resultados est\~{a}o sumarizados na \autoref{tab:gemm_tempo} e visualizados na \autoref{fig:case2_plot}.
 
 \begin{table}[htb]
 \caption{Tempo de verificação do kernel GEMM em função da dimensão da matriz.}
@@ -292,8 +350,6 @@ Adicionalmente, um dos pilares discutidos pelos \textit{Benchmarks} de quantiza�
 A verificação de políticas de Reinforcement Learning é crítica. O modelo \texttt{rl\_policy.c} simulou estaticamente o bloco físico através do motor PyTest acionando \texttt{--floatbv} do ESBMC. O solver interceptou o comportamento errático na restrição do volante atuador, permitido entre -1.0 a 1.0 comprovando sua funcionalidade como \textit{Safety Shield} pré-implantação física.
 
 \section{Análise Comparativa}
-
-A \autoref{tab:comparativo} apresenta uma síntese comparativa dos quatro casos de uso segundo as dimensões de foco, maturidade tecnológica e relação custo-benefício.
 
 A \autoref{tab:comparativo} apresenta uma síntese comparativa evoluída dos seis casos de uso, definindo a barreira entre a Arquitetura em Python e o \textit{core} nativo em C++.
 
