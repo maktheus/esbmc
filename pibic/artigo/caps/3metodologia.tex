@@ -1,11 +1,11 @@
 \chapter{Metodologia}
 \label{cap:metodologia}
 
-Este capítulo descreve os procedimentos metodológicos adotados para verificação formal de sistemas de Inteligência Artificial Generativa (GenAI) utilizando o verificador de modelos ESBMC (\textit{Efficient SMT-Based Context-Bounded Model Checker}). A investigação foi estruturada em quatro estudos de caso complementares, cada um explorando uma camada distinta do ecossistema de IA Generativa.
+Este capítulo descreve os procedimentos metodológicos adotados para verificação formal de sistemas de Inteligência Artificial Generativa (GenAI) utilizando o verificador de modelos ESBMC (\textit{Efficient SMT-Based Context-Bounded Model Checker}). A investigação foi estruturada em seis estudos de caso complementares, culminando na arquitetura avançada de abstração Python que envolve o \textit{core} nativo C++.
 
 \section{Visão Geral da Abordagem}
 
-A metodologia geral segue o ciclo de verificação formal baseado em SMT, conforme ilustrado na \autoref{fig:pipeline_esbmc}. O ESBMC opera convertendo o código-fonte para uma representação intermediária (\textit{GOTO-Programs}), realizando execução simbólica e codificando as restrições em fórmulas SMT (\textit{Satisfiability Modulo Theories}). O solver SMT (Z3 ou Bitwuzla) então determina se existe uma atribuição de valores de entrada capaz de violar as propriedades especificadas — produzindo um contra-exemplo em caso afirmativo, ou uma prova de corretude dentro dos limites verificados.
+A metodologia geral segue o ciclo de verificação formal baseado em SMT, conforme ilustrado na \autoref{fig:pipeline_esbmc}. O ESBMC opera convertendo o código-fonte C/C++ (ou \textit{stubs} ONNX traduzidos) para uma representação intermediária (\textit{GOTO-Programs}), realizando execução simbólica e codificando as restrições em fórmulas SMT (\textit{Satisfiability Modulo Theories}). O \textit{solver} SMT (Z3 ou Bitwuzla) então determina se existe uma atribuição de valores de entrada capaz de violar as propriedades especificadas — produzindo um contra-exemplo explícito em caso afirmativo.
 
 \begin{figure}[htb]
     \caption{\label{fig:pipeline_esbmc}Pipeline de verificação formal com o ESBMC.}
@@ -22,17 +22,78 @@ Para cada caso de uso, foram definidas:
     \item \textbf{Métricas de Avaliação}: tempo de verificação, escalabilidade e eficácia na detecção de falhas.
 \end{alineas}
 
-\section{Caso 1 — Verificação Direta de Modelos Python (Frontend Experimental)}
+\section{Caso 1 (N\'ivel 1) --- Verifica\c{c}\~ao Formal de Neur\^onio com Ativa\c{c}\~ao ReLU}
 
-O primeiro caso de uso explorou o \textit{frontend} experimental do ESBMC para código Python. Um neurônio artificial com função de ativação ReLU foi implementado em \texttt{neuron.py} com anotações de tipo estático, requisito obrigatório para que o ESBMC consiga inferir os tipos durante a análise.
+O primeiro caso de uso corresponde ao \textbf{N\'ivel 1} da hierarquia de verifica\c{c}\~ao proposta: a verifica\c{c}\~ao de propriedades matem\'aticas de unidades computacionais elementares de redes neurais, implementadas em Python com anota\c{c}\~oes de tipo estritas. O objetivo central \'e demonstrar que o ESBMC \'e capaz de \textbf{provar formalmente}, para \textit{qualquer} entrada dentro de um dom\'inio especificado, que a sa\'ida de um neur\^onio artificial com ativa\c{c}\~ao ReLU sempre obedece a limites te\'oricos calculados analiticamente.
 
-As entradas $x_1, x_2 \in [0.0, 1.0]$ foram tratadas como variáveis simbólicas não-determinísticas, e as seguintes propriedades foram verificadas formalmente:
+\subsection{Arquitetura do Modelo}
+
+O modelo implementado (\texttt{neuron.py}) consiste em um \'unico neur\^onio artificial com dois pesos fixos, um \textit{bias} e fun\c{c}\~ao de ativa\c{c}\~ao ReLU:
+
+\begin{equation}\label{eq:neuron}
+out = \text{ReLU}(w_1 \cdot x_1 + w_2 \cdot x_2 + b)
+\end{equation}
+
+onde $w_1 = 0.5$, $w_2 = -0.2$, $b = 0.1$, e $\text{ReLU}(z) = \max(0, z)$.
+
+O Python puro foi escolhido --- sem depend\^encias de \textit{frameworks} din\^amicos como NumPy ou PyTorch --- pois o \textit{frontend} do ESBMC requer anota\c{c}\~oes de tipo expl\'icitas (\texttt{float}) para traduzir corretamente o c\'odigo para a representa\c{c}\~ao intermedi\'aria \texttt{GOTO-Programs}.
+
+\begin{lstlisting}[language=Python, numbers=none]
+def relu(x: float) -> float:
+    if x > 0:
+        return x
+    return 0.0
+
+def neuron(x1: float, x2: float) -> float:
+    w1: float = 0.5
+    w2: float = -0.2
+    bias: float = 0.1
+    activation: float = (x1 * w1) + (x2 * w2) + bias
+    return relu(activation)
+
+def main() -> None:
+    in1: float   # Simbolico: ESBMC trata como nao-deterministico
+    in2: float
+    if in1 >= 0.0 and in1 <= 1.0 and in2 >= 0.0 and in2 <= 1.0:
+        out: float = neuron(in1, in2)
+        assert out >= 0.0   # Prop1: ReLU garante nao-negatividade
+        assert out <= 0.6   # Prop2: bound superior calculavel
+main()
+\end{lstlisting}
+
+\subsection{Propriedades de Verifica\c{c}\~ao e Prova Anal\'itica}
+
+A propriedade de seguran\c{c}a pode ser verificada analiticamente, servindo de \textit{ground truth} para validar o resultado do \textit{solver} SMT:
+
 \begin{alineas}
-    \item Saída não-negativa: $\text{out} \geq 0.0$ (propriedade da ReLU);
-    \item Saída limitada superiormente: $\text{out} \leq 0.6$ (limite teórico dado os pesos fixos).
+    \item \textbf{Pr\'e-condi\c{c}\~ao} (regi\~ao de hip\'otese): $x_1, x_2 \in [0.0, 1.0]$;
+    \item \textbf{Limite Superior}: A sa\'ida m\'axima ocorre em $x_1 = 1.0$, $x_2 = 0.0$ (pois $w_2 < 0$):
+    \[
+    out_{\max} = \text{ReLU}(0.5 \cdot 1.0 + (-0.2) \cdot 0.0 + 0.1) = \text{ReLU}(0.6) = 0.6;
+    \]
+    \item \textbf{Limite Inferior}: Como ReLU $\geq 0$ por defini\c{c}\~ao, $out_{\min} = 0.0$;
+    \item \textbf{P\'os-condi\c{c}\~ao} (\textit{assert}): $0.0 \leq out \leq 0.6$, $\forall (x_1, x_2) \in [0,1]^2$.
 \end{alineas}
 
-O ESBMC foi executado com os flags \texttt{-{}-floatbv -{}-k-induction} para habilitar aritmética de ponto flutuante e indução-k.
+O verificador formal foi executado com os argumentos:
+
+\begin{alineas}
+    \item \texttt{-{}-floatbv}: codifica\c{c}\~ao precisa de aritm\'etica de ponto flutuante via \textit{Bitvectores} IEEE~754;
+    \item \texttt{-{}-k-induction}: estrat\'egia de prova por indu\c{c}\~ao-$k$, percorrendo todos os caminhos simb\'olicos do programa $k$ vezes, buscando uma atribui\c{c}\~ao que viole as asser\c{c}\~oes.
+\end{alineas}
+
+\subsection{Pipeline de Verifica\c{c}\~ao}
+
+A \autoref{fig:case1_pipeline} sintetiza o fluxo completo da verifica\c{c}\~ao formal aplicada ao Caso 1: da vari\'avel n\~ao-determin\'istica ao resultado \textit{UNSAT} (nenhuma viola\c{c}\~ao encontrada em nenhum ponto do dom\'inio de entrada).
+
+\begin{figure}[htb]
+    \caption{\label{fig:case1_pipeline}Pipeline de Verifica\c{c}\~ao Formal --- Caso~1 (Neur\^onio Python com ESBMC).}
+    \begin{center}
+        \includegraphics[width=0.92\textwidth]{case1_pipeline.png}
+    \end{center}
+    \legend{Fonte: Elaborada pelo autor, 2026.}
+\end{figure}
+
 
 \section{Caso 2 — Verificação do Motor de Inferência (Kernels C++)}
 
@@ -61,8 +122,99 @@ O fluxo do agente é:
 
 O tempo de verificação por iteração foi medido para avaliar o \textit{overhead} introduzido pela integração ESBMC-LLM.
 
-\section{Caso 4 — Controlador PID com Injeção de Caos}
+\section{Caso 4 (Níveis 2 e 3) — Controladores Neurais e Planta de Sistema (Malha Fechada)}
 
-O quarto caso aplicou princípios de \textit{Engenharia do Caos} à verificação de sistemas de controle críticos. Um controlador PID digital (\texttt{pid\_controller.c}) responsável por regular a temperatura de uma planta térmica foi submetido à injeção de ruído não-determinístico nos sensores (±5.0 graus) a cada iteração.
+O quarto caso operacionalizou a transição sistêmica referenciada pelos \textbf{Níveis 2 e 3} das reuniões orientativas, onde redes assumem papéis vitais em Sistemas Dinâmicos de Controle. Ao invés da mera classificação vetorial, o algoritmo (agora um Agente Controlador) atua frente às perturbações não documentadas (\textit{Engine Chaos}). 
 
-A propriedade de segurança verificada foi: $T_{\text{sistema}} < T_{\text{MAX}} = 150.0\,^{\circ}$C para todos os valores de ruído possíveis ao longo de 10 passos de simulação. O verificador realizou análise por limitação de passos (\textit{bounded model checking}) com desenrolamento de 10 iterações do laço de controle.
+Modelou-se a abstração sistêmica rigorosa em "Malha Fechada" (\textit{Closed-Loop System}), entrelaçando o código iterativo da Planta Termal e a reação de resposta do Controlador. Subjugamos o \textit{feedback} inserindo uma incerteza paramétrica no sensor ruidoso $\tilde{s}$: $s_{\text{ruido}} \in [-5.0, 5.0]$. Os gargalos de instabilidade e o afunilamento de rastreamento do erro (\textit{tracking error} $e(t)$) foram inspecionados exaustivamente para atestar validade global.
+
+A invariante imperiosa do sistema limitou-se ao topo termodinâmico: $T_{\text{sistema}}(t) < T_{\text{MAX}} = 150.0\,^{\circ}$C. O Model Checker realizou o \textit{Bounded Model Checking} com um laço simbólico cíclico de 10 cadências ($k=10$), comprovando proteção para $\forall t \in [0, k]$.
+
+O algoritmo a seguir revela a mecânica adaptada para avaliar, sob testes de caos metodológicos, a evolução do sistema (representada através do passo iterativo \texttt{pid\_step}) submetido a inserções de ruídos não-determinísticos (\texttt{nondet\_float}):
+
+\begin{lstlisting}[language=C, numbers=none]
+void pid_step(float setpoint, float measured, float* intg, float* prev_e) {
+    float kp = 0.5f, ki = 0.1f, kd = 0.05f;
+    float error = setpoint - measured;
+    *intg += error * 0.1f; 
+    float output = (kp * error) + (ki * *intg) + (kd * ((error - *prev_e) / 0.1f));
+    *prev_e = error;
+    // Teste de integridade e limite atuarial do controle:
+    __ESBMC_assert(output >= -100.0f && output <= 100.0f, "Output bound violado!");
+}
+
+int main() {
+    float setpoint = 10.0f, integral = 0.0f, prev_error = 0.0f;
+    float noise = nondet_float(); // Injecao de incerteza modelada pelo solver
+    __ESBMC_assume(noise >= -5.0f && noise <= 5.0f);
+    float measured_sensor = 0.0f + noise;
+    
+    for(int i = 0; i < 5; i++) {
+        pid_step(setpoint, measured_sensor, &integral, &prev_error);
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\section{A Dicotomia Arquitetural: Orquestracao Python vs. Core Nativo C/C++}
+
+Embora as provas matemáticas rigorosas recaiam intrinsecamente sobre o \textit{solver} associado ao verificador, capaz de destrinchar representações de memória estritas originadas do C/C++, a arquitetura global adota linguagens de alto nível (\textit{scripts} em Python) como sua principal "Mente Arquitetural". Por limitações de tipagem dinâmica e natureza interpretada, é inviável modelar restrições temporais SMT diretamente sobre o código \texttt{.py}. Em vez disso, a metodologia opera numa simbiose de responsabilidades:
+
+\begin{alineas}
+    \item \textbf{C/C++ (O Motor Matemático):} Abriga as implementações nucleares sob teste — plantas de malhas fechadas dinâmicas, camadas preditivas limitadas (\textit{Dense, Relu, Attention}) e suas asserções lógicas (\texttt{\_\_ESBMC\_assert}).
+    \item \textbf{Python (O Orquestrador de Testes e Caos):} Age encapsulando o verificador (\texttt{core\_verify/}). Esta camada dinamicamente formata perturbações estatísticas não-lineares (injecao de caos sistemico), transcrevendo-as dentro do esqueleto dos \textit{Stubs} em C, e automatiza as rotinas de estresse varrendo dezenas de operacoes matriciais em iteracoes de Integracao Continua.
+\end{alineas}
+
+\section{Caso 5 e 6 — Ralph Loop Architect e RL Actor-Critic}
+
+Dada essa especialização para operar os parâmetros nativos do ESBMC em escala, reestruturamos o arcabouço através da suíte Python isolada.
+
+No \textbf{Caso 5}, reestruturamos o \textit{Mock LLM Agent} através de orquestradores desacoplados capazes de extrair as métricas de quebra SMT (\textit{Array Bounds}, \textit{Buffer Overflows}) através de Expressoes Regulares direcionais (\textit{Regex Trace Parser}). Essa instrumentação gera a prova metodológica do isolamento de falhas \textit{vis-à-vis} a visão contínua neural vs a representação disjunta SMT. A Figura abaixo (via listagem de código) denota a classe \texttt{FeedbackTrace}, responsável pelo mapeamento das saídas brutas do verificador em categorias semânticas (como vazamento de memória e índices fora de limite):
+
+\begin{lstlisting}[language=Python, numbers=none]
+class FeedbackTrace:
+    # Mapeamento de rastreios ESBMC nativos para excecoes categorizadas
+    PATTERNS = {
+        "array out of bounds": r"(?i)array bounds violated",
+        "arithmetic overflow": r"(?i)arithmetic overflow",
+        "memory leak": r"(?i)memory leak|dereference failure",
+        "assertion failure": r"(?i)assertion.*failed|violated property",
+    }
+    
+    def parse_violations(self):
+        if self.is_timeout:
+            self.violations.append("target timeout")
+            return
+        for name, pattern in self.PATTERNS.items():
+            if re.search(pattern, self.raw_output):
+                self.violations.append(name)
+\end{lstlisting}
+
+No \textbf{Caso 6}, estressamos o arcabouço através da simulação física formal de Restrições em Aprendizado por Reforço (\textit{Actor-Critic RL}). Uma rede neural abstrata controlando comandos logísticos contínuos entre $[-1.0, 1.0]$ foi transcrita em C e submetida à exploração não-linear profunda com o argumento \texttt{-{}-floatbv}, objetivando caçar estados matemáticos periféricos aos limites seguros operacionais do mecanismo em tempo de implantação robótica (\textit{Safety Shield}).
+
+\section{Fluxo de Desenvolvimento e Integração Contínua}
+
+Para garantir a confiabilidade das propriedades analisadas, o fluxo de desenvolvimento incorpora Integração Contínua (CI). A cada submissão, automações (via \textit{GitHub Actions}) provisionam as versões canônicas do ESBMC, resolvendo \textit{pipelines} de testes que cruzam \textit{scripts} em Python e os programas fontes da verificação:
+
+\begin{lstlisting}[language=bash, numbers=none]
+jobs:
+  formal-verification:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install ESBMC Binary
+      run: |
+        wget https://github.../v8.0.0/esbmc-linux.zip
+        unzip esbmc-linux.zip -d bin/
+        export PATH=$PATH:$(pwd)/bin/
+        
+    - name: Run Pytest Formal Verification
+      run: |
+        cd pibic
+        pytest tests/ -v
+\end{lstlisting}
+
+Internamente, grande parte das avaliações do controlador neural lidou-se localmente providenciando as execuções de compilação simbólica baseadas em comandos chave do ESBMC. A validação de precisão matemática exige pragmas restritivas, por exemplo, determinando o tamanho das palavras flutuantes e verificações robustas:
+\begin{alineas}
+    \item \texttt{esbmc pid\_template.c -{}-floatbv -{}-k-induction}: Realiza a prova de malha de controle através de análise de indução-$k$, crucial para atestar a convergência segura frente aos laços da temporalidade dos modelos interativos.
+    \item \texttt{esbmc attention\_kernel.cpp -{}-multi-property -{}-memory-leak-check}: Aborda violações ortogonais de integridade em código C++, identificando desvios na alocação da pilha (\textit{stack}) em tensores das arquiteturas \textit{Transformers}.
+\end{alineas}
