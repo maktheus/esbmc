@@ -1,4 +1,12 @@
 \babel@toc {brazil}{}\relax 
-\contentsline {figure}{\numberline {1}{\ignorespaces Pipeline de verificação formal com o ESBMC.}}{10}{figure.caption.6}%
-\contentsline {figure}{\numberline {2}{\ignorespaces Tempo de verificação vs dimensão da matriz (GEMM com tiling).}}{14}{figure.caption.8}%
-\contentsline {figure}{\numberline {3}{\ignorespaces Tempo de verificação por iteração do agente neuro-simbólico.}}{15}{figure.caption.9}%
+\contentsline {figure}{\numberline {1}{\ignorespaces Pipeline de verificação formal com o ESBMC.}}{13}{figure.caption.6}%
+\contentsline {figure}{\numberline {2}{\ignorespaces Pipeline de Verifica\c {c}\~ao Formal --- Caso~1 (Neur\^onio Python com ESBMC).}}{16}{figure.caption.7}%
+\contentsline {figure}{\numberline {3}{\ignorespaces Superf\'icie de Sa\'ida do Neur\^onio e Distribui\c {c}\~ao das Sa\'idas com os Limites Verificados pelo ESBMC.}}{22}{figure.caption.8}%
+\contentsline {figure}{\numberline {4}{\ignorespaces Tempo de verificação vs dimensão da matriz (GEMM com tiling).}}{24}{figure.caption.10}%
+\contentsline {figure}{\numberline {5}{\ignorespaces Tempo de verificação por iteração do agente neuro-simbólico.}}{25}{figure.caption.11}%
+\contentsline {figure}{\numberline {6}{\ignorespaces Desempenho da Verificação SMT no Controlador PID (52 Casos) vs Injeção de Ruídos.}}{25}{figure.caption.12}%
+\contentsline {figure}{\numberline {7}{\ignorespaces Distribuição de Casos (Seguros, Adversariais e Timeout).}}{26}{figure.caption.13}%
+\contentsline {figure}{\numberline {8}{\ignorespaces Escalabilidade SMT: Tempo de Verificação vs Tamanho da Rede Neural.}}{27}{figure.caption.14}%
+\contentsline {figure}{\numberline {9}{\ignorespaces Impacto da Otimização (Slicing e Intervalos) no Tempo de Verificação.}}{28}{figure.caption.15}%
+\contentsline {figure}{\numberline {10}{\ignorespaces Visão Contínua Idealizada (AIA).}}{29}{figure.caption.16}%
+\contentsline {figure}{\numberline {11}{\ignorespaces Fronteira Fragmentada Matemática (Solve SMT).}}{30}{figure.caption.17}%

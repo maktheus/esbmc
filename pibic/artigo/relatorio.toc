@@ -2,32 +2,49 @@
 \changetocdepth {4}
 \cftinsert {APP}
 \babel@toc {brazil}{}\relax 
-\contentsline {chapter}{\chapternumberline {1}\MakeTextUppercase []{Introdução}}{6}{chapter.1}%
-\contentsline {chapter}{\chapternumberline {2}\MakeTextUppercase []{Objetivos}}{7}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Geral}{7}{section.2.1}%
-\contentsline {section}{\numberline {2.2}Específicos}{7}{section.2.2}%
-\contentsline {chapter}{\chapternumberline {3}\MakeTextUppercase []{Fundamentação Teórica}}{8}{chapter.3}%
-\contentsline {section}{\numberline {3.1}Verificação Formal e Model Checking}{8}{section.3.1}%
-\contentsline {section}{\numberline {3.2}Bounded Model Checking (BMC)}{8}{section.3.2}%
-\contentsline {section}{\numberline {3.3}O Verificador ESBMC}{8}{section.3.3}%
-\contentsline {chapter}{\chapternumberline {4}\MakeTextUppercase []{Metodologia}}{10}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Visão Geral da Abordagem}{10}{section.4.1}%
-\contentsline {section}{\numberline {4.2}Caso 1 — Verificação Direta de Modelos Python (Frontend Experimental)}{11}{section.4.2}%
-\contentsline {section}{\numberline {4.3}Caso 2 — Verificação do Motor de Inferência (Kernels C++)}{11}{section.4.3}%
-\contentsline {section}{\numberline {4.4}Caso 3 — Loop Neuro-Simbólico (Agente LLM + ESBMC)}{11}{section.4.4}%
-\contentsline {section}{\numberline {4.5}Caso 4 — Controlador PID com Injeção de Caos}{12}{section.4.5}%
-\contentsline {chapter}{\chapternumberline {5}\MakeTextUppercase []{Resultado Parcial}}{13}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Caso 1 — Verificação de Modelo Python}{13}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Caso 2 — Verificação de Kernels de Inferência}{13}{section.5.2}%
-\contentsline {subsection}{\numberline {5.2.1}Kernel de Atenção}{13}{subsection.5.2.1}%
-\contentsline {subsection}{\numberline {5.2.2}Escalabilidade do GEMM}{13}{subsection.5.2.2}%
-\contentsline {section}{\numberline {5.3}Caso 3 — Loop Neuro-Simbólico}{14}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Caso 4 — Controlador PID com Engenharia do Caos}{15}{section.5.4}%
-\contentsline {section}{\numberline {5.5}Análise Comparativa}{15}{section.5.5}%
-\contentsline {chapter}{\chapternumberline {6}\MakeTextUppercase []{Conclusão}}{17}{chapter.6}%
+\contentsline {chapter}{\chapternumberline {1}\MakeTextUppercase []{Introdução}}{7}{chapter.1}%
+\contentsline {chapter}{\chapternumberline {2}\MakeTextUppercase []{Objetivos}}{8}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Geral}{8}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Específicos}{8}{section.2.2}%
+\contentsline {chapter}{\chapternumberline {3}\MakeTextUppercase []{Fundamentação Teórica}}{10}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Verificação Formal e Model Checking}{10}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Bounded Model Checking (BMC)}{10}{section.3.2}%
+\contentsline {section}{\numberline {3.3}O Verificador ESBMC}{10}{section.3.3}%
+\contentsline {section}{\numberline {3.4}Primitivas de Modelagem C/C++ no ESBMC}{11}{section.3.4}%
+\contentsline {chapter}{\chapternumberline {4}\MakeTextUppercase []{Metodologia}}{13}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Visão Geral da Abordagem}{13}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Caso 1 (N\'ivel 1) --- Verifica\c {c}\~ao Formal de Neur\^onio com Ativa\c {c}\~ao ReLU}{14}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Arquitetura do Modelo}{14}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}Propriedades de Verifica\c {c}\~ao e Prova Anal\'itica}{15}{subsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.2.3}Pipeline de Verifica\c {c}\~ao}{15}{subsection.4.2.3}%
+\contentsline {section}{\numberline {4.3}Caso 2 — Verificação do Motor de Inferência (Kernels C++)}{15}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Caso 3 — Loop Neuro-Simbólico (Agente LLM + ESBMC)}{16}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Caso 4 (Níveis 2 e 3) — Controladores Neurais e Planta de Sistema (Malha Fechada)}{17}{section.4.5}%
+\contentsline {section}{\numberline {4.6}A Dicotomia Arquitetural: Orquestracao Python vs. Core Nativo C/C++}{18}{section.4.6}%
+\contentsline {section}{\numberline {4.7}Caso 5 e 6 — Ralph Loop Architect e RL Actor-Critic}{18}{section.4.7}%
+\contentsline {section}{\numberline {4.8}Fluxo de Desenvolvimento e Integração Contínua}{19}{section.4.8}%
+\contentsline {chapter}{\chapternumberline {5}\MakeTextUppercase []{Resultado Parcial}}{21}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Caso 1 --- Verifica\c {c}\~ao Formal de Neur\^onio com ReLU}{21}{section.5.1}%
+\contentsline {subsection}{\numberline {5.1.1}Metodologia de Execu\c {c}\~ao}{21}{subsection.5.1.1}%
+\contentsline {subsection}{\numberline {5.1.2}Resultado da Verifica\c {c}\~ao}{21}{subsection.5.1.2}%
+\contentsline {subsection}{\numberline {5.1.3}An\'alise dos Resultados e Discuss\~ao}{22}{subsection.5.1.3}%
+\contentsline {section}{\numberline {5.2}Caso 2 — Verificação de Kernels de Inferência}{23}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}Kernel de Atenção}{23}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}Escalabilidade do GEMM}{23}{subsection.5.2.2}%
+\contentsline {section}{\numberline {5.3}Caso 3 — Loop Neuro-Simbólico}{23}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Caso 4 — Controlador PID com Engenharia do Caos e SMT}{24}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Caso 5 — The Ralph Loop Concept e Validação em Larga Escala}{26}{section.5.5}%
+\contentsline {subsection}{\numberline {5.5.1}Escalabilidade e Distribuição de Resultados}{26}{subsection.5.5.1}%
+\contentsline {subsection}{\numberline {5.5.2}Eficácia das Otimizações ESBMC}{27}{subsection.5.5.2}%
+\contentsline {subsection}{\numberline {5.5.3}A Dicotomia Cognitiva: IA Generativa vs SMT}{27}{subsection.5.5.3}%
+\contentsline {subsubsection}{\numberline {5.5.3.1}A Visão Contínua (Expectativa do Agente/IA)}{27}{subsubsection.5.5.3.1}%
+\contentsline {subsection}{\numberline {5.5.4}A Visão Discreta Formal (Realidade SMT no ESBMC)}{27}{subsection.5.5.4}%
+\contentsline {section}{\numberline {5.6}Caso 6 — Verificação Formal em Reinforcement Learning (Actor-Critic)}{28}{section.5.6}%
+\contentsline {section}{\numberline {5.7}Análise Comparativa}{28}{section.5.7}%
+\contentsline {chapter}{\chapternumberline {6}\MakeTextUppercase []{Conclusão}}{31}{chapter.6}%
 \cftinsert {POS}
 \vspace {\cftbeforepartskip }
 \vspace {\cftbeforepartskip }
 \vspace {-38pt}
-\contentsline {chapter}{REFER\^ENCIAS}{18}{chapter*.13}%
+\contentsline {chapter}{REFER\^ENCIAS}{32}{chapter*.21}%
 \vspace {\cftbeforepartskip }
