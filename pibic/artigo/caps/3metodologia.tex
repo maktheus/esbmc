@@ -15,11 +15,12 @@ A metodologia geral segue o ciclo de verificação formal baseado em SMT, confor
     \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{figure}
 
-Para cada caso de uso, foram definidas:
+Para cada caso de uso, as primitivas magnas da verifica\c{c}\~ao baseada em \textit{Satisfiability Modulo Theories} (SMT) foram sistematicamente definidas:
+
 \begin{alineas}
-    \item \textbf{Pré-condições}: restrições sobre os valores de entrada, ex.: intervalo de valores, tamanho de buffers;
-    \item \textbf{Propriedades de Segurança}: asserções formais que o sistema deve satisfazer para todo valor de entrada válido;
-    \item \textbf{Métricas de Avaliação}: tempo de verificação, escalabilidade e eficácia na detecção de falhas.
+    \item \textbf{Pr\'e-condi\c{c}\~oes e Hip\'oteses de Ambiente (\texttt{\_\_ESBMC\_assume})}: O comando \texttt{assume(expr)} n\~ao verifica se a express\~ao \'e verdadeira, mas instrui o \textit{solver} SMT a descartar qualquer estado ou caminho de execu\c{c}\~ao onde \texttt{expr} seja falsa. Na pr\'atica, atua limitando a \'arvore de busca (\textit{state space pruning}). Em contextos de Redes Neurais e Matrizes, isso \'e imperativo para fixar o tamanho de tensores ou assumir intervalos de normaliza\c{c}\~ao (como vari\'aveis contidas entre $[0,1]$ ou entropia estoc\'astica de ru\'ido). Sem essa diretiva de restri\c{c}\~ao (\textit{Constraint Injection}), o verificador SMT buscaria contra-exemplos ao longo de toda a vastid\~ao dos N\'umeros Reais nas abstra\c{c}\~oes \textit{floating-point}, estourando absurdamente a mem\'oria e o tempo limite (\textit{State Explosion Problem});
+    \item \textbf{Propriedades de Seguran\c{c}a e Invariantes Cr\'iticos (\texttt{assert})}: Diferentemente do \textit{assume}, o comando \texttt{assert(expr)} \'e o desafio de prova estrita. Ele instrui o ESBMC a verificar rigorosa e exaustivamente que \texttt{expr} \textbf{nunca} pode ser violada sob as hip\'oteses ativas. Tratando-se de Modelos Preditivos ou Sistemas de Controle Cr\'iticos, ele materializa o teto operacional impenetr\'avel (ex.: um atuador rob\'otico nunca excede o limite el\'etrico, uma sa\'ida algor\'itmica n\~ao passa dos \textit{bounds} estruturais). Se existir matematicamente qualquer combina\c{c}\~ao \textit{corner-case} de vari\'aveis que fure esta barreira de l\'ogica de primeira ordem, o \textit{solver} deduzir\'a essa combina\c{c}\~ao \textit{bit} a \textit{bit} e entregar\'a um contra-exemplo SMT palp\'avel reproduzindo a cat\'astrofe programada;
+    \item \textbf{M\'etricas de Avalia\c{c}\~ao}: Tempo de verifica\c{c}\~ao SMT (overhead do solver), escalabilidade do desenrolamento de la\c{c}os (\textit{loop unwinding constraints}) e efic\'acia na detec\c{c}\~ao formal de \textit{bugs} atrav\'es das primitivas supracitadas.
 \end{alineas}
 
 \section{Caso 1 (N\'ivel 1) Verifica\c{c}\~ao Formal de Neur\^onio com Ativa\c{c}\~ao ReLU}
