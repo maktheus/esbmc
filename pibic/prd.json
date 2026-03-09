@@ -1,0 +1,1206 @@
+{
+    "project": "CLI (Cover Display) Framework Architecture & Educational Ralph Loops",
+    "total_tasks": 200,
+    "tasks": [
+        {
+            "id": "TSK_001",
+            "category": "Architecture: Core Services",
+            "description": "Investigate and document role of DisplayManagerService (Module 1, Case 1).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_002",
+            "category": "Architecture: DisplayPowerController",
+            "description": "Analyze cover display power state transitions in DisplayPowerController (Module 1, Case 2).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_003",
+            "category": "Architecture: WindowManager",
+            "description": "Document multi-display window routing in LogicalDisplayMapper (Module 1, Case 3).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_004",
+            "category": "Architecture: Input & Focus",
+            "description": "Explain input event dispatching for external CLI display via ActivityTaskManagerService (Module 1, Case 4).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_005",
+            "category": "SystemUI Integration",
+            "description": "Analyze SystemUI component WindowManagerService behavior on cover display (Module 1, Case 5).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_006",
+            "category": "Foldable States & Sensors",
+            "description": "Document hinge angle sensor interaction with InputDispatcher (Module 1, Case 6).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_007",
+            "category": "Ralph Loop: State Validation",
+            "description": "Create Ralph Loop to verify KeyguardDisplayManager during fold/unfold (Module 1, Case 7).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_008",
+            "category": "Ralph Loop: Power Validation",
+            "description": "Create Ralph Loop to test sleep/wake signals for NotificationShade (Module 1, Case 8).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_009",
+            "category": "Documentation: Slides",
+            "description": "Draft presentation slide content for DeviceFoldStateProvider (Module 1, Case 9).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_010",
+            "category": "Documentation: Markdown Handbooks",
+            "description": "Write detailed technical section on DualDisplayPolicy (Module 1, Case 10).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_011",
+            "category": "Architecture: Core Services",
+            "description": "Investigate and document role of DisplayDeviceInfo (Module 1, Case 11).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_012",
+            "category": "Architecture: DisplayPowerController",
+            "description": "Analyze cover display power state transitions in SurfaceFlinger (Module 1, Case 12).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_013",
+            "category": "Architecture: WindowManager",
+            "description": "Document multi-display window routing in PowerManagerService (Module 1, Case 13).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_014",
+            "category": "Architecture: Input & Focus",
+            "description": "Explain input event dispatching for external CLI display via DreamManager (Module 1, Case 14).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_015",
+            "category": "SystemUI Integration",
+            "description": "Analyze SystemUI component Wakelock interactions behavior on cover display (Module 1, Case 15).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_016",
+            "category": "Foldable States & Sensors",
+            "description": "Document hinge angle sensor interaction with DisplayBlanker (Module 1, Case 16).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_017",
+            "category": "Ralph Loop: State Validation",
+            "description": "Create Ralph Loop to verify ColorFade during fold/unfold (Module 1, Case 17).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_018",
+            "category": "Ralph Loop: Power Validation",
+            "description": "Create Ralph Loop to test sleep/wake signals for ScreenOffAnimation (Module 1, Case 18).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_019",
+            "category": "Documentation: Slides",
+            "description": "Draft presentation slide content for AOD (Always On Display) (Module 1, Case 19).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_020",
+            "category": "Documentation: Markdown Handbooks",
+            "description": "Write detailed technical section on Biometrics on Cover Display (Module 1, Case 20).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_021",
+            "category": "Architecture: Core Services",
+            "description": "Investigate and document role of DisplayManagerService (Module 2, Case 21).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_022",
+            "category": "Architecture: DisplayPowerController",
+            "description": "Analyze cover display power state transitions in DisplayPowerController (Module 2, Case 22).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_023",
+            "category": "Architecture: WindowManager",
+            "description": "Document multi-display window routing in LogicalDisplayMapper (Module 2, Case 23).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_024",
+            "category": "Architecture: Input & Focus",
+            "description": "Explain input event dispatching for external CLI display via ActivityTaskManagerService (Module 2, Case 24).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_025",
+            "category": "SystemUI Integration",
+            "description": "Analyze SystemUI component WindowManagerService behavior on cover display (Module 2, Case 25).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_026",
+            "category": "Foldable States & Sensors",
+            "description": "Document hinge angle sensor interaction with InputDispatcher (Module 2, Case 26).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_027",
+            "category": "Ralph Loop: State Validation",
+            "description": "Create Ralph Loop to verify KeyguardDisplayManager during fold/unfold (Module 2, Case 27).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_028",
+            "category": "Ralph Loop: Power Validation",
+            "description": "Create Ralph Loop to test sleep/wake signals for NotificationShade (Module 2, Case 28).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_029",
+            "category": "Documentation: Slides",
+            "description": "Draft presentation slide content for DeviceFoldStateProvider (Module 2, Case 29).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_030",
+            "category": "Documentation: Markdown Handbooks",
+            "description": "Write detailed technical section on DualDisplayPolicy (Module 2, Case 30).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_031",
+            "category": "Architecture: Core Services",
+            "description": "Investigate and document role of DisplayDeviceInfo (Module 2, Case 31).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_032",
+            "category": "Architecture: DisplayPowerController",
+            "description": "Analyze cover display power state transitions in SurfaceFlinger (Module 2, Case 32).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_033",
+            "category": "Architecture: WindowManager",
+            "description": "Document multi-display window routing in PowerManagerService (Module 2, Case 33).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_034",
+            "category": "Architecture: Input & Focus",
+            "description": "Explain input event dispatching for external CLI display via DreamManager (Module 2, Case 34).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_035",
+            "category": "SystemUI Integration",
+            "description": "Analyze SystemUI component Wakelock interactions behavior on cover display (Module 2, Case 35).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_036",
+            "category": "Foldable States & Sensors",
+            "description": "Document hinge angle sensor interaction with DisplayBlanker (Module 2, Case 36).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_037",
+            "category": "Ralph Loop: State Validation",
+            "description": "Create Ralph Loop to verify ColorFade during fold/unfold (Module 2, Case 37).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_038",
+            "category": "Ralph Loop: Power Validation",
+            "description": "Create Ralph Loop to test sleep/wake signals for ScreenOffAnimation (Module 2, Case 38).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_039",
+            "category": "Documentation: Slides",
+            "description": "Draft presentation slide content for AOD (Always On Display) (Module 2, Case 39).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_040",
+            "category": "Documentation: Markdown Handbooks",
+            "description": "Write detailed technical section on Biometrics on Cover Display (Module 2, Case 40).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_041",
+            "category": "Architecture: Core Services",
+            "description": "Investigate and document role of DisplayManagerService (Module 3, Case 41).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_042",
+            "category": "Architecture: DisplayPowerController",
+            "description": "Analyze cover display power state transitions in DisplayPowerController (Module 3, Case 42).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_043",
+            "category": "Architecture: WindowManager",
+            "description": "Document multi-display window routing in LogicalDisplayMapper (Module 3, Case 43).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_044",
+            "category": "Architecture: Input & Focus",
+            "description": "Explain input event dispatching for external CLI display via ActivityTaskManagerService (Module 3, Case 44).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_045",
+            "category": "SystemUI Integration",
+            "description": "Analyze SystemUI component WindowManagerService behavior on cover display (Module 3, Case 45).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_046",
+            "category": "Foldable States & Sensors",
+            "description": "Document hinge angle sensor interaction with InputDispatcher (Module 3, Case 46).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_047",
+            "category": "Ralph Loop: State Validation",
+            "description": "Create Ralph Loop to verify KeyguardDisplayManager during fold/unfold (Module 3, Case 47).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_048",
+            "category": "Ralph Loop: Power Validation",
+            "description": "Create Ralph Loop to test sleep/wake signals for NotificationShade (Module 3, Case 48).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_049",
+            "category": "Documentation: Slides",
+            "description": "Draft presentation slide content for DeviceFoldStateProvider (Module 3, Case 49).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_050",
+            "category": "Documentation: Markdown Handbooks",
+            "description": "Write detailed technical section on DualDisplayPolicy (Module 3, Case 50).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_051",
+            "category": "Architecture: Core Services",
+            "description": "Investigate and document role of DisplayDeviceInfo (Module 3, Case 51).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_052",
+            "category": "Architecture: DisplayPowerController",
+            "description": "Analyze cover display power state transitions in SurfaceFlinger (Module 3, Case 52).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_053",
+            "category": "Architecture: WindowManager",
+            "description": "Document multi-display window routing in PowerManagerService (Module 3, Case 53).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_054",
+            "category": "Architecture: Input & Focus",
+            "description": "Explain input event dispatching for external CLI display via DreamManager (Module 3, Case 54).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_055",
+            "category": "SystemUI Integration",
+            "description": "Analyze SystemUI component Wakelock interactions behavior on cover display (Module 3, Case 55).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_056",
+            "category": "Foldable States & Sensors",
+            "description": "Document hinge angle sensor interaction with DisplayBlanker (Module 3, Case 56).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_057",
+            "category": "Ralph Loop: State Validation",
+            "description": "Create Ralph Loop to verify ColorFade during fold/unfold (Module 3, Case 57).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_058",
+            "category": "Ralph Loop: Power Validation",
+            "description": "Create Ralph Loop to test sleep/wake signals for ScreenOffAnimation (Module 3, Case 58).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_059",
+            "category": "Documentation: Slides",
+            "description": "Draft presentation slide content for AOD (Always On Display) (Module 3, Case 59).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_060",
+            "category": "Documentation: Markdown Handbooks",
+            "description": "Write detailed technical section on Biometrics on Cover Display (Module 3, Case 60).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_061",
+            "category": "Architecture: Core Services",
+            "description": "Investigate and document role of DisplayManagerService (Module 4, Case 61).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_062",
+            "category": "Architecture: DisplayPowerController",
+            "description": "Analyze cover display power state transitions in DisplayPowerController (Module 4, Case 62).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_063",
+            "category": "Architecture: WindowManager",
+            "description": "Document multi-display window routing in LogicalDisplayMapper (Module 4, Case 63).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_064",
+            "category": "Architecture: Input & Focus",
+            "description": "Explain input event dispatching for external CLI display via ActivityTaskManagerService (Module 4, Case 64).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_065",
+            "category": "SystemUI Integration",
+            "description": "Analyze SystemUI component WindowManagerService behavior on cover display (Module 4, Case 65).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_066",
+            "category": "Foldable States & Sensors",
+            "description": "Document hinge angle sensor interaction with InputDispatcher (Module 4, Case 66).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_067",
+            "category": "Ralph Loop: State Validation",
+            "description": "Create Ralph Loop to verify KeyguardDisplayManager during fold/unfold (Module 4, Case 67).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_068",
+            "category": "Ralph Loop: Power Validation",
+            "description": "Create Ralph Loop to test sleep/wake signals for NotificationShade (Module 4, Case 68).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_069",
+            "category": "Documentation: Slides",
+            "description": "Draft presentation slide content for DeviceFoldStateProvider (Module 4, Case 69).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_070",
+            "category": "Documentation: Markdown Handbooks",
+            "description": "Write detailed technical section on DualDisplayPolicy (Module 4, Case 70).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_071",
+            "category": "Architecture: Core Services",
+            "description": "Investigate and document role of DisplayDeviceInfo (Module 4, Case 71).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_072",
+            "category": "Architecture: DisplayPowerController",
+            "description": "Analyze cover display power state transitions in SurfaceFlinger (Module 4, Case 72).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_073",
+            "category": "Architecture: WindowManager",
+            "description": "Document multi-display window routing in PowerManagerService (Module 4, Case 73).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_074",
+            "category": "Architecture: Input & Focus",
+            "description": "Explain input event dispatching for external CLI display via DreamManager (Module 4, Case 74).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_075",
+            "category": "SystemUI Integration",
+            "description": "Analyze SystemUI component Wakelock interactions behavior on cover display (Module 4, Case 75).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_076",
+            "category": "Foldable States & Sensors",
+            "description": "Document hinge angle sensor interaction with DisplayBlanker (Module 4, Case 76).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_077",
+            "category": "Ralph Loop: State Validation",
+            "description": "Create Ralph Loop to verify ColorFade during fold/unfold (Module 4, Case 77).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_078",
+            "category": "Ralph Loop: Power Validation",
+            "description": "Create Ralph Loop to test sleep/wake signals for ScreenOffAnimation (Module 4, Case 78).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_079",
+            "category": "Documentation: Slides",
+            "description": "Draft presentation slide content for AOD (Always On Display) (Module 4, Case 79).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_080",
+            "category": "Documentation: Markdown Handbooks",
+            "description": "Write detailed technical section on Biometrics on Cover Display (Module 4, Case 80).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_081",
+            "category": "Architecture: Core Services",
+            "description": "Investigate and document role of DisplayManagerService (Module 5, Case 81).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_082",
+            "category": "Architecture: DisplayPowerController",
+            "description": "Analyze cover display power state transitions in DisplayPowerController (Module 5, Case 82).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_083",
+            "category": "Architecture: WindowManager",
+            "description": "Document multi-display window routing in LogicalDisplayMapper (Module 5, Case 83).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_084",
+            "category": "Architecture: Input & Focus",
+            "description": "Explain input event dispatching for external CLI display via ActivityTaskManagerService (Module 5, Case 84).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_085",
+            "category": "SystemUI Integration",
+            "description": "Analyze SystemUI component WindowManagerService behavior on cover display (Module 5, Case 85).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_086",
+            "category": "Foldable States & Sensors",
+            "description": "Document hinge angle sensor interaction with InputDispatcher (Module 5, Case 86).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_087",
+            "category": "Ralph Loop: State Validation",
+            "description": "Create Ralph Loop to verify KeyguardDisplayManager during fold/unfold (Module 5, Case 87).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_088",
+            "category": "Ralph Loop: Power Validation",
+            "description": "Create Ralph Loop to test sleep/wake signals for NotificationShade (Module 5, Case 88).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_089",
+            "category": "Documentation: Slides",
+            "description": "Draft presentation slide content for DeviceFoldStateProvider (Module 5, Case 89).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_090",
+            "category": "Documentation: Markdown Handbooks",
+            "description": "Write detailed technical section on DualDisplayPolicy (Module 5, Case 90).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_091",
+            "category": "Architecture: Core Services",
+            "description": "Investigate and document role of DisplayDeviceInfo (Module 5, Case 91).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_092",
+            "category": "Architecture: DisplayPowerController",
+            "description": "Analyze cover display power state transitions in SurfaceFlinger (Module 5, Case 92).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_093",
+            "category": "Architecture: WindowManager",
+            "description": "Document multi-display window routing in PowerManagerService (Module 5, Case 93).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_094",
+            "category": "Architecture: Input & Focus",
+            "description": "Explain input event dispatching for external CLI display via DreamManager (Module 5, Case 94).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_095",
+            "category": "SystemUI Integration",
+            "description": "Analyze SystemUI component Wakelock interactions behavior on cover display (Module 5, Case 95).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_096",
+            "category": "Foldable States & Sensors",
+            "description": "Document hinge angle sensor interaction with DisplayBlanker (Module 5, Case 96).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_097",
+            "category": "Ralph Loop: State Validation",
+            "description": "Create Ralph Loop to verify ColorFade during fold/unfold (Module 5, Case 97).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_098",
+            "category": "Ralph Loop: Power Validation",
+            "description": "Create Ralph Loop to test sleep/wake signals for ScreenOffAnimation (Module 5, Case 98).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_099",
+            "category": "Documentation: Slides",
+            "description": "Draft presentation slide content for AOD (Always On Display) (Module 5, Case 99).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_100",
+            "category": "Documentation: Markdown Handbooks",
+            "description": "Write detailed technical section on Biometrics on Cover Display (Module 5, Case 100).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_101",
+            "category": "Architecture: Core Services",
+            "description": "Investigate and document role of DisplayManagerService (Module 6, Case 101).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_102",
+            "category": "Architecture: DisplayPowerController",
+            "description": "Analyze cover display power state transitions in DisplayPowerController (Module 6, Case 102).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_103",
+            "category": "Architecture: WindowManager",
+            "description": "Document multi-display window routing in LogicalDisplayMapper (Module 6, Case 103).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_104",
+            "category": "Architecture: Input & Focus",
+            "description": "Explain input event dispatching for external CLI display via ActivityTaskManagerService (Module 6, Case 104).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_105",
+            "category": "SystemUI Integration",
+            "description": "Analyze SystemUI component WindowManagerService behavior on cover display (Module 6, Case 105).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_106",
+            "category": "Foldable States & Sensors",
+            "description": "Document hinge angle sensor interaction with InputDispatcher (Module 6, Case 106).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_107",
+            "category": "Ralph Loop: State Validation",
+            "description": "Create Ralph Loop to verify KeyguardDisplayManager during fold/unfold (Module 6, Case 107).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_108",
+            "category": "Ralph Loop: Power Validation",
+            "description": "Create Ralph Loop to test sleep/wake signals for NotificationShade (Module 6, Case 108).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_109",
+            "category": "Documentation: Slides",
+            "description": "Draft presentation slide content for DeviceFoldStateProvider (Module 6, Case 109).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_110",
+            "category": "Documentation: Markdown Handbooks",
+            "description": "Write detailed technical section on DualDisplayPolicy (Module 6, Case 110).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_111",
+            "category": "Architecture: Core Services",
+            "description": "Investigate and document role of DisplayDeviceInfo (Module 6, Case 111).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_112",
+            "category": "Architecture: DisplayPowerController",
+            "description": "Analyze cover display power state transitions in SurfaceFlinger (Module 6, Case 112).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_113",
+            "category": "Architecture: WindowManager",
+            "description": "Document multi-display window routing in PowerManagerService (Module 6, Case 113).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_114",
+            "category": "Architecture: Input & Focus",
+            "description": "Explain input event dispatching for external CLI display via DreamManager (Module 6, Case 114).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_115",
+            "category": "SystemUI Integration",
+            "description": "Analyze SystemUI component Wakelock interactions behavior on cover display (Module 6, Case 115).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_116",
+            "category": "Foldable States & Sensors",
+            "description": "Document hinge angle sensor interaction with DisplayBlanker (Module 6, Case 116).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_117",
+            "category": "Ralph Loop: State Validation",
+            "description": "Create Ralph Loop to verify ColorFade during fold/unfold (Module 6, Case 117).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_118",
+            "category": "Ralph Loop: Power Validation",
+            "description": "Create Ralph Loop to test sleep/wake signals for ScreenOffAnimation (Module 6, Case 118).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_119",
+            "category": "Documentation: Slides",
+            "description": "Draft presentation slide content for AOD (Always On Display) (Module 6, Case 119).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_120",
+            "category": "Documentation: Markdown Handbooks",
+            "description": "Write detailed technical section on Biometrics on Cover Display (Module 6, Case 120).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_121",
+            "category": "Architecture: Core Services",
+            "description": "Investigate and document role of DisplayManagerService (Module 7, Case 121).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_122",
+            "category": "Architecture: DisplayPowerController",
+            "description": "Analyze cover display power state transitions in DisplayPowerController (Module 7, Case 122).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_123",
+            "category": "Architecture: WindowManager",
+            "description": "Document multi-display window routing in LogicalDisplayMapper (Module 7, Case 123).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_124",
+            "category": "Architecture: Input & Focus",
+            "description": "Explain input event dispatching for external CLI display via ActivityTaskManagerService (Module 7, Case 124).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_125",
+            "category": "SystemUI Integration",
+            "description": "Analyze SystemUI component WindowManagerService behavior on cover display (Module 7, Case 125).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_126",
+            "category": "Foldable States & Sensors",
+            "description": "Document hinge angle sensor interaction with InputDispatcher (Module 7, Case 126).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_127",
+            "category": "Ralph Loop: State Validation",
+            "description": "Create Ralph Loop to verify KeyguardDisplayManager during fold/unfold (Module 7, Case 127).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_128",
+            "category": "Ralph Loop: Power Validation",
+            "description": "Create Ralph Loop to test sleep/wake signals for NotificationShade (Module 7, Case 128).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_129",
+            "category": "Documentation: Slides",
+            "description": "Draft presentation slide content for DeviceFoldStateProvider (Module 7, Case 129).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_130",
+            "category": "Documentation: Markdown Handbooks",
+            "description": "Write detailed technical section on DualDisplayPolicy (Module 7, Case 130).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_131",
+            "category": "Architecture: Core Services",
+            "description": "Investigate and document role of DisplayDeviceInfo (Module 7, Case 131).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_132",
+            "category": "Architecture: DisplayPowerController",
+            "description": "Analyze cover display power state transitions in SurfaceFlinger (Module 7, Case 132).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_133",
+            "category": "Architecture: WindowManager",
+            "description": "Document multi-display window routing in PowerManagerService (Module 7, Case 133).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_134",
+            "category": "Architecture: Input & Focus",
+            "description": "Explain input event dispatching for external CLI display via DreamManager (Module 7, Case 134).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_135",
+            "category": "SystemUI Integration",
+            "description": "Analyze SystemUI component Wakelock interactions behavior on cover display (Module 7, Case 135).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_136",
+            "category": "Foldable States & Sensors",
+            "description": "Document hinge angle sensor interaction with DisplayBlanker (Module 7, Case 136).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_137",
+            "category": "Ralph Loop: State Validation",
+            "description": "Create Ralph Loop to verify ColorFade during fold/unfold (Module 7, Case 137).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_138",
+            "category": "Ralph Loop: Power Validation",
+            "description": "Create Ralph Loop to test sleep/wake signals for ScreenOffAnimation (Module 7, Case 138).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_139",
+            "category": "Documentation: Slides",
+            "description": "Draft presentation slide content for AOD (Always On Display) (Module 7, Case 139).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_140",
+            "category": "Documentation: Markdown Handbooks",
+            "description": "Write detailed technical section on Biometrics on Cover Display (Module 7, Case 140).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_141",
+            "category": "Architecture: Core Services",
+            "description": "Investigate and document role of DisplayManagerService (Module 8, Case 141).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_142",
+            "category": "Architecture: DisplayPowerController",
+            "description": "Analyze cover display power state transitions in DisplayPowerController (Module 8, Case 142).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_143",
+            "category": "Architecture: WindowManager",
+            "description": "Document multi-display window routing in LogicalDisplayMapper (Module 8, Case 143).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_144",
+            "category": "Architecture: Input & Focus",
+            "description": "Explain input event dispatching for external CLI display via ActivityTaskManagerService (Module 8, Case 144).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_145",
+            "category": "SystemUI Integration",
+            "description": "Analyze SystemUI component WindowManagerService behavior on cover display (Module 8, Case 145).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_146",
+            "category": "Foldable States & Sensors",
+            "description": "Document hinge angle sensor interaction with InputDispatcher (Module 8, Case 146).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_147",
+            "category": "Ralph Loop: State Validation",
+            "description": "Create Ralph Loop to verify KeyguardDisplayManager during fold/unfold (Module 8, Case 147).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_148",
+            "category": "Ralph Loop: Power Validation",
+            "description": "Create Ralph Loop to test sleep/wake signals for NotificationShade (Module 8, Case 148).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_149",
+            "category": "Documentation: Slides",
+            "description": "Draft presentation slide content for DeviceFoldStateProvider (Module 8, Case 149).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_150",
+            "category": "Documentation: Markdown Handbooks",
+            "description": "Write detailed technical section on DualDisplayPolicy (Module 8, Case 150).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_151",
+            "category": "Architecture: Core Services",
+            "description": "Investigate and document role of DisplayDeviceInfo (Module 8, Case 151).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_152",
+            "category": "Architecture: DisplayPowerController",
+            "description": "Analyze cover display power state transitions in SurfaceFlinger (Module 8, Case 152).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_153",
+            "category": "Architecture: WindowManager",
+            "description": "Document multi-display window routing in PowerManagerService (Module 8, Case 153).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_154",
+            "category": "Architecture: Input & Focus",
+            "description": "Explain input event dispatching for external CLI display via DreamManager (Module 8, Case 154).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_155",
+            "category": "SystemUI Integration",
+            "description": "Analyze SystemUI component Wakelock interactions behavior on cover display (Module 8, Case 155).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_156",
+            "category": "Foldable States & Sensors",
+            "description": "Document hinge angle sensor interaction with DisplayBlanker (Module 8, Case 156).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_157",
+            "category": "Ralph Loop: State Validation",
+            "description": "Create Ralph Loop to verify ColorFade during fold/unfold (Module 8, Case 157).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_158",
+            "category": "Ralph Loop: Power Validation",
+            "description": "Create Ralph Loop to test sleep/wake signals for ScreenOffAnimation (Module 8, Case 158).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_159",
+            "category": "Documentation: Slides",
+            "description": "Draft presentation slide content for AOD (Always On Display) (Module 8, Case 159).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_160",
+            "category": "Documentation: Markdown Handbooks",
+            "description": "Write detailed technical section on Biometrics on Cover Display (Module 8, Case 160).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_161",
+            "category": "Architecture: Core Services",
+            "description": "Investigate and document role of DisplayManagerService (Module 9, Case 161).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_162",
+            "category": "Architecture: DisplayPowerController",
+            "description": "Analyze cover display power state transitions in DisplayPowerController (Module 9, Case 162).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_163",
+            "category": "Architecture: WindowManager",
+            "description": "Document multi-display window routing in LogicalDisplayMapper (Module 9, Case 163).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_164",
+            "category": "Architecture: Input & Focus",
+            "description": "Explain input event dispatching for external CLI display via ActivityTaskManagerService (Module 9, Case 164).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_165",
+            "category": "SystemUI Integration",
+            "description": "Analyze SystemUI component WindowManagerService behavior on cover display (Module 9, Case 165).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_166",
+            "category": "Foldable States & Sensors",
+            "description": "Document hinge angle sensor interaction with InputDispatcher (Module 9, Case 166).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_167",
+            "category": "Ralph Loop: State Validation",
+            "description": "Create Ralph Loop to verify KeyguardDisplayManager during fold/unfold (Module 9, Case 167).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_168",
+            "category": "Ralph Loop: Power Validation",
+            "description": "Create Ralph Loop to test sleep/wake signals for NotificationShade (Module 9, Case 168).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_169",
+            "category": "Documentation: Slides",
+            "description": "Draft presentation slide content for DeviceFoldStateProvider (Module 9, Case 169).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_170",
+            "category": "Documentation: Markdown Handbooks",
+            "description": "Write detailed technical section on DualDisplayPolicy (Module 9, Case 170).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_171",
+            "category": "Architecture: Core Services",
+            "description": "Investigate and document role of DisplayDeviceInfo (Module 9, Case 171).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_172",
+            "category": "Architecture: DisplayPowerController",
+            "description": "Analyze cover display power state transitions in SurfaceFlinger (Module 9, Case 172).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_173",
+            "category": "Architecture: WindowManager",
+            "description": "Document multi-display window routing in PowerManagerService (Module 9, Case 173).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_174",
+            "category": "Architecture: Input & Focus",
+            "description": "Explain input event dispatching for external CLI display via DreamManager (Module 9, Case 174).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_175",
+            "category": "SystemUI Integration",
+            "description": "Analyze SystemUI component Wakelock interactions behavior on cover display (Module 9, Case 175).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_176",
+            "category": "Foldable States & Sensors",
+            "description": "Document hinge angle sensor interaction with DisplayBlanker (Module 9, Case 176).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_177",
+            "category": "Ralph Loop: State Validation",
+            "description": "Create Ralph Loop to verify ColorFade during fold/unfold (Module 9, Case 177).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_178",
+            "category": "Ralph Loop: Power Validation",
+            "description": "Create Ralph Loop to test sleep/wake signals for ScreenOffAnimation (Module 9, Case 178).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_179",
+            "category": "Documentation: Slides",
+            "description": "Draft presentation slide content for AOD (Always On Display) (Module 9, Case 179).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_180",
+            "category": "Documentation: Markdown Handbooks",
+            "description": "Write detailed technical section on Biometrics on Cover Display (Module 9, Case 180).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_181",
+            "category": "Architecture: Core Services",
+            "description": "Investigate and document role of DisplayManagerService (Module 10, Case 181).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_182",
+            "category": "Architecture: DisplayPowerController",
+            "description": "Analyze cover display power state transitions in DisplayPowerController (Module 10, Case 182).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_183",
+            "category": "Architecture: WindowManager",
+            "description": "Document multi-display window routing in LogicalDisplayMapper (Module 10, Case 183).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_184",
+            "category": "Architecture: Input & Focus",
+            "description": "Explain input event dispatching for external CLI display via ActivityTaskManagerService (Module 10, Case 184).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_185",
+            "category": "SystemUI Integration",
+            "description": "Analyze SystemUI component WindowManagerService behavior on cover display (Module 10, Case 185).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_186",
+            "category": "Foldable States & Sensors",
+            "description": "Document hinge angle sensor interaction with InputDispatcher (Module 10, Case 186).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_187",
+            "category": "Ralph Loop: State Validation",
+            "description": "Create Ralph Loop to verify KeyguardDisplayManager during fold/unfold (Module 10, Case 187).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_188",
+            "category": "Ralph Loop: Power Validation",
+            "description": "Create Ralph Loop to test sleep/wake signals for NotificationShade (Module 10, Case 188).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_189",
+            "category": "Documentation: Slides",
+            "description": "Draft presentation slide content for DeviceFoldStateProvider (Module 10, Case 189).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_190",
+            "category": "Documentation: Markdown Handbooks",
+            "description": "Write detailed technical section on DualDisplayPolicy (Module 10, Case 190).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_191",
+            "category": "Architecture: Core Services",
+            "description": "Investigate and document role of DisplayDeviceInfo (Module 10, Case 191).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_192",
+            "category": "Architecture: DisplayPowerController",
+            "description": "Analyze cover display power state transitions in SurfaceFlinger (Module 10, Case 192).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_193",
+            "category": "Architecture: WindowManager",
+            "description": "Document multi-display window routing in PowerManagerService (Module 10, Case 193).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_194",
+            "category": "Architecture: Input & Focus",
+            "description": "Explain input event dispatching for external CLI display via DreamManager (Module 10, Case 194).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_195",
+            "category": "SystemUI Integration",
+            "description": "Analyze SystemUI component Wakelock interactions behavior on cover display (Module 10, Case 195).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_196",
+            "category": "Foldable States & Sensors",
+            "description": "Document hinge angle sensor interaction with DisplayBlanker (Module 10, Case 196).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_197",
+            "category": "Ralph Loop: State Validation",
+            "description": "Create Ralph Loop to verify ColorFade during fold/unfold (Module 10, Case 197).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_198",
+            "category": "Ralph Loop: Power Validation",
+            "description": "Create Ralph Loop to test sleep/wake signals for ScreenOffAnimation (Module 10, Case 198).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_199",
+            "category": "Documentation: Slides",
+            "description": "Draft presentation slide content for AOD (Always On Display) (Module 10, Case 199).",
+            "status": "pending"
+        },
+        {
+            "id": "TSK_200",
+            "category": "Documentation: Markdown Handbooks",
+            "description": "Write detailed technical section on Biometrics on Cover Display (Module 10, Case 200).",
+            "status": "pending"
+        }
+    ]
+}

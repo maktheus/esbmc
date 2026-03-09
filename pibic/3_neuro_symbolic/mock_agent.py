@@ -60,11 +60,11 @@ def verify_code(filename):
     start_time = time.time()
     # Run ESBMC
     # --no-pointer-check to keep output simple for this demo
-    cmd = ["esbmc", filename, "--overflow-check", "--memory-leak-check", "--no-pointer-check", "--smtlib"]
+    cmd = ["build/src/esbmc/esbmc", filename, "--overflow-check", "--memory-leak-check", "--no-pointer-check", "--smtlib"]
     result = subprocess.run(cmd, capture_output=True, text=True)
     end_time = time.time()
     
-    success = "VERIFICATION SUCCESSFUL" in result.stdout
+    success = "VERIFICATION SUCCESSFUL" in result.stdout or "VERIFICATION SUCCESSFUL" in result.stderr
     duration = end_time - start_time
     return success, result.stdout, duration
 

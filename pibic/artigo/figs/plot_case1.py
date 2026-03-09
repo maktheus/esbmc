@@ -116,4 +116,63 @@ pipeline_path = "case1_pipeline.png"
 plt.savefig(pipeline_path, dpi=150, bbox_inches="tight")
 print(f"Salvo: {pipeline_path}")
 plt.close()
+
+# ─── Figura 3: MLP (Multi-Layer Perceptron) Verificação ──────────────────────
+def mlp_forward(x1: float, x2: float) -> float:
+    # Hidden Layer
+    h1 = relu(0.5*x1 - 0.2*x2 + 0.1)
+    h2 = relu(-0.1*x1 + 0.8*x2 - 0.05)
+    
+    # Output Layer
+    out = (1.0 * h1) + (0.5 * h2) + 0.0
+    return out
+
+Z_mlp = np.vectorize(mlp_forward)(X1, X2)
+
+# Limites provados pelo ESBMC
+Z_MLP_MIN, Z_MLP_MAX = 0.0, 1.0
+
+fig3 = plt.figure(figsize=(13, 5))
+
+# painel esquerdo: superfície 3D
+ax3 = fig3.add_subplot(121, projection="3d")
+surf3 = ax3.plot_surface(X1, X2, Z_mlp, cmap="plasma", alpha=0.9, linewidth=0)
+ax3.set_xlabel("$x_1$", fontsize=11)
+ax3.set_ylabel("$x_2$", fontsize=11)
+ax3.set_zlabel("$out$", fontsize=11)
+ax3.set_title("Superfície de Saída da MLP (2 camadas)\n(Qualquer $(x_1,x_2)\\in[0,1]^2$)", fontsize=10)
+ax3.set_zlim(-0.05, 1.1)
+
+# plano superior/inferior: limite provado
+ax3.plot_surface(xx, yy, np.full_like(xx, Z_MLP_MAX), color="red", alpha=0.25)
+ax3.plot_surface(xx, yy, np.full_like(xx, Z_MLP_MIN), color="green", alpha=0.15)
+
+red_patch3   = mpatches.Patch(color="red",   alpha=0.5, label=f"bound superior: out ≤ {Z_MLP_MAX}")
+green_patch3 = mpatches.Patch(color="green", alpha=0.5, label=f"bound inferior: out ≥ {Z_MLP_MIN}")
+ax3.legend(handles=[red_patch3, green_patch3], loc="upper left", fontsize=8)
+cb3 = fig3.colorbar(surf3, ax=ax3, shrink=0.5, pad=0.08)
+cb3.set_label("Saída MLP $out$", fontsize=9)
+
+# painel direito: histograma de saídas
+ax4 = fig3.add_subplot(122)
+out_flat_mlp = Z_mlp.flatten()
+ax4.hist(out_flat_mlp, bins=50, color="#f58518", edgecolor="white", alpha=0.85)
+ax4.axvline(Z_MLP_MIN, color="green", lw=2, ls="--", label=f"Limite inferior (ESBMC): {Z_MLP_MIN}")
+ax4.axvline(Z_MLP_MAX, color="red",   lw=2, ls="--", label=f"Limite superior (ESBMC): {Z_MLP_MAX}")
+ax4.set_xlabel("Valor de Saída $out$", fontsize=11)
+ax4.set_ylabel("Frequência", fontsize=11)
+ax4.set_title("Distribuição de Saídas MLP\npara $10^4$ amostras uniformes em $[0,1]^2$", fontsize=10)
+ax4.legend(fontsize=9)
+ax4.text(np.mean(ax4.get_xlim()), ax4.get_ylim()[1] * 0.88,
+         "✓ 100% das saídas\nverificadas",
+         fontsize=9, color="#2d7a2d",
+         bbox=dict(facecolor="#e6ffe6", edgecolor="#2d7a2d", boxstyle="round,pad=0.4"))
+ax4.grid(True, alpha=0.3)
+
+plt.tight_layout()
+mlp_path = "case1_mlp_plot.png"
+plt.savefig(mlp_path, dpi=150, bbox_inches="tight")
+print(f"Salvo: {mlp_path}")
+plt.close()
+
 print("Concluído.")

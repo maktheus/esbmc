@@ -2,9 +2,10 @@
 \contentsline {figure}{\numberline {1}{\ignorespaces Pipeline de verificação formal com o ESBMC.}}{13}{figure.caption.6}%
 \contentsline {figure}{\numberline {2}{\ignorespaces Pipeline de Verifica\c {c}\~ao Formal Caso~1 (Neur\^onio Python com ESBMC).}}{16}{figure.caption.7}%
 \contentsline {figure}{\numberline {3}{\ignorespaces Superf\'icie de Sa\'ida do Neur\^onio e Distribui\c {c}\~ao das Sa\'idas com os Limites Verificados pelo ESBMC.}}{22}{figure.caption.8}%
-\contentsline {figure}{\numberline {4}{\ignorespaces Tempo de verificação vs dimensão da matriz, GEMM com tiling.}}{28}{figure.caption.11}%
-\contentsline {figure}{\numberline {5}{\ignorespaces Caso~3: Tempo por Itera\c {c}\~{a}o do Loop Agente-ESBMC, com decomposi\c {c}\~{a}o entre atraso LLM e verifica\c {c}\~{a}o formal, e Overhead do Verificador por itera\c {c}\~{a}o.}}{29}{figure.caption.12}%
-\contentsline {figure}{\numberline {6}{\ignorespaces Caso~4: Evolu\c {c}\~{a}o da Temperatura, Sinal de Controle PID e Erro de Rastreamento sob Cinco Perfis de Ru\'{i}do de Sensor.}}{30}{figure.caption.13}%
-\contentsline {figure}{\numberline {7}{\ignorespaces Distribuição de Casos, Seguros, Adversariais e Timeout.}}{31}{figure.caption.14}%
-\contentsline {figure}{\numberline {8}{\ignorespaces Escalabilidade SMT: Tempo de Verificação vs Tamanho da Rede Neural.}}{32}{figure.caption.15}%
-\contentsline {figure}{\numberline {9}{\ignorespaces Impacto da Otimização, Slicing e Intervalos no Tempo de Verificação.}}{32}{figure.caption.16}%
+\contentsline {figure}{\numberline {4}{\ignorespaces Superf\'icie de Sa\'ida da MLP e Distribui\c {c}\~ao das Amostras em Rela\c {c}\~ao aos Limites Verificados.}}{23}{figure.caption.9}%
+\contentsline {figure}{\numberline {5}{\ignorespaces Tempo de verificação vs dimensão da matriz, GEMM com tiling.}}{29}{figure.caption.12}%
+\contentsline {figure}{\numberline {6}{\ignorespaces Caso~3: Tempo por Itera\c {c}\~{a}o do Loop Agente-ESBMC, com decomposi\c {c}\~{a}o entre atraso LLM e verifica\c {c}\~{a}o formal, e Overhead do Verificador por itera\c {c}\~{a}o.}}{29}{figure.caption.13}%
+\contentsline {figure}{\numberline {7}{\ignorespaces Caso~4: Evolu\c {c}\~{a}o da Temperatura, Sinal de Controle PID e Erro de Rastreamento sob Cinco Perfis de Ru\'{i}do de Sensor.}}{31}{figure.caption.14}%
+\contentsline {figure}{\numberline {8}{\ignorespaces Distribuição de Casos, Seguros, Adversariais e Timeout.}}{32}{figure.caption.15}%
+\contentsline {figure}{\numberline {9}{\ignorespaces Escalabilidade SMT: Tempo de Verificação vs Tamanho da Rede Neural.}}{33}{figure.caption.16}%
+\contentsline {figure}{\numberline {10}{\ignorespaces Impacto da Otimização, Slicing e Intervalos no Tempo de Verificação.}}{33}{figure.caption.17}%

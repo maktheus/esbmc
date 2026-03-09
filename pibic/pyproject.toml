@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "core_verify"
+version = "0.1.0"
+description = "ESBMC AI Verification Toolkit in Python"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pytest>=7.0",
+    "torch>=2.0",
+    "onnx>=1.14",
+    "numpy>=1.24"
+]

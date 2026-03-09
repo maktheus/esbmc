@@ -1,0 +1,19 @@
+{
+    "project": "ESBMC Ralph",
+    "tasks": [
+        {
+            "id": "CASE_3_BUFFER",
+            "description": "Ralph Loop on strcpy buffer overflow",
+            "status": "pending",
+            "file_to_edit": "/tmp/case_3.c",
+            "verify_cmd": "esbmc /tmp/case_3.c --overflow-check"
+        },
+        {
+            "id": "CASE_2_MATMUL",
+            "description": "Ralph Loop on Matmul out of bounds",
+            "status": "pending",
+            "file_to_edit": "/tmp/case_2.c",
+            "verify_cmd": "esbmc /tmp/case_2.c --overflow-check"
+        }
+    ]
+}

@@ -31,3 +31,33 @@ O fluxo de trabalho do ESBMC consiste em:
 \end{itemize}
 
 A capacidade do ESBMC de lidar com aritmética de ponto flutuante e ponteiros o torna ideal para a verificação de kernels de redes neurais e algoritmos de controle crítico.
+
+\section{Primitivas de Modelagem C/C++ no ESBMC}
+
+A transcrição de requisitos lógicos para código analisável pelo ESBMC é construída sobre funções intrínsecas chamadas de primitivas de verificação. Para modelar o espaço de busca e as propriedades desejadas de uma IA, empregam-se centralmente três construções vitais:
+
+\begin{itemize}
+    \item \textbf{Valores Não-Determinísticos (\texttt{nondet})}
+    
+    Permitem ao \textit{solver} instanciar qualquer valor possível para o tipo da variável, forçando a ferramenta a testar matematicamente todo o domínio computacional.
+    \begin{lstlisting}[language=C, numbers=none]
+float input_val = nondet_float();
+    \end{lstlisting}
+
+    \item \textbf{Restrições de Hipótese (\texttt{\_\_ESBMC\_assume})}
+    
+    Restringe o espaço não-determinístico às pré-condições do problema. O comando orienta o verificador a ignorar caminhos simbólicos que não atendam à condição. Em notação formal, modela uma fronteira que força as entradas $x$ a estarem contidas num conjunto seguro $\mathcal{S}$ do domínio: $x \in [-10, 10]$.
+    \begin{lstlisting}[language=C, numbers=none]
+__ESBMC_assume(input_val >= -10.0f && input_val <= 10.0f);
+    \end{lstlisting}
+
+    \item \textbf{Asserções de Propriedade (\texttt{\_\_ESBMC\_assert})}
+    
+    Expressa as invariantes e \textit{post-conditions} de segurança. Se o ESBMC encontrar iterativamente qualquer valor de $x$ (confinado pelo \texttt{assume}) que viole o \texttt{assert}, a prova matemática "quebra", reportando o caminho indutivo como \textit{Counter-Example Trace}. Matematicamente, exige que a função $f(x) = y$ nunca escape do conjunto limite seguro $y_{max}$.
+    \begin{lstlisting}[language=C, numbers=none]
+float y = model_predict(input_val);
+__ESBMC_assert(y < 10.0f, "Saida excedeu o limite teorico");
+    \end{lstlisting}
+\end{itemize}
+
+O acoplamento dessas construções subverte o escopo empírico de testes pontuais, pois o modelo (antes visto como uma "caixa preta" determinista) passa a atuar sob o rigor absoluto de restrições lógicas exaustivas no espaço das entradas.

@@ -48,6 +48,20 @@ Os resultados do Caso 1 evidenciam tr\^es contribui\c{c}\~oes relevantes:
 
 Em suma, o Caso 1 serve como prova de conceito da integra\c{c}\~ao ESBMC-Python: o verificador, munido dos argumentos \texttt{-{}-floatbv -{}-k-induction}, \'e capaz de consumir c\'odigo Python bem tipado, construir o modelo SMT correspondente e emitir uma \textbf{garantia formal absolutamente confi\'avel} de que as propriedades an\'alises s\~ao mantidas para todo o espa\c{c}o de entrada.
 
+\subsection{Verifica\c{c}\~ao de M\'ultiplas Camadas (MLP)}
+
+Para estender o conceito de neur\^onio \'unico, uma arquitetura de \textit{Multilayer Perceptron} (MLP) com duas camadas (sendo a oculta composta por tr\^es neur\^onios com ativa\c{c}\~ao ReLU e uma camada de sa\'ida) foi modelada e verificada sob as mesmas restri\c{c}\~oes de entrada ($x_1, x_2 \in [0,1]$). O limite anal\'itico rigoroso determinou que a sa\'ida m\'axima n\~ao excede $1.0$.
+
+O ESBMC concluiu a an\'alise do modelo MLP em aproximadamente 51 segundos. A amplia\c{c}\~ao do modelo exige o desdobramento na gera\c{c}\~ao de 32 VCCs (\textit{Verification Conditions}). Diferente da execu\c{c}\~ao quase instant\^anea da unidade simples, o aniquilamento do espa\c{c}o simb\'olico comprova os \textit{bounds} via o status final de \textbf{VERIFICATION SUCCESSFUL}. A \autoref{fig:case1_mlp_plot} apresenta a topologia resultante de decis\~ao dessa MLP e atesta que nenhuma das amostras testadas extrapola as fronteiras validadas formalmente pelo \textit{solver}.
+
+\begin{figure}[htb]
+    \caption{\label{fig:case1_mlp_plot}Superf\'icie de Sa\'ida da MLP e Distribui\c{c}\~ao das Amostras em Rela\c{c}\~ao aos Limites Verificados.}
+    \begin{center}
+        \includegraphics[width=0.95\textwidth]{case1_mlp_plot.png}
+    \end{center}
+    \legend{Fonte: Elaborada pelo autor, 2026.}
+\end{figure}
+
 
 
 \subsection{Extens\~{a}o ao Dom\'{i}nio Generativo: Verifica\c{c}\~{a}o Modular de Transformers}
@@ -266,7 +280,7 @@ Para o kernel de multiplicação de matrizes com \textit{tiling}, foi realizada 
     \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{figure}
 
-O crescimento exponencial do tempo de verificação com o tamanho da matriz confirma que a verificação formal completa é inviável para matrizes de LLMs em escala real, ex.: dimensão 4096. Entretanto, a abordagem é \textbf{altamente eficaz} para verificar a corretude da lógica, especialmente do algoritmo de \textit{tiling}, em instâncias reduzidas   estratégia compatível com a \textit{Small Scope Hypothesis} da verificação formal.
+O crescimento exponencial do tempo de verifica\c{c}\~ao com o tamanho da matriz confirma que a verifica\c{c}\~ao formal completa \'e invi\'avel para matrizes de LLMs em escala real (ex.: dimens\~ao 4096) ou at\'e mesmo blocos medianos. A \autoref{fig:case2_plot} projeta a continuidade dessa escala exponencial para matrizes de dimens\~ao $60 \times 60$, na qual o \textit{solver} atinge uma inviabilidade computacional pr\'atica estimando-se tempos imensur\'aveis sob hardware convencional. Entretanto, a abordagem permanece \textbf{altamente eficaz} para verificar a corretude da l\'ogica, especialmente do algoritmo de \textit{tiling}, em inst\^ancias reduzidas (vide an\'alise da \textit{Small Scope Hypothesis}).
 
 \section{Caso 3 --- Loop Neuro-Simb\'{o}lico}
 
@@ -301,10 +315,14 @@ O verificador formal comprovou, via \texttt{VERIFICATION SUCCESSFUL}, que o cont
 \end{figure}
 
 \begin{alineas}
-    \item \textbf{Painel superior}: A temperatura nunca ultrapassa 150\,°C em nenhum dos cinco perfis de ru\'{i}do, confirmando o resultado \textit{UNSAT} do ESBMC. O ru\'{i}do negativo fixo ($-5$\,°C) representa o pior caso cr\'{i}tico: o sensor subestima a temperatura, levando o PID a fornecer mais pot\^{e}ncia. O intertravamento de seguran\c{c}a, que corta o aquecimento quando a temperatura medida excede $120$\,°C, \'{e} capturado simbolicamente pelo verificador;
-    \item \textbf{Painel inferior esquerdo}: O sinal de controle PID \'{e} corretamente saturado em $[0, 100\%]$ em todos os cen\'{a}rios;
     \item \textbf{Painel inferior direito}: O erro de rastreamento $e(t) = \text{setpoint} - T_{\text{medido}}$ converge para zero em todos os perfis dentro dos 10 passos, comprovando a estabilidade do controlador mesmo sob caos estoc\'{a}stico.
 \end{alineas}
+
+\subsection{Verifica\c{c}\~ao de Biblioteca de Controle C++ Famosa (Arduino PID)}
+
+Para demonstrar a aplicabilidade da abordagem de verifica\c{c}\~ao formal formal a sistemas de controle reais em produ\c{c}\~ao e consolidar o m\'etodo de Engenharia do Caos, a biblioteca padr\~ao da ind\'ustria \textit{Arduino-PID-Library} (de Brett Beauregard) foi clonada diretamente do reposit\'orio oficial no GitHub. Foi desenvolvido um \textit{harness} em C++ (escrevendo \textit{mock} para as fun\c{c}\~oes temporais em placa, como \texttt{millis()}) que encapsula a inst\^ancia e execu\c{c}\~ao da classe \texttt{PID} sob a mesma planta t\'ermica e modelo de inje\c{c}\~ao de ru\'ido sensoriais variando entre $[-5, +5]$.
+
+O orquestrador ESBMC consumiu o c\'odigo C++ limpo (\texttt{PID\_v1.cpp}) sem qualquer modifica\c{c}\~ao ou \textit{downgrade} pragm\'atico na abstra\c{c}\~ao original em objeto. Ap\'os explorar os caminhos por \textit{Bounded Model Checking} (\texttt{-{}-floatbv -{}-unwind~11}), o \textit{solver} emitiu \textbf{VERIFICATION SUCCESSFUL}. O experimento atesta, com endosso formal, que algoritmos famosos \textit{open-source} blindados por invariantes SMT s\~ao robustos o suficiente para integra\c{c}\~ao direta nos fluxos cr\'iticos.
 
 
 \section{Caso 5   The Ralph Loop Concept e Validação em Larga Escala}

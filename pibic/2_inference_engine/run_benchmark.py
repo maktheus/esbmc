@@ -20,7 +20,7 @@ def run_benchmark():
             # Pass macro DIM_LIMIT to compiler
             # ESBMC passes -D flags to frontend
             cmd = [
-                "esbmc", 
+                "build/src/esbmc/esbmc", 
                 "pibic/2_inference_engine/matmul_kernel.cpp",
                 "--multi-property", 
                 "--memory-leak-check", 
@@ -33,7 +33,7 @@ def run_benchmark():
             try:
                 result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
                 duration = time.time() - start_time
-                success = "VERIFICATION SUCCESSFUL" in result.stdout
+                success = "VERIFICATION SUCCESSFUL" in result.stdout or "VERIFICATION SUCCESSFUL" in result.stderr
                 outcome = "Pass" if success else "Fail"
             except subprocess.TimeoutExpired:
                 duration = 120.0

@@ -7,7 +7,7 @@ A rápida ascensão da Inteligência Artificial (IA) Generativa e sua integraç�
 
 Este trabalho explora o uso do ESBMC (\textit{Efficient SMT-Based Context-Bounded Model Checker}), um verificador de modelos de vanguarda, para prover garantias matemáticas sobre a execução de componentes de IA. A pesquisa aborda desde a verificação de propriedades lógicas em modelos Python até a análise de segurança de kernels em C++, fundamentais para a infraestrutura de inferência moderna \cite{gopinath2021verifying}.
 
-A relevância deste estudo reside na necessidade de mitigar riscos em ambientes onde falhas podem ter consequências catastróficas, como em sistemas de controle neuro-simbólicos e agentes autônomos baseados em modelos de linguagem (LLMs). Ao longo deste relatório, detalha-se uma estratégia de verificação em três níveis, cobrindo modelos isolados, controladores neurais e a análise sistêmica em malha fechada.
+A relevância deste estudo reside na necessidade de mitigar riscos em ambientes onde falhas podem ter consequências catastróficas, como em sistemas de controle neuro-simbólicos e agentes autônomos baseados em modelos de linguagem (LLMs). Ao longo deste relatório, detalha-se uma estratégia de verificação escalável, cobrindo modelos de \textit{Machine Learning} isolados, controladores físicos, ciclos de auto-reparo gerativo e arquiteturas de Aprendizado por Reforço.
 
 \chapter{Objetivos}
 
@@ -25,4 +25,8 @@ Para atingir o objetivo geral, a pesquisa foi estruturada em três níveis de co
     \item \textbf{Nível 2 — Verificação de Controladores Neurais}: Expandir a análise para redes neurais especificamente projetadas para controle de sistemas dinâmicos, verificando propriedades locais de corretude e segurança do código do controlador.
     
     \item \textbf{Nível 3 — Verificação de Propriedades de Sistema (Malha Fechada)}: Realizar a verificação formal de propriedades de alto nível do sistema completo (planta + controlador neural). Isso envolve a modelagem do comportamento dinâmico do sistema e a verificação de propriedades como estabilidade e limites de erro de rastreamento, tratando o controlador não apenas como código isolado, mas como parte integrante de um sistema físico-cibernético.
+    
+    \item \textbf{Nível 4 — Verificação de Agentes e Módulos Python (\textit{The Ralph Loop})}: Projetar um arcabouço programático em Python (API \texttt{core\_verify}) que encapsule o binário C++ do ESBMC, dotando modelos de linguagem de um mecanismo SMT de prova e auto-correção imediata para vulnerabilidades sintáticas (\textit{buffer overflows, memory leaks}).
+    
+    \item \textbf{Nível 5 — Aprendizado por Reforço (RL Actor-Critic)}: Formalizar a garantia de segurança (Safety Shields) em redes voltadas à automação física e comportamentos de tomada de decisão não-lineares sob \textit{Reinforcement Learning}, bloqueando saídas perversas do agente que violam o atuador.
 \end{itemize}
