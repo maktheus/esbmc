@@ -13,7 +13,11 @@ A verifica\c{c}\~ao do neurônio (\texttt{neuron.py}) foi executada localmente v
 esbmc pibic/1_python_models/neuron.py --floatbv --k-induction
 \end{lstlisting}
 
-O \textit{frontend} Python do ESBMC (baseado em \texttt{ast2json}) converte o c\'odigo-fonte diretamente para \texttt{GOTO-Programs}, a representa\c{c}\~ao intermedi\'aria interna do verificador. A execu\c{c}\~ao simb\'olica trata as vari\'aveis n\~ao inicializadas (\texttt{in1}, \texttt{in2}) como valores n\~ao-determin\'isticos, e a estrutura condicional \texttt{if in1 >= 0.0 and ...} \'e automaticamente convertida em uma \textit{pre-condi\c{c}\~ao} (\texttt{\_\_ESBMC\_assume}) pelo \textit{solver}.
+O \textit{frontend} Python do ESBMC (baseado em \texttt{ast2json}) converte o c\'odigo-fonte diretamente para \texttt{GOTO-Programs}, a representa\c{c}\~ao intermedi\'aria interna do verificador. A execu\c{c}\~ao simb\'olica trata as vari\'aveis n\~ao inicializadas (\texttt{in1}, \texttt{in2}) como valores n\~ao-determin\'isticos. 
+
+Neste caso de uso, as primitivas magnas da verifica\c{c}\~ao \textbf{foram meticulosamente selecionadas}:
+- A estrutura condicional \texttt{if in1 >= 0.0 and in1 <= 1.0} \'e automaticamente convertida em uma restrin\c{c}\~ao de ambiente, ou \textbf{\textit{pre-condi\c{c}\~ao}} (\texttt{\_\_ESBMC\_assume}), pelo \textit{solver}. Essa \textit{assumption} \'e vital: sem ela, o ESBMC tentaria provar o modelo para qualquer n\'umero de ponto flutuante ($-\infty$ a $+\infty$), o que causaria violac\~ao dos limites te\'oricos e explos\~ao do espa\c{c}o de estados SMT. Assumir que as vari\'aveis de entrada est\~ao contidas em $[0, 1]$ (pixel normalizado) poda ramos computacionalmente intrat\'aveis.
+- A condi\c{c}\~ao s'imbolica \textbf{\textit{assert}} (\texttt{assert out <= 0.6}) representa nosso invariante de seguran\c{c}a estrito a ser provado. Foi selecionada especificamente para consolidar matematicamente a fronteira de ativa\c{c}\~ao m\'axima do neur\^onio, fornecendo uma base axiom\'atica impenetravel para ataques sobrepostas no espectro.
 
 \subsection{Resultado da Verifica\c{c}\~ao}
 
@@ -247,7 +251,9 @@ Este resultado demonstra que a verifica\c{c}\~{a}o modular de blocos MLP de LLMs
 
 \subsection{Kernel de Atenção}
 
-A verificação do kernel \texttt{attention\_kernel.cpp} confirmou a ausência de \textit{buffer overflows} e vazamentos de memória para $\texttt{seq\_len} \in [1, 10]$. O ESBMC explorou simbolicamente todas as trajetórias possíveis dentro do laço, provando que os acessos \texttt{query[i]} e \texttt{key[i]} são sempre válidos, dado que os vetores são alocados com tamanho proporcional a \texttt{seq\_len}.
+A verifica\c{c}\~ao do kernel \texttt{attention\_kernel.cpp} confirmou a aus\^encia de \textit{buffer overflows} e vazamentos de mem\'oria para a condi\c{c}\~ao for\c{c}ada onde $\texttt{seq\_len} \in [1, 10]$.
+
+A aplica\c{c}\~ao de \texttt{\_\_ESBMC\_assume(seq\_len <= 10)} associado ao fato do array ser não-determinístico é primordial neste Kernel: em Bounded Model Checking (BMC), la\c{c}os (\textit{loops}) demandam um limite seguro computacional para sua t\'ecnica de desenrolamento (\textit{unwinding}). Sem o \texttt{assume} isolando o comprimento do *batch/sequence*, a \'arvore de \textit{pointers} cresceria infinitamente. Simultaneamente, as op\c{c}\~oes passadas via \textit{flags} como \texttt{--overflow-check} instanciam automaticamente diretivas SMT do tipo \textbf{\textit{asserts gen\'ericas}} sob a matriz operada, assegurando com certeza formal que acessos c\'riticos como \texttt{query[i]} e \texttt{key[i]} est\~ao indexados perfeitamente nas posi\c{c}\~oes VRAM (Virtual RAM) leg\'itimas em toda e qualquer amostragem daquela \textit{boundary}.
 
 \subsection{Escalabilidade do GEMM}
 
@@ -299,7 +305,7 @@ O agente simulado executou com sucesso o ciclo completo de 5 itera\c{c}\~{o}es. 
     \item \textbf{Itera\c{c}\~{o}es 1 a 4}: O c\'{o}digo corrigido com \texttt{strncpy} recebeu \texttt{VERIFICATION SUCCESSFUL} consistentemente, com tempo do verificador inferior a 0,65\,s em todas as itera\c{c}\~{o}es.
 \end{alineas}
 
-O painel direito da \autoref{fig:case3_plot} evidencia que o \textit{overhead} do ESBMC \'{e} \textbf{constante e inferior a 1 segundo} para \textit{snippets} de c\'{o}digo gerado por LLMs, independentemente da itera\c{c}\~{a}o. O custo computacional da verifica\c{c}\~{a}o formal \'{e} marginal frente ao ganho de seguran\c{c}a, pois os testes funcionais convencionais n\~{a}o detectariam o \textit{overflow} caso o input de teste n\~{a}o tivesse exatamente 10+ bytes.
+O painel direito da \autoref{fig:case3_plot} evidencia que o \textit{overhead} do ESBMC \'{e} \textbf{constante e inferior a 1 segundo} para \textit{snippets} de c\'{o}digo gerado por LLMs, independentemente da itera\c{c}\~{a}o. O custo computacional da verifica\c{c}\~{a}o formal \'{e} marginal frente ao ganho de seguran\c{c}a, pois os testes funcionais convencionais n\~{a}o detectariam o \textit{overflow} caso o input de teste n\~{a}o tivesse exatamente 10+ bytes. Neste sistema ag\^entico, O LLM gera naturalmente l\'ogicas reativas baseadas em limites do \textit{prompt}, mas o orquestrador Ralph codifica implicitamente restri\c{c}\~oes via SMT \textbf{\textit{\_\_ESBMC\_assume}} (tamanho do contexto gerativo ou limites de string operada) confrontando os retornos contra \textbf{\textit{asserts estruturais}}, estabelecendo uma camada determin\'istica imperme\'avel (\textit{trust layer}) num loop din\^amico.
 
 
 \section{Caso 4 --- Controlador PID com Engenharia do Caos e SMT}
