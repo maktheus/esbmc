@@ -56,7 +56,7 @@ Em suma, o Caso 1 serve como prova de conceito da integra\c{c}\~ao ESBMC-Python:
 
 Para estender o conceito de neur\^onio \'unico, uma arquitetura de \textit{Multilayer Perceptron} (MLP) com duas camadas (sendo a oculta composta por tr\^es neur\^onios com ativa\c{c}\~ao ReLU e uma camada de sa\'ida) foi modelada e verificada sob as mesmas restri\c{c}\~oes de entrada ($x_1, x_2 \in [0,1]$). O limite anal\'itico rigoroso determinou que a sa\'ida m\'axima n\~ao excede $1.0$.
 
-O ESBMC concluiu a an\'alise do modelo MLP em aproximadamente 51 segundos. A amplia\c{c}\~ao do modelo exige o desdobramento na gera\c{c}\~ao de 32 VCCs (\textit{Verification Conditions}). Diferente da execu\c{c}\~ao quase instant\^anea da unidade simples, o aniquilamento do espa\c{c}o simb\'olico comprova os \textit{bounds} via o status final de \textbf{VERIFICATION SUCCESSFUL}. A \autoref{fig:case1_mlp_plot} apresenta a topologia resultante de decis\~ao dessa MLP e atesta que nenhuma das amostras testadas extrapola as fronteiras validadas formalmente pelo \textit{solver}.
+O ESBMC concluiu a an\'alise do modelo MLP em aproximadamente 51 segundos. A amplia\c{c}\~ao da arquitetura exige o desdobramento na gera\c{c}\~ao formal de 32 VCCs (\textit{Verification Conditions}). Tais instru\c{c}\~oes derivam fisicamente do desenrolamento simb\'olico integral de cada itera\c{c}\~ao matricial (os produtos vetoriais interconectando pesos e entradas), conjugado com os mapeamentos condicionais bin\'arios embutidos em cada neur\^onio da camada oculta, induzidos pelo passo da fun\c{c}\~ao de ativa\c{c}\~ao n\~ao-linear restritiva (\textit{branching}). Diferente da execu\c{c}\~ao quase instant\^anea da unidade simples, o \textit{solver} precisou estressar todos os arranjos topol\'ogicos que comp\~oem essa intrincada interliga\c{c}\~ao neural, culminando no aniquilamento met\'odico do espa\c{c}o simb\'olico e a devida comprova\c{c}\~ao absoluta dos \textit{bounds} via o status final de \textbf{VERIFICATION SUCCESSFUL}. A \autoref{fig:case1_mlp_plot} apresenta a topologia resultante de decis\~ao dessa MLP e atesta que nenhuma das amostras testadas extrapola as fronteiras validadas formalmente pelo \textit{solver}.
 
 \begin{figure}[htb]
     \caption{\label{fig:case1_mlp_plot}Superf\'icie de Sa\'ida da MLP e Distribui\c{c}\~ao das Amostras em Rela\c{c}\~ao aos Limites Verificados.}
@@ -66,7 +66,13 @@ O ESBMC concluiu a an\'alise do modelo MLP em aproximadamente 51 segundos. A amp
     \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{figure}
 
-
+\begin{figure}[htb]
+    \caption{\label{fig:case1_weights}Heatmap de Pesos da MLP atestando a origem topol\'ogica das VCCs.}
+    \begin{center}
+        \includegraphics[width=0.95\textwidth]{plot_case1_weights.png}
+    \end{center}
+    \legend{Fonte: Elaborada pelo autor (Subagente Gr\'afico), 2026.}
+\end{figure}
 
 \subsection{Extens\~{a}o ao Dom\'{i}nio Generativo: Verifica\c{c}\~{a}o Modular de Transformers}
 
@@ -206,7 +212,15 @@ O desafio fundamental \'{e} que $\sigma(z) = 1/(1+e^{-z})$ \'{e} uma fun\c{c}\~{
 \sigma_{\text{approx}}(z) = \text{clip}\!\left(0.25z + 0.5,\; 0,\; 1\right) \;\in\; [0,1] \quad \forall\, z
 \end{equation}
 
-Essa express\~{a}o \'{e} a tangente de $\sigma$ em $z=0$ (exata nesse ponto) com \textit{clipping} que preserva os limites globais. O \textit{solver} SMT a resolve em opera\c{c}\~{o}es aritm\'{e}ticas primitivas, sem chamadas de biblioteca.
+Essa express\~{a}o \'{e} a tangente de $\sigma$ em $z=0$ (exata nesse ponto) com \textit{clipping} que preserva os limites globais. Ao substituir transcri\c{c}\~oes exponenciais complexas por diretrizes retil\'ineas liminares, transmutamos geometricamente o \textit{state space}: O \textit{solver} SMT (Z3/Bitwuzla), que usualmente declararia estado \texttt{UNKNOWN} ou sofreria \textit{timeout} perante c\'alculos anal\'iticos de pontos flutuantes indecid\'iveis para fun\c{c}\~oes transcendentalistas cont\'inuas, agora perfaz opera\c{c}\~oes literais fragmentadas lineares (simples somas e clivagens de restri\c{c}\~ao comparativa). O resultado atesta que o salto heur\'istico proporciona \textit{verificabilidade aut\^entica em tempo real} sem comprometer as margens param\'etricas operacionais do tensor iterado.
+
+\begin{figure}[htb]
+    \caption{\label{fig:silu_approx}Substitui\c{c}\~ao Transcendental no ESBMC: SiLU Exata vs Aproxima\c{c}\~ao SMT Linear.}
+    \begin{center}
+        \includegraphics[width=0.9\textwidth]{plot_silu_approx.png}
+    \end{center}
+    \legend{Fonte: Elaborada pelo autor (Subagente Curvas), 2026.}
+\end{figure}
 
 \subsubsection{Limitac\~{o}es e Por Que Ocorrem}
 
@@ -300,12 +314,20 @@ O agente simulado executou com sucesso o ciclo completo de 5 itera\c{c}\~{o}es. 
     \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{figure}
 
+\begin{figure}[htb]
+    \caption{\label{fig:agent_statemachine}M\'aquina de Estados do Agente Aut\^onomo Ralph Loop.}
+    \begin{center}
+        \includegraphics[width=0.95\textwidth]{plot_agent_statemachine.png}
+    \end{center}
+    \legend{Fonte: Elaborada pelo autor (Subagente Arquitetural), 2026.}
+\end{figure}
+
 \begin{alineas}
     \item \textbf{Itera\c{c}\~{a}o 0}: O ESBMC detectou o \textit{buffer overflow} no c\'{o}digo com \texttt{strcpy}, produzindo um contra-exemplo concreto com o \textit{offset} exato da viola\c{c}\~{a}o. O tempo total foi de $\approx\!2{,}0$\,s, dos quais apenas $\approx\!0{,}6$\,s foram do verificador formal e o restante do atraso simulado do LLM;
     \item \textbf{Itera\c{c}\~{o}es 1 a 4}: O c\'{o}digo corrigido com \texttt{strncpy} recebeu \texttt{VERIFICATION SUCCESSFUL} consistentemente, com tempo do verificador inferior a 0,65\,s em todas as itera\c{c}\~{o}es.
 \end{alineas}
 
-O painel direito da \autoref{fig:case3_plot} evidencia que o \textit{overhead} do ESBMC \'{e} \textbf{constante e inferior a 1 segundo} para \textit{snippets} de c\'{o}digo gerado por LLMs, independentemente da itera\c{c}\~{a}o. O custo computacional da verifica\c{c}\~{a}o formal \'{e} marginal frente ao ganho de seguran\c{c}a, pois os testes funcionais convencionais n\~{a}o detectariam o \textit{overflow} caso o input de teste n\~{a}o tivesse exatamente 10+ bytes. Neste sistema ag\^entico, O LLM gera naturalmente l\'ogicas reativas baseadas em limites do \textit{prompt}, mas o orquestrador Ralph codifica implicitamente restri\c{c}\~oes via SMT \textbf{\textit{\_\_ESBMC\_assume}} (tamanho do contexto gerativo ou limites de string operada) confrontando os retornos contra \textbf{\textit{asserts estruturais}}, estabelecendo uma camada determin\'istica imperme\'avel (\textit{trust layer}) num loop din\^amico.
+O painel direito da \autoref{fig:case3_plot} evidencia que o \textit{overhead} do ESBMC \'{e} \textbf{constante e inferior a 1 segundo} para \textit{snippets} de c\'{o}digo gerado por LLMs, independentemente da itera\c{c}\~{a}o. O custo computacional da verifica\c{c}\~{a}o formal \'{e} marginal frente ao ganho de seguran\c{c}a. Neste sistema ag\^entico, O LLM gera naturalmente l\'ogicas reativas, mas o orquestrador Ralph codifica as restri\c{c}\~oes estritas via \textbf{\textit{\_\_ESBMC\_assume}} e \textbf{\textit{assert}}. Crucialmente, durante o \textit{feedback loop}, o extrator sem\^antico converte a sa\'ida densa e formal nativa do solver (\textit{Trace}: \texttt{Violated property: array `buffer` upper bound}) em uma reinje\c{c}\~ao de prompt (\textit{Prompt}: "Fix index-out-of-bounds at line X when input exceeds sizeof(buffer)"). Esta tradu\c{c}\~ao org\^anica da prova mec\^anica em direcionalidade de linguagem natural cristaliza a camada de confian\c{c}a (\textit{trust layer}) aut\^onoma num rigoroso ciclo neuro-simb\'olico.
 
 
 \section{Caso 4 --- Controlador PID com Engenharia do Caos e SMT}
@@ -320,8 +342,16 @@ O verificador formal comprovou, via \texttt{VERIFICATION SUCCESSFUL}, que o cont
     \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{figure}
 
+\begin{figure}[htb]
+    \caption{\label{fig:pid_phase}Retrato de Fase (Phase Portrait) detalhando a atra\c{c}\~ao do PID sob caos.}
+    \begin{center}
+        \includegraphics[width=0.85\textwidth]{plot_pid_phase_portrait.png}
+    \end{center}
+    \legend{Fonte: Elaborada pelo autor (Subagente de Controle), 2026.}
+\end{figure}
+
 \begin{alineas}
-    \item \textbf{Painel inferior direito}: O erro de rastreamento $e(t) = \text{setpoint} - T_{\text{medido}}$ converge para zero em todos os perfis dentro dos 10 passos, comprovando a estabilidade do controlador mesmo sob caos estoc\'{a}stico.
+    \item \textbf{Painel inferior direito}: O erro de rastreamento $e(t) = \text{setpoint} - T_{\text{medido}}$ converge para zero em todos os perfis dentro dos 10 passos, comprovando a estabilidade do controlador mesmo sob caos estoc\'{a}stico. Ressalta-se formalmente que este Bounded Model Checking parametrizou o escudo (\textit{shield}) limitando o \textit{Engine} essencialmente nas capta\c{c}\~oes ruidosas originadas no sensor (\textit{sensor-side}); an\'alises sist\^emicas projetando a modelagem \textit{Chaos Engineering} na perturba\c{c}\~ao final dos tuchos e motores atuadores (\textit{actuator-side}) consistem em desenvolvimentos vitais para os trabalhos subsequentes focados em intera\c{c}\~oes eletromec\^anicas robustas.
 \end{alineas}
 
 \subsection{Verifica\c{c}\~ao de Biblioteca de Controle C++ Famosa (Arduino PID)}
@@ -371,7 +401,17 @@ Adicionalmente, um dos pilares discutidos pelos \textit{Benchmarks} de quantiza�
 
 
 \section{Caso 6   Verificação Formal em Reinforcement Learning, Actor-Critic}
-A verificação de políticas de Reinforcement Learning é crítica. O modelo \texttt{rl\_policy.c} simulou estaticamente o bloco físico através do motor PyTest acionando \texttt{--floatbv} do ESBMC. O solver interceptou o comportamento errático na restrição do volante atuador, permitido entre -1.0 a 1.0 comprovando sua funcionalidade como \textit{Safety Shield} pré-implantação física.
+A verificação sistemática de políticas dinâmicas de \textit{Reinforcement Learning} (RL) destitui o comportamento puramente opaco (\textit{black-box}) destas lógicas de atuação contínua. Formalizando a ação logística ($A = \text{MatMul}(W, S)$), o modelo do caso seis (\texttt{rl\_policy.c}) encapsulou a estática neural dentro de um \textit{Safety Shield} estrutural acionado via motor dinâmico PyTest (\texttt{-{}-floatbv}). 
+
+Em suma, durante a exploração exaustiva promovida pelo solver \textit{Bitwuzla/Z3}, o verificador esmiuçou todo o \textit{Phase Space} dos vetores de estado cinemático possíveis ($S$). A asserção formal delimitou rigidamente que a magnitude da modulação expedida ao volante atuador não poderia transpor os tensores físicos permitidos (fixados pela física no espaço entre $[-1.0, 1.0]$). A descoberta metódica de contra-exemplos SMT operou podando ativamente os impulsos neurais perigosos (aquelas perturbações \textit{out-of-distribution}) provando de forma esmagadora a eficácia arquitetural do modelo ESBMC interceptador em cenários complexos pré-implantação robótica.
+
+\begin{figure}[htb]
+    \caption{\label{fig:rl_shield}Distribui\c{c}\~ao SMT: A\c{c}\~oes Permitidas vs Intercepta\c{c}\~ao do Safety Shield.}
+    \begin{center}
+        \includegraphics[width=0.9\textwidth]{plot_rl_shield.png}
+    \end{center}
+    \legend{Fonte: Elaborada pelo autor (Subagente RL), 2026.}
+\end{figure}
 
 \section{Análise Comparativa}
 

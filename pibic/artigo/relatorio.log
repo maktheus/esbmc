@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.2.23)  9 MAR 2026 15:54
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.2.23)  9 MAR 2026 16:17
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1537,50 +1537,55 @@ Package pdftex.def Info: ./figs/fluxo-esbmc.png  used on input line 13.
 (pdftex.def)             Requested size: 432.24861pt x 123.78111pt.
  [13
 
- <./figs/fluxo-esbmc.png>] (/usr/share/texlive/texmf-dist/tex/latex/listings/ls
-tlang1.sty
+ <./figs/fluxo-esbmc.png>] [14]
+<./figs/plot_python_to_smt.png, id=253, 715.473pt x 244.9953pt>
+File: ./figs/plot_python_to_smt.png Graphic file (type png)
+<use ./figs/plot_python_to_smt.png>
+Package pdftex.def Info: ./figs/plot_python_to_smt.png  used on input line 45.
+(pdftex.def)             Requested size: 445.89806pt x 152.6843pt.
+ (/usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2023/02/27 1.9 listings language file
-) [14]
-[15]
-<./figs/case1_pipeline.png, id=285, 574.3056pt x 258.2448pt>
+)
+[15 <./figs/plot_python_to_smt.png>]
+<./figs/case1_pipeline.png, id=282, 574.3056pt x 258.2448pt>
 File: ./figs/case1_pipeline.png Graphic file (type png)
 <use ./figs/case1_pipeline.png>
-Package pdftex.def Info: ./figs/case1_pipeline.png  used on input line 93.
+Package pdftex.def Info: ./figs/case1_pipeline.png  used on input line 101.
 (pdftex.def)             Requested size: 418.59917pt x 188.23341pt.
-
-Overfull \hbox (2.86948pt too wide) in paragraph at lines 111--113
+ [16 <./figs/case1_pipeline.png>]
+Overfull \hbox (2.86948pt too wide) in paragraph at lines 119--121
 \T1/lmtt/m/n/12 attention_kernel.cpp --multi-property --memory-leak-check --ove
 rflow-check\T1/lmr/m/n/12 (-20) . 
  []
 
-[16 <./figs/case1_pipeline.png>]
-Overfull \hbox (69.9356pt too wide) in paragraph at lines 124--125
+
+Overfull \hbox (69.9356pt too wide) in paragraph at lines 132--133
 []\T1/lmr/bx/n/12 (-20) Verificação ESBMC\T1/lmr/m/n/12 (-20) : o ve-ri-fi-ca-d
 or é in-vo-cado com \T1/lmtt/m/n/12 --overflow-check --memory-leak-check\T1/lmr
 /m/n/12 (-20) .
  []
 
 
-Overfull \hbox (4.37556pt too wide) in paragraph at lines 128--129
+Overfull \hbox (4.37556pt too wide) in paragraph at lines 136--137
 []\T1/lmr/m/n/12 (-20) Os tem-pos e re-sul-ta-dos de cada ite-ra-ção são re-gis
 -tra-dos em \T1/lmtt/m/n/12 case3_agent_stats.csv\T1/lmr/m/n/12 (-20) : 
  []
 
-
-Overfull \hbox (66.23747pt too wide) in paragraph at lines 142--143
+[17]
+Overfull \hbox (66.23747pt too wide) in paragraph at lines 150--151
 []\T1/lmr/m/n/12 (-20) O ESBMC de-tecta que \T1/lmtt/m/n/12 strcpy(buffer, inpu
 t) \T1/lmr/m/n/12 (-20) com \T1/lmtt/m/n/12 sizeof(buffer)=10 \T1/lmr/m/n/12 (-
 20) e \T1/lmtt/m/n/12 sizeof(input)=20
  []
 
-[17] [18{/usr/share/texmf/fonts/enc/dvips/lm/lm-mathex.enc}] [19]
+[18{/usr/share/texmf/fonts/enc/dvips/lm/lm-mathex.enc}] [19]
 (/usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2023/02/27 1.9 listings language file
 )
 (/usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2023/02/27 1.9 listings language file
 ) [20]
-Overfull \hbox (32.19838pt too wide) in paragraph at lines 243--244
+Overfull \hbox (32.19838pt too wide) in paragraph at lines 251--252
 []\T1/lmtt/m/n/12 esbmc attention_kernel.cpp --multi-property --memory-leak-che
 ck\T1/lmr/m/n/12 (-20) : Aborda
  []
@@ -1588,209 +1593,233 @@ ck\T1/lmr/m/n/12 (-20) : Aborda
 ) (./caps/4resultados.tex [21] [22
 
 ]
-<./figs/case1_plot.png, id=382, 919.2744pt x 351.714pt>
+<./figs/case1_plot.png, id=384, 919.2744pt x 351.714pt>
 File: ./figs/case1_plot.png Graphic file (type png)
 <use ./figs/case1_plot.png>
 Package pdftex.def Info: ./figs/case1_plot.png  used on input line 36.
 (pdftex.def)             Requested size: 432.24861pt x 165.38074pt.
  [23 <./figs/case1_plot.png>]
-<./figs/case1_mlp_plot.png, id=394, 875.4306pt x 351.2322pt>
+<./figs/case1_mlp_plot.png, id=396, 875.4306pt x 351.2322pt>
 File: ./figs/case1_mlp_plot.png Graphic file (type png)
 <use ./figs/case1_mlp_plot.png>
 Package pdftex.def Info: ./figs/case1_mlp_plot.png  used on input line 64.
 (pdftex.def)             Requested size: 432.24861pt x 173.42368pt.
- [24] [25 <./figs/case1_mlp_plot.png>] [26] [27]
-Underfull \hbox (badness 10000) in paragraph at lines 223--223
+<./figs/plot_case1_weights.png, id=397, 607.7907pt x 284.5029pt>
+File: ./figs/plot_case1_weights.png Graphic file (type png)
+<use ./figs/plot_case1_weights.png>
+Package pdftex.def Info: ./figs/plot_case1_weights.png  used on input line 72.
+(pdftex.def)             Requested size: 432.24861pt x 202.33273pt.
+ [24] [25 <./figs/case1_mlp_plot.png> <./figs/plot_case1_weights.png>] [26] [27
+] [28]
+<./figs/plot_silu_approx.png, id=472, 570.933pt x 351.714pt>
+File: ./figs/plot_silu_approx.png Graphic file (type png)
+<use ./figs/plot_silu_approx.png>
+Package pdftex.def Info: ./figs/plot_silu_approx.png  used on input line 220.
+(pdftex.def)             Requested size: 409.49722pt x 252.27325pt.
+
+Underfull \hbox (badness 10000) in paragraph at lines 237--237
 []|\T1/lmr/m/n/12 (+20) Z3/Bitwuzla trata
  []
 
 
-Underfull \hbox (badness 3417) in paragraph at lines 223--223
+Underfull \hbox (badness 3417) in paragraph at lines 237--237
 \T1/lmr/m/n/12 (+20) interpretada; ne-nhum
  []
 
 
-Underfull \hbox (badness 1303) in paragraph at lines 223--224
+Underfull \hbox (badness 1303) in paragraph at lines 237--238
 []|$\OML/lmm/m/it/12 ^^[$ \T1/lmr/m/n/12 (+20) exata gera \T1/lmtt/m/n/12 UNKNO
 WN\T1/lmr/m/n/12 (+20) ;
  []
 
 
-Underfull \hbox (badness 1082) in paragraph at lines 225--225
+Underfull \hbox (badness 1082) in paragraph at lines 239--239
 []|\T1/lmr/m/n/12 (+20) BMC cresce com $\OML/lmm/m/it/12 D[]$
  []
 
 
-Underfull \hbox (badness 1199) in paragraph at lines 225--225
+Underfull \hbox (badness 1199) in paragraph at lines 239--239
 \T1/lmr/m/n/12 (+20) cas; $\OML/lmm/m/it/12 d \OT1/lmr/m/n/12 (+20) = 4096$ \T1
 /lmr/m/n/12 (+20) gera
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 227--227
+Underfull \hbox (badness 10000) in paragraph at lines 241--241
 []|\T1/lmr/m/n/12 (+20) Sequência
  []
 
 
-Underfull \hbox (badness 1259) in paragraph at lines 227--227
+Underfull \hbox (badness 1259) in paragraph at lines 241--241
 []|\T1/lmr/m/n/12 (+20) Cada to-ken adi-ci-o-nal
  []
 
 
-Underfull \hbox (badness 1418) in paragraph at lines 229--229
+Underfull \hbox (badness 1418) in paragraph at lines 243--243
 []|$\OML/lmm/m/it/12 ^^[[]$ \T1/lmr/m/n/12 (+20) su-pe-res-tima $\OML/lmm/m/it/
 12 ^^[$
  []
 
 
-Underfull \hbox (badness 6188) in paragraph at lines 229--230
+Underfull \hbox (badness 6188) in paragraph at lines 243--244
 []|\T1/lmr/m/n/12 (+20) P4 (\T1/lmtt/m/n/12 out $\OMS/lmsy/m/n/12 2$ \T1/lmtt/m
 /n/12 [-6,6]\T1/lmr/m/n/12 (+20) ) é
  []
 
 
-Underfull \hbox (badness 4242) in paragraph at lines 229--230
+Underfull \hbox (badness 4242) in paragraph at lines 243--244
 \T1/lmr/m/n/12 (+20) vá-lido mas não \T1/lmr/m/it/12 (+20) tight\T1/lmr/m/n/12 
 (+20) ;
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 229--230
+Underfull \hbox (badness 10000) in paragraph at lines 243--244
 \T1/lmtt/m/n/12 --interval-analysis
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 231--231
+Underfull \hbox (badness 10000) in paragraph at lines 245--245
 []|\T1/lmr/m/n/12 (+20) Normalização di-vide
  []
 
 
-Underfull \hbox (badness 2913) in paragraph at lines 231--231
+Underfull \hbox (badness 2913) in paragraph at lines 245--245
 \T1/lmr/m/n/12 (+20) por norma sim-bó-lica
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 231--232
+Underfull \hbox (badness 10000) in paragraph at lines 245--246
 []|\T1/lmr/m/n/12 (+20) Exige
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 231--232
+Underfull \hbox (badness 10000) in paragraph at lines 245--246
 \T1/lmtt/m/n/12 __ESBMC_assume(norm >
  []
 
-[28]
-<./figs/case2_plot.png, id=474, 722.7pt x 433.62pt>
+[29 <./figs/plot_silu_approx.png>] [30]
+<./figs/case2_plot.png, id=492, 722.7pt x 433.62pt>
 File: ./figs/case2_plot.png Graphic file (type png)
 <use ./figs/case2_plot.png>
-Package pdftex.def Info: ./figs/case2_plot.png  used on input line 284.
+Package pdftex.def Info: ./figs/case2_plot.png  used on input line 298.
 (pdftex.def)             Requested size: 445.89806pt x 267.53816pt.
- [29]
-<./figs/case3_plot.png, id=482, 931.8012pt x 352.1958pt>
+ [31 <./figs/case2_plot.png>]
+<./figs/case3_plot.png, id=502, 931.8012pt x 352.1958pt>
 File: ./figs/case3_plot.png Graphic file (type png)
 <use ./figs/case3_plot.png>
-Package pdftex.def Info: ./figs/case3_plot.png  used on input line 298.
+Package pdftex.def Info: ./figs/case3_plot.png  used on input line 312.
 (pdftex.def)             Requested size: 445.89806pt x 168.53615pt.
- [30 <./figs/case2_plot.png>]
-<./figs/case4_plot.png, id=491, 838.332pt x 628.749pt>
+<./figs/plot_agent_statemachine.png, id=503, 715.473pt x 280.8894pt>
+File: ./figs/plot_agent_statemachine.png Graphic file (type png)
+<use ./figs/plot_agent_statemachine.png>
+Package pdftex.def Info: ./figs/plot_agent_statemachine.png  used on input line
+ 320.
+(pdftex.def)             Requested size: 432.24861pt x 169.69644pt.
+ [32 <./figs/case3_plot.png> <./figs/plot_agent_statemachine.png>]
+<./figs/case4_plot.png, id=514, 838.332pt x 628.749pt>
 File: ./figs/case4_plot.png Graphic file (type png)
 <use ./figs/case4_plot.png>
-Package pdftex.def Info: ./figs/case4_plot.png  used on input line 318.
+Package pdftex.def Info: ./figs/case4_plot.png  used on input line 340.
 (pdftex.def)             Requested size: 445.89806pt x 334.42502pt.
- [31 <./figs/case3_plot.png>] [32 <./figs/case4_plot.png>]
-<./figs/distribution_plot.png, id=509, 505.89pt x 433.62pt>
+<./figs/plot_pid_phase_portrait.png, id=515, 424.4658pt x 423.7431pt>
+File: ./figs/plot_pid_phase_portrait.png Graphic file (type png)
+<use ./figs/plot_pid_phase_portrait.png>
+Package pdftex.def Info: ./figs/plot_pid_phase_portrait.png  used on input line
+ 348.
+(pdftex.def)             Requested size: 386.75278pt x 386.11761pt.
+ [33] [34 <./figs/case4_plot.png>] [35 <./figs/plot_pid_phase_portrait.png>]
+<./figs/distribution_plot.png, id=537, 505.89pt x 433.62pt>
 File: ./figs/distribution_plot.png Graphic file (type png)
 <use ./figs/distribution_plot.png>
-Package pdftex.def Info: ./figs/distribution_plot.png  used on input line 345.
+Package pdftex.def Info: ./figs/distribution_plot.png  used on input line 375.
 (pdftex.def)             Requested size: 273.00278pt x 234.00575pt.
-<./figs/scalability_plot.png, id=511, 578.16pt x 361.35pt>
+<./figs/scalability_plot.png, id=539, 578.16pt x 361.35pt>
 File: ./figs/scalability_plot.png Graphic file (type png)
 <use ./figs/scalability_plot.png>
-Package pdftex.def Info: ./figs/scalability_plot.png  used on input line 355.
+Package pdftex.def Info: ./figs/scalability_plot.png  used on input line 385.
 (pdftex.def)             Requested size: 364.00139pt x 227.49731pt.
-<./figs/optimization_plot.png, id=513, 650.43pt x 361.35pt>
+<./figs/optimization_plot.png, id=541, 650.43pt x 361.35pt>
 File: ./figs/optimization_plot.png Graphic file (type png)
 <use ./figs/optimization_plot.png>
-Package pdftex.def Info: ./figs/optimization_plot.png  used on input line 367.
+Package pdftex.def Info: ./figs/optimization_plot.png  used on input line 397.
 (pdftex.def)             Requested size: 364.00139pt x 202.2278pt.
 
-Overfull \hbox (0.45638pt too wide) in paragraph at lines 373--373
+Overfull \hbox (0.45638pt too wide) in paragraph at lines 403--403
 []\T1/lmr/bx/n/14.4 (-20) Caso 6 Ve-ri-fi-ca-ção For-mal em Rein-for-ce-ment Le
 -ar-ning, Actor-
  []
 
+[36 <./figs/distribution_plot.png>] [37 <./figs/scalability_plot.png> <./figs/o
+ptimization_plot.png>]
+<./figs/plot_rl_shield.png, id=557, 570.933pt x 353.1594pt>
+File: ./figs/plot_rl_shield.png Graphic file (type png)
+<use ./figs/plot_rl_shield.png>
+Package pdftex.def Info: ./figs/plot_rl_shield.png  used on input line 411.
+(pdftex.def)             Requested size: 409.49722pt x 253.30995pt.
 
-Overfull \hbox (6.2328pt too wide) in paragraph at lines 374--375
-[]\T1/lmr/m/n/12 (-20) A ve-ri-fi-ca-ção de po-lí-ti-cas de Rein-for-ce-ment Le
--ar-ning é crí-tica. O mo-delo \T1/lmtt/m/n/12 rl_policy.c
- []
-
-[33]
-Underfull \hbox (badness 10000) in paragraph at lines 386--386
+Underfull \hbox (badness 10000) in paragraph at lines 426--426
 []|\T1/lmr/bx/n/12 (+20) Caso 1/2,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 386--386
+Underfull \hbox (badness 10000) in paragraph at lines 426--426
 []|\T1/lmr/bx/n/12 (+20) Caso 3/5,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 386--386
+Underfull \hbox (badness 10000) in paragraph at lines 426--426
 []|\T1/lmr/bx/n/12 (+20) Caso 4,
  []
 
 
-Underfull \hbox (badness 1360) in paragraph at lines 388--388
+Underfull \hbox (badness 1360) in paragraph at lines 428--428
 \T1/lmr/m/n/12 (+20) mi-tes Ma-tri-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 388--388
+Underfull \hbox (badness 10000) in paragraph at lines 428--428
 []|\T1/lmr/m/n/12 (+20) Ciclo Autô-
  []
 
 
-Underfull \hbox (badness 1137) in paragraph at lines 388--388
+Underfull \hbox (badness 1137) in paragraph at lines 428--428
 \T1/lmr/m/n/12 (+20) nomo Cor-re-
  []
 
 
-Underfull \hbox (badness 4660) in paragraph at lines 388--388
+Underfull \hbox (badness 4660) in paragraph at lines 428--428
 \T1/lmr/m/n/12 (+20) sor Es-to-cás-
  []
 
 
-Underfull \hbox (badness 6995) in paragraph at lines 388--389
+Underfull \hbox (badness 6995) in paragraph at lines 428--429
 []|\T1/lmr/m/n/12 (+20) Barreira Fí-
  []
 
 
-Underfull \hbox (badness 1087) in paragraph at lines 388--389
+Underfull \hbox (badness 1087) in paragraph at lines 428--429
 \T1/lmr/m/n/12 (+20) sica Atu-a-do-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 390--390
+Underfull \hbox (badness 10000) in paragraph at lines 430--430
 []|\T1/lmr/m/n/12 (+20) Emergente,
  []
 
 
-Underfull \hbox (badness 6927) in paragraph at lines 390--391
+Underfull \hbox (badness 6927) in paragraph at lines 430--431
 []|\T1/lmr/m/n/12 (+20) Teórica, Sa-
  []
 
-) (./caps/conclusao.tex [34 <./figs/distribution_plot.png>] [35 <./figs/scalabi
-lity_plot.png> <./figs/optimization_plot.png>] [36])) [37
+) (./caps/conclusao.tex [38 <./figs/plot_rl_shield.png>] [39])) [40
 
-] (./relatorio.bbl
-(./relatorio.brf)
+]
+(./relatorio.bbl (./relatorio.brf)
 \tf@brf=\write5
 \openout5 = `relatorio.brf'.
 
 
 bibitemlist
-) [38
+) [41
 
 
 
@@ -1817,33 +1846,57 @@ Package rerunfilecheck Warning: File `relatorio.brf' has changed.
 (rerunfilecheck)                Rerun to get bibliographical references right.
 
 Package rerunfilecheck Info: Checksums for `relatorio.brf':
-(rerunfilecheck)             Before: 90296D2C139701AA5A289FDB4D326B62;227
-(rerunfilecheck)             After:  28EB08616CF10CA1DFF738811C38F3AE;227.
+(rerunfilecheck)             Before: 28EB08616CF10CA1DFF738811C38F3AE;227
+(rerunfilecheck)             After:  04455F562E4BDFFB98A107020AB4EE16;227.
  ) 
 Here is how much of TeX's memory you used:
- 36032 strings out of 476162
- 641318 string characters out of 5794814
- 2141975 words of memory out of 5000000
- 56832 multiletter control sequences out of 15000+600000
- 624894 words of font info for 200 fonts, out of 8000000 for 9000
+ 36105 strings out of 476162
+ 643505 string characters out of 5794814
+ 2100975 words of memory out of 5000000
+ 56894 multiletter control sequences out of 15000+600000
+ 624632 words of font info for 198 fonts, out of 8000000 for 9000
  16 hyphenation exceptions out of 8191
- 99i,18n,117p,1264b,2125s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/share/texmf/fonts/type1/public/lm/lmbx12.pfb></usr/share/texmf/fonts/ty
-pe1/public/lm/lmbxi10.pfb></usr/share/texmf/fonts/type1/public/lm/lmex10.pfb></
-usr/share/texmf/fonts/type1/public/lm/lmmi12.pfb></usr/share/texmf/fonts/type1/
-public/lm/lmmi8.pfb></usr/share/texmf/fonts/type1/public/lm/lmr10.pfb></usr/sha
-re/texmf/fonts/type1/public/lm/lmr12.pfb></usr/share/texmf/fonts/type1/public/l
-m/lmr8.pfb></usr/share/texmf/fonts/type1/public/lm/lmri10.pfb></usr/share/texmf
-/fonts/type1/public/lm/lmri12.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy1
-0.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy8.pfb></usr/share/texmf/fonts
-/type1/public/lm/lmtk10.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt10.pfb>
-</usr/share/texmf/fonts/type1/public/lm/lmtt12.pfb></usr/share/texmf/fonts/type
-1/public/lm/lmtti10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfo
-nts/symbols/msbm10.pfb>
-Output written on relatorio.pdf (39 pages, 2007800 bytes).
+ 99i,18n,117p,1264b,2161s stack positions out of 10000i,1000n,20000p,200000b,200000s
+
+pdfTeX warning (dest): name{table.caption.18} has been referenced but does not 
+exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{table.caption.11} has been referenced but does not 
+exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{table.caption.10} has been referenced but does not 
+exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{chapter*.21} has been referenced but does not exist
+, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{figure.caption.14} has been referenced but does not
+ exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{figure.caption.13} has been referenced but does not
+ exist, replaced by a fixed one
+
+</usr/share/texmf/fonts/type1/public/lm/lmbx12.pfb></usr/share/texmf/fonts/type
+1/public/lm/lmbxi10.pfb></usr/share/texmf/fonts/type1/public/lm/lmex10.pfb></us
+r/share/texmf/fonts/type1/public/lm/lmmi12.pfb></usr/share/texmf/fonts/type1/pu
+blic/lm/lmmi8.pfb></usr/share/texmf/fonts/type1/public/lm/lmr10.pfb></usr/share
+/texmf/fonts/type1/public/lm/lmr12.pfb></usr/share/texmf/fonts/type1/public/lm/
+lmr8.pfb></usr/share/texmf/fonts/type1/public/lm/lmri10.pfb></usr/share/texmf/f
+onts/type1/public/lm/lmri12.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy10.
+pfb></usr/share/texmf/fonts/type1/public/lm/lmsy8.pfb></usr/share/texmf/fonts/t
+ype1/public/lm/lmtk10.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt10.pfb></
+usr/share/texmf/fonts/type1/public/lm/lmtt12.pfb></usr/share/texmf/fonts/type1/
+public/lm/lmtti10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfont
+s/symbols/msbm10.pfb>
+Output written on relatorio.pdf (42 pages, 2872814 bytes).
 PDF statistics:
- 863 PDF objects out of 1000 (max. 8388607)
- 756 compressed objects within 8 object streams
- 275 named destinations out of 1000 (max. 500000)
- 34812 words of extra memory for PDF output out of 35830 (max. 10000000)
+ 903 PDF objects out of 1000 (max. 8388607)
+ 781 compressed objects within 8 object streams
+ 290 named destinations out of 1000 (max. 500000)
+ 34842 words of extra memory for PDF output out of 35830 (max. 10000000)
 

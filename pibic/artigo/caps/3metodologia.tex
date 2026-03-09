@@ -37,7 +37,15 @@ out = \text{ReLU}(w_1 \cdot x_1 + w_2 \cdot x_2 + b)
 
 onde $w_1 = 0.5$, $w_2 = -0.2$, $b = 0.1$, e $\text{ReLU}(z) = \max, 0, z$.
 
-O Python puro foi escolhido sem depend\^encias de \textit{frameworks} din\^amicos como NumPy ou PyTorch pois o \textit{frontend} do ESBMC requer anota\c{c}\~oes de tipo expl\'icitas (\texttt{float}) para traduzir corretamente o c\'odigo para a representa\c{c}\~ao intermedi\'aria \texttt{GOTO-Programs}.
+O Python puro foi escolhido sem depend\^encias de \textit{frameworks} din\^amicos como NumPy ou PyTorch pois o \textit{frontend} do ESBMC requer anota\c{c}\~oes de tipo expl\'icitas (\texttt{float}). Neste escopo, a simbiose de arquiteturas \'e mediada pelo \textit{parser} \texttt{ast2json}: a \'arvore de sintaxe abstrata (AST) do Python passa por uma transpila\c{c}\~ao estrita que mapeia os tipos din\^amicos (já validados pelo \textit{type hinting}) diretamente para as primitivas de C++ suportadas no \textit{backend}. Deste modo, o interpretador forja a representa\c{c}\~ao formal intermedi\'aria do verificador (\texttt{GOTO-Programs}) de maneira sem\^antica e segura, sem perda do contexto de execu\c{c}\~ao simb\'olica.
+
+\begin{figure}[htb]
+    \caption{\label{fig:python_to_smt}Pipeline de Transpila\c{c}\~ao via ast2json sugerida pelo Subagente Metodol\'ogico.}
+    \begin{center}
+        \includegraphics[width=0.98\textwidth]{plot_python_to_smt.png}
+    \end{center}
+    \legend{Fonte: Elaborada pelo autor (Simula\c{c}\~ao Multi-Agent), 2026.}
+\end{figure}
 
 \begin{lstlisting}[language=Python, numbers=none]
 def relu, x: float -> float:
