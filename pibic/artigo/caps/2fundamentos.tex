@@ -61,3 +61,17 @@ __ESBMC_assert(y < 10.0f, "Saida excedeu o limite teorico");
 \end{itemize}
 
 O acoplamento dessas construções subverte o escopo empírico de testes pontuais, pois o modelo (antes visto como uma "caixa preta" determinista) passa a atuar sob o rigor absoluto de restrições lógicas exaustivas no espaço das entradas.
+
+\section{Redes Neurais Quantizadas (QNN)}
+
+Uma Rede Neural Artificial tradicional treina seus pesos sinápticos e viéses (\textit{biases}) utilizando representação numérica de Ponto Flutuante (geralmente 32 ou 64 bits, previstos no IEEE 754). Isso entrega capacidade de simular distribuições muito suaves (curvas complexas), mas consome enorme potência de processamento e RAM.
+
+Uma QNN (\textit{Quantized Neural Network}) converte essa rede para Ponto Fixo com tamanho estrito de palavras de hardware (Ex: 8-bits ou 16-bits inteiros). 
+O funcionamento consiste em:
+\begin{enumerate}
+    \item \textbf{Escalonamento Geométrico:} O valor float real (ex: $0.5$) é multiplicado por um fator de escala (ex: $256$ para 8-bits de fração) para se tornar num número Inteiro rígido ($128$).
+    \item \textbf{Aritmética Truncada:} Todas as somas e multiplicações entre os neurônios passam a utilizar registradores inteiros normais, o que é brutalmente mais rápido e econômico energeticamente na ponta (\textit{Edge AI} / IoT).
+    \item \textbf{Realinhamento:} Sempre que dois números de ponto fixo são multiplicados (o que eleva a escala ao quadrado), os \textit{bits} menos significativos são descartados (\textit{Shift-Right} lógico \texttt{>>}) para alinhar a palavra de volta à escala padronizada.
+\end{enumerate}
+
+O truncamento geométrico supracitado invariavelmente perde a precisão infinitesimal natural da IA. Ferramentas de verificação formal, como o ESBMC, são empregadas para analisar se a rede neural sofre degradação dessa quantização ao ponto de desclassificar uma predição crítica ou se sofrerá um \textit{overflow} de memória sob ataque adversário.
