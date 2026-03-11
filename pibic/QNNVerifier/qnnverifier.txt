@@ -1,0 +1,440 @@
+arXiv:2111.13110v1 [cs.AI] 25 Nov 2021
+
+QNNVerifier: A Tool for Verifying Neural Networks
+using SMT-Based Model Checking
+Xidan Song
+Edoardo Manino
+
+Luiz Sena, Erickson Alves,
+Eddie de Lima Filho, Iury Bessa
+
+University of Manchester
+Manchester, UK
+
+University of Amazonas
+Manaus, Brazil
+
+Mikel Luján, Lucas Cordeiro
+lucas.cordeiro@manchester.ac.uk
+University of Manchester
+Manchester, UK
+
+Abstract
+
+1
+
+QNNVerifier is the first open-source tool for verifying implementations of neural networks that takes into account
+the finite word-length (i.e. quantization) of their operands.
+The novel support for quantization is achieved by employing
+state-of-the-art software model checking (SMC) techniques.
+It translates the implementation of neural networks to a decidable fragment of first-order logic based on satisfiability
+modulo theories (SMT). The effects of fixed- and floatingpoint operations are represented through direct implementations given a hardware-determined precision. Furthermore,
+QNNVerifier allows to specify bespoke safety properties and
+verify the resulting model with different verification strategies (incremental and k-induction) and SMT solvers. Finally,
+QNNVerifier is the first tool that combines invariant inference via interval analysis and discretization of non-linear
+activation functions to speed up the verification of neural
+networks by orders of magnitude. A video presentation of
+QNNVerifier is available at https://youtu.be/7jMgOL41zTY.
+
+Artificial Neural Networks (ANNs) are machine learning
+models that can solve an extensive range of problems, including pattern recognition, decision making, and approximation of physical systems [3]. Unfortunately, ANNs may
+be fragile to adversarial input perturbations, which induces
+erratic outputs [13]. Moreover, the black-box nature of ANNs
+makes them challenging to interpret and debug [16]. This
+further compounds the risk of unwanted behaviors remaining undetected. As the deployment of ANNs in safety-critical
+applications becomes widespread, there has been a growing
+interest in verification methods to certify their behavior.
+The existing approaches for ANNs verification can be divided into three different families. First, optimization-based
+approaches handle the required safety properties as constraints and search for the most damaging adversarial input
+that satisfies them [20]. However, ANNs present challenging
+non-linear and non-convex optimization problems. Some approaches solve a relaxation of the original problem to scale
+but sacrifice the completeness of their results [6, 7].
+Second, reachability-based approaches take a safe set of
+inputs and propagate it through the layers of an ANN. Safety
+violations are found when the output set exceeds the boundaries of a given safe region [23]. However, computing the exact output sets is challenging. Thus, existing approaches overapproximate the result using symbolic [22] or set-theoretic
+techniques [21, 23], which are sound but not complete.
+Last, satisfiability-based approaches encode both the ANN
+and the desired safety property into a single logic formula
+and then check whether a counterexample exists. In this regard, only binarized neural networks [17] can be directly encoded into propositional logic and verified with SAT solvers.
+For general ANNs, Satisfiability Modulo Theories (SMT) offer
+a more compact encoding as they can describe the semantics of ANNs (real-valued arithmetic, ReLU activations, etc.)
+using a decidable fragment of first-order logic [1, 14].
+While satisfiability-based approaches are exact, the resulting verification problem is challenging to solve [18]. Moving
+from the idealized mathematical model of ANNs (infinite precision) to their quantized implementation (floating- or fixedpoint) makes the computational problem even harder [12].
+Given the interest in deploying extremely quantized ANNs
+for low-power applications [11], a few recent studies have
+proposed new fixed-point SMT background theories [2, 10].
+
+CCS Concepts: • Computing methodologies → Neural
+networks; • Software and its engineering → Formal
+software verification.
+Keywords: neural networks, quantization, formal verification, finite word-length effects.
+ACM Reference Format:
+Xidan Song, Edoardo Manino, Luiz Sena, Erickson Alves,, Eddie
+de Lima Filho, Iury Bessa, and Mikel Luján, Lucas Cordeiro. 2021.
+QNNVerifier: A Tool for Verifying Neural Networks using SMTBased Model Checking. In Proceedings of ACM Conference (Conference’22). ACM, New York, NY, USA, 4 pages. https://doi.org/10.
+1145/nnnnnnn.nnnnnnn
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are not
+made or distributed for profit or commercial advantage and that copies bear
+this notice and the full citation on the first page. Copyrights for components
+of this work owned by others than ACM must be honored. Abstracting with
+credit is permitted. To copy otherwise, or republish, to post on servers or to
+redistribute to lists, requires prior specific permission and/or a fee. Request
+permissions from permissions@acm.org.
+Conference’22, May 2022, Pittsburgh, PA, US
+© 2021 Association for Computing Machinery.
+ACM ISBN 978-x-xxxx-xxxx-x/YY/MM. . . $15.00
+https://doi.org/10.1145/nnnnnnn.nnnnnnn
+
+Introduction
+
+Conference’22, May 2022, Pittsburgh, PA, US
+
+Unfortunately, these studies do not publish their source code
+and respective tool, thus limiting the impact of their approaches on real-world verification of ANNs.
+Given this, we present the first open-source tool, known
+as QNNVerifier, which efficiently verifies the quantized implementation of ANNs both in fixed- and floating-point. QNNVerifier checks the source code of the ANN rather than
+its abstract mathematical model. By doing so, we can verify
+the actual ANN implementation and leverage several recent
+advances in software verification that dramatically speed up
+the verification process. More in detail, QNNVerifier has the
+following unique features:
+• The input ANN can be in various formats, including
+ONNX, NNET, Keras, Tensorflow, or native C code.
+• The input ANN can include any type of layer architecture supported by keras2c.1
+• The input ANN can include any non-linear activation
+function, as our tool replaces them with look-up tables
+to speed up the verification process.
+• The user can specify any type of safety property expressible in plain C code. Here, we give examples of
+robustness properties.
+• Our tool supports both IEEE 754 floating-point and any
+fixed-point precision, as long as the whole network
+uses the same precision.
+• In the backend, our tool uses the state-of-the-art software verification tool ESBMC [9]. Thus, any future
+improvement in ESBMC and its SMT solvers will automatically translate into benefits for QNNVerifier.
+The code of QNNVerifier is available at https://zenodo.org/
+record/5724254#.YZ47YdDP13g. .
+
+2
+
+Tool description
+
+2.1
+
+Technical approach
+
+C code abstract model for ANNs. ANNs are highly parallel models built by combining basic building blocks called
+neurons. The output 𝑦𝑘 ∈ of each neuron 𝑘 is a function
+of its inputs 𝑥𝑘 ∈ 𝑚 defined by the composition of two
+functions 𝑢𝑘 and N𝑘 . The activation potential 𝑢𝑘 is an affine
+projection of the 𝑚 local inputs 𝑥𝑘 . The activation function
+(AF) N𝑘 is a non-linear mapping of the potential 𝑢𝑘 :
+Í
+𝑦𝑘 = N𝑘 ◦ 𝑢𝑘 (𝑥𝑘 ), 𝑢𝑘 (𝑥𝑘 ) = 𝑚
+(1)
+𝑗=1 𝑤 𝑗,𝑘 𝑥 𝑗,𝑘 + 𝑏𝑘 .
+
+R
+
+R
+
+In this paper, we use the C language as an abstract model
+of the ANN implementation. It allows us to model each operation in its quantized form explicitly (fixed- or floating-point)
+and apply mature software verification techniques.
+Fixed-point operational model for ANNs. For low-power
+applications, it is beneficial to implement ANNs in fixedpoint arithmetic, rather than the more energy-hungry floatingpoint format [11]. To cover this case, we allow the user to
+1 https://github.com/f0uriest/keras2c
+
+Song et al.
+
+specify which operations in the ANN implementation should
+be verified in fixed-point format. Furthermore, we let the user
+customize the fixed-point representation by freely choosing
+the number of integer and fractional bits. Our approach is
+based on the fixed-point models in [5]: all arithmetic operations (+, −, ∗, and /) are modeled as an SMT background
+theory, thus making them compatible with SMT solvers.
+As an example, Figure 1 shows a code snippet that computes the activation potential of a single neuron in fixedpoint. In particular, fxp_float_to_fxp transforms a type
+float into a type fxp_t (fixed point), and both fxp_add and
+fxp_mult perform additions and multiplications in fixedpoint. The integer and fractional precisions are specified
+globally as a preprocessor directive (not shown here).
+1 f x p _ t p o t e n t i a l ( float ∗w, float ∗ x , unsigned int w_len ,
+2
+unsigned int w_len , float b ) {
+3
+i f ( w_len ! = x _ l e n ) {
+4
+return 0 ;
+5
+}
+6
+fxp_t result = 0;
+7
+for ( unsigned int i = 0 ; i < w_len ; ++ i ) {
+8
+f x p _ t w_fxp = f x p _ f l o a t _ t o _ f x p (w[ i ] ) ;
+9
+fxp_t x_fxp = f x p _ f l o a t _ t o _ f x p ( x [ i ] ) ;
+10
+r e s u l t = f x p _ a d d ( r e s u l t , f x p _ m u l t ( w_fxp , x _ f x p ) ) ;
+11
+}
+12
+fxp_t b_fxp = f x p _ f l o a t _ t o _ f x p ( b ) ;
+13
+r e s u l t = fxp_add ( r e s u l t , b_fxp ) ;
+14
+return r e s u l t ;
+15
+}
+
+Figure 1. C-code for fixed-point computation of 𝑢𝑘 .
+Discretization of AFs. Among all non-linear AFs, only
+the ReLU function can be efficiently encoded in SMT, as it
+requires a single if-then-else operation. To support other
+non-linear AFs, we convert them into look-up tables, which
+dramatically speeds up the verification time. To this end,
+assume that the AF N : U ↦→ R is piecewise Lipschitz
+continuous, thus there are 𝑎 locally Lipschitz continuous
+functions N𝑖 : U𝑖 ↦→ R for 𝑖 ∈ N ≤𝑎 with disjoint intervals
+U𝑖 ⊂ R and Lipschitz constant 𝜆𝑖 . First, we discretize each U𝑖
+with a countable set Ũ𝑖 ⊂ U𝑖 . Then, we build a lookup table
+for rounding N𝑖 (𝑢) to Ñ𝑖 (𝑢) : U𝑖 ↦→ R, thus rounding N (𝑢)
+to Ñ (𝑢) ∈ Ñ1 (𝑢), . . . , Ñ𝑎 (𝑢) . The lookup table contains
+uniformly distributed 𝑁𝑖 samples within U𝑖 to guarantee
+∥ Ñ𝑖 (𝑢) − N𝑖 (𝑢) ∥ ≤ 𝜖 for a given 𝜖.
+Safety properties. The following steps are used for specifying safety properties. First, the concrete ANN input is
+replaced by a non-deterministic one, which is enabled by the
+command nondet_float() from the ESBMC [8] to prepare
+QNNVerifier to expect any possible value:
+float x_1 = nondet_float()
+
+(2)
+
+float x_2 = nondet_float()
+Then, let us consider safety properties in the implication form
+x ∈ H =⇒ y ∈ G, e.g. robustness properties. We model the
+premise x ∈ H with the instruction assume by specifying
+
+QNNVerifier: A Tool for Verifying Neural Networks using SMT-Based Model Checking
+
+Conference’22, May 2022, Pittsburgh, PA, US
+
+Figure 2. QNNVerifier architecture and usage.
+the input domain H . For example, the input domain defined
+by 𝑥 1 ∈ [0, 2] and 𝑥 2 ∈ [− 12 , + 12 ) is encoded as:
+assume(x_1 >= 0 && x_1 <= 2),
+
+(3)
+
+assume(x_2 >= -0.5 && x_2 < 0.5).
+Similarly, we model the consequent with the instruction
+assert by specifying the safe domain G for the output y.
+For instance, consider the binary classifier with outputs 𝑦1
+and 𝑦2 denoting the score of each class. We can require that
+all outputs are assigned to class 2 as follows:
+assert(y_2 > y_1).
+
+(4)
+
+By combining different input and output domains, the user
+can specify a large variety of safety properties. If that does
+not suffice, the instructions assume and assert can be freely
+used to express any custom property in plain C code.
+Invariant inference. Once a safety property is specified,
+we prune the search space by inserting additional assume instructions (see Figure 3). More specifically, we use invariant
+analysis methods, which take the input domain H and propagate it through the ANN. In this way, we compute upper
+and lower bounds on the value of each neuron (intervals),
+which are guaranteed to hold during the verification process.
+To do so, we employ the open-source tool FRAMA-C with
+the evolved value analysis (EVA) plugin [4].
+1 float layer1 [50];
+2 layer1 [0]= (5.40062 e -02) * x [0] + ( -2.61092 e +00) * x [1] +
+
+3
+4
+5
+
+6
+7
+
+( -1.80027 e -01) * x [2] + (2.42194 e -01) * x [3] +
+(1.41407 e -01) * x [4] + (2.27630 e -01) ;
+if ( layer1 [0] < 0) layer1 [0] = 0; // ReLU
+__ESBMC_assume (( layer1 [0] >= -0.0) && ( layer1 [0] <=
+0.256393373013) ) ;
+layer1 [1]= ( -1.12374 e +00) * x [0] + (2.63619 e -02) * x [1] +
+( -9.17929 e -03) * x [2] + (5.56230 e -02) * x [3] +
+( -3.27635 e -01) * x [4] + ( -1.88762 e -01) ;
+if ( layer1 [1] < 0) layer1 [1] = 0; // ReLU
+...
+
+Figure 3. Example of invariant in the ANN code (Line 4).
+
+2.2
+
+Verification framework
+
+The overall architecture of QNNVerifier is illustrated in Fig. 2.
+We describe it by following the typical workflow of our users.
+In step 1, QNNVerifier converts a given ANN model into
+C code. The user can invoke our tool by graphical interface
+or command line under the guidance of the prompt message.
+Currently, supported formats include Keras HDF5, ONNX,
+TensorFlow PB, and NNET. Note that the latter can only
+represent fully-connected feedforward neural networks.
+In step 2, the user describes the safety properties by inserting assume statements to constrain the search-space exploration and assert statements to specify the safety property
+in the C code. In step 3, QNNVerifier takes the annotated C
+code with the properties and performs invariant inference
+with Frama-C. An example of the result, with intervals for
+each neuron, is given in Figure 4. These intervals are then automatically inserted back in the C code, encoded as assume
+instructions (see Figure 3).
+1
+2
+3
+4
+5
+
+float x0 = F r a m a _ C _ f l o a t _ i n t e r v a l (
+float x1 = F r a m a _ C _ f l o a t _ i n t e r v a l (
+float x2 = F r a m a _ C _ f l o a t _ i n t e r v a l (
+float x3 = F r a m a _ C _ f l o a t _ i n t e r v a l (
+float x4 = F r a m a _ C _ f l o a t _ i n t e r v a l (
+
+0 , 60760) ;
+−3.141592 , 3. 1 4 15 9 2) ;
+−3.141592 , 3. 1 4 15 9 2) ;
+100 , 1 2 0 0 ) ;
+0 , 1200 ) ;
+
+Figure 4. Example of intervals provided by Frama-C.
+In step 4, the fixed-point operations specified by the user
+are replaced with their operational model, and the AFs are
+replaced by look-up tables. We provide pre-computed tables
+for the popular sigmoid and tanh AFs to ensure 𝜖 ≤ 0.002,
+but we leave the user the option of adding their look-up
+tables for custom AFs.
+In step 5, QNNVerifier invokes ESBMC to verify the annotated C file, which contains quantized ANN implementation
+and safety properties. Users can run a batch of verification
+processes in parallel. If ESBMC cannot find any counterexamples, the ANN is safe and ready to be deployed. Otherwise,
+a counterexample is provided, and the user must re-train
+the network or change its representation to make it safe.
+Our tool includes examples of pre-annotated C files: all of
+
+Conference’22, May 2022, Pittsburgh, PA, US
+
+Song et al.
+
+our experiment files are available (see Section 3), with their
+corresponding 8-, 16-, and 32-bit fixed-point versions.
+
+par with reachability-based tools, even though these other
+tools do not consider quantization effects.
+
+3
+
+References
+
+Evaluation and Benchmarks
+
+Benchmarks. We evaluate QNNVerifier on three robustness benchmarks, which are representative of small to medium
+ANNs. The first is an ANN with 3 layers and tanh AFs trained
+on the Iris dataset. The second is an image classification ANN
+with 4 layers and sigmoid AFs trained on a character recognition dataset. The third is an ANN with 6 layers of 300 neurons
+each and ReLU AFs from the standard AcasXu benchmark.
+We conduct our experiments on an Intel(R) Xeon(R) CPU E52620 v4 @ 2.10GHz with 128 GB of RAM and Linux CentOS
+7 (Core). See [19] for more information.
+SMT solvers. The verification performance of QNNVerifier depends on the SMT solvers in the backend. We compare
+four of them: Bitwuzla, Boolector, Yices, and Z3. We show
+that Bitwuzla and Boolector have almost identical execution
+time, Yices is considerably faster across our whole verification suite, and Z3 struggles to complete most of the runs [19].
+Quantization. Recall that verifying QNNs is PSPACEhard in the worst-case scenario [12], but empirical studies
+have shown a positive correlation between the word length
+and the total verification time [10]. Using QNNVerifier, we
+find that this correlation holds only for short word lengths
+(less than 16 bits) and specific safety properties. Similarly,
+our results do not indicate relevant variations in safety for
+QNN with different quantization formats [19].
+Comparison with SOTA. QNNVerifier, despite targeting
+the ANN implementation, is not slower than state-of-the-art
+tools that verify the ANN abstract mathematical model. For
+example, in our experiments with AcasXu [19], QNNVerifier
+is faster than the SMT tool Marabou [15] and on par with
+the reachability-based tool Neurify [22].
+
+4
+
+Conclusions
+
+QNNVerifier is the first open-source verification tool capable
+of handling the finite word-length effects of quantized ANNs
+(fixed- and floating-point). Furthermore, QNNVerifier is the
+only tool that supports all non-linear activation functions,
+and gives the user maximum freedom in specifying bespoke
+safety properties. Additionally, QNNVerifier supports the
+largest number of ANN formats, including ONNX, NNET,
+Keras, Tensorflow, or even native C code. All of these unique
+functionalities ensure wide applicability of the tool.
+QNNVerifier verifies the source code of quantized ANNs
+with state-of-the-art software verification techniques, including interval analysis, fixed-point operational models and
+SMT-based model checking. Thanks to this, QNNVerifier can
+efficiently verify ANNs with different quantization levels
+and non-linear activation functions. Moreover, QNNVerifier
+is faster than existing SMT-based verification tools and on
+
+[1] Guy Amir, Haoze Wu, Clark Barrett, and Guy Katz. 2021. An SMTbased approach for verifying binarized neural networks. In TACAS.
+203–222.
+[2] Marek Baranowski, Shaobo He, Mathias Lechner, et al. 2020. An SMT
+theory of fixed-point arithmetic. In IJCAR. 13–31.
+[3] Christopher Bishop. 2006. Pattern recognition and machine learning.
+Springer.
+[4] Allan Blanchard, Nikolai Kosmatov, and Frédéric Loulergue. 2018. A
+lesson on verification of IoT software with Frama-C. In HPCS. 21–30.
+[5] Lennon Chaves, Hussama Ismail, Iury Bessa, et al. 2019. Verifying
+fragility in digital systems with uncertainties using DSVerifier v2.0.
+JSS 153 (2019), 22–43.
+[6] Krishnamurthy Dvijotham, Robert Stanforth, Sven Gowal, et al. 2018.
+A dual approach to scalable verification of deep networks. In UAI.
+550–559.
+[7] Mahyar Fazlyab, Manfred Morari, and George J. Pappas. 2020. Safety
+verification and robustness analysis of neural networks via quadratic
+constraints and semidefinite programming. IEEE TAC (2020), 1–15.
+[8] Mikhail Gadelha, Rafael Menezes, Felipe Monteiro, et al. 2020. ESBMC:
+scalable and precise test generation based on the floating-point theory.
+In FASE, Vol. 12076. 525–529.
+[9] Mikhail Gadelha, Felipe Monteiro, Jeremy Morse, et al. 2018. ESBMC
+5.0: an industrial-strength C model checker. In ASE. 888–891.
+[10] Mirco Giacobbe, Thomas A. Henzinger, and Mathias Lechner. 2020.
+How many bits does it take to quantize your neural network?. In
+TACAS. 79–97.
+[11] Yunhui Guo. 2018. A survey on methods and theories of quantized
+neural networks. CoRR abs/1808.04752 (2018).
+[12] Thomas A. Henzinger, Mathias Lechner, and Ðorđe Žikelić. 2020. Scalable verification of quantized neural networks (technical report). CoRR
+abs/2012.08185 (2020).
+[13] Xiaowei Huang, Marta Kwiatkowska, Sen Wang, and Min Wu. 2017.
+Safety verification of deep neural networks. In CAV. 3–29.
+[14] Guy Katz, Clark Barrett, David Dill, et al. 2017. Reluplex: an efficient
+SMT solver for verifying deep neural networks. In CAV. 97–117.
+[15] Guy Katz, Derek A. Huang, Duligur Ibeling, et al. 2019. The Marabou
+framework for verification and analysis of deep neural networks. In
+CAV. 443–452.
+[16] Scott Lundberg and Su-In Lee. 2017. A unified approach to interpreting
+model predictions. In NIPS. 4765–4774.
+[17] Nina Narodytska, Shiva Kasiviswanathan, Leonid Ryzhyk, et al. 2018.
+Verifying properties of binarized deep neural networks. In AAAI. 6615–
+6624.
+[18] Luca Pulina and Armando Tacchella. 2012. Challenging SMT solvers
+to verify neural networks. AI Communications 25, 2 (2012), 117–135.
+[19] Luiz Sena, Xidan Song, Erickson Alves, et al. 2021. Verifying quantized neural networks using SMT-based model checking. CoRR
+abs/2106.05997 (2021).
+[20] Vincent Tjeng, Kai Y. Xiao, and R. Tedrake. 2019. Evaluating robustness
+of neural networks with mixed integer programming. In ICLR.
+[21] Hoang-Dung Tran, Xiaodong Yang, Diego Manzanas Lopez, et al. 2020.
+NNV: the neural network verification tool for deep neural networks
+and learning-enabled cyber-physical systems. In CAV. 3–17.
+[22] Shiqi Wang, Kexin Pei, Justin Whitehouse, et al. 2018. Efficient formal
+safety analysis of neural networks. In NeurIPS. 6369–6379.
+[23] Weiming Xiang, Hoang-Dung Tran, and Taylor T. Johnson. 2018. Output reachable set estimation and verification for multilayer neural
+networks. IEEE TNNLS 29, 11 (2018), 5777–5783.
+
+
