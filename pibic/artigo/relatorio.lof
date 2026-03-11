@@ -1,11 +1,17 @@
 \babel@toc {brazil}{}\relax 
 \contentsline {figure}{\numberline {1}{\ignorespaces Pipeline de verificação formal com o ESBMC.}}{13}{figure.caption.6}%
-\contentsline {figure}{\numberline {2}{\ignorespaces Pipeline de Verifica\c {c}\~ao Formal Caso~1 (Neur\^onio Python com ESBMC).}}{16}{figure.caption.7}%
-\contentsline {figure}{\numberline {3}{\ignorespaces Superf\'icie de Sa\'ida do Neur\^onio e Distribui\c {c}\~ao das Sa\'idas com os Limites Verificados pelo ESBMC.}}{22}{figure.caption.8}%
-\contentsline {figure}{\numberline {4}{\ignorespaces Superf\'icie de Sa\'ida da MLP e Distribui\c {c}\~ao das Amostras em Rela\c {c}\~ao aos Limites Verificados.}}{23}{figure.caption.9}%
-\contentsline {figure}{\numberline {5}{\ignorespaces Tempo de verificação vs dimensão da matriz, GEMM com tiling.}}{29}{figure.caption.12}%
-\contentsline {figure}{\numberline {6}{\ignorespaces Caso~3: Tempo por Itera\c {c}\~{a}o do Loop Agente-ESBMC, com decomposi\c {c}\~{a}o entre atraso LLM e verifica\c {c}\~{a}o formal, e Overhead do Verificador por itera\c {c}\~{a}o.}}{29}{figure.caption.13}%
-\contentsline {figure}{\numberline {7}{\ignorespaces Caso~4: Evolu\c {c}\~{a}o da Temperatura, Sinal de Controle PID e Erro de Rastreamento sob Cinco Perfis de Ru\'{i}do de Sensor.}}{31}{figure.caption.14}%
-\contentsline {figure}{\numberline {8}{\ignorespaces Distribuição de Casos, Seguros, Adversariais e Timeout.}}{32}{figure.caption.15}%
-\contentsline {figure}{\numberline {9}{\ignorespaces Escalabilidade SMT: Tempo de Verificação vs Tamanho da Rede Neural.}}{33}{figure.caption.16}%
-\contentsline {figure}{\numberline {10}{\ignorespaces Impacto da Otimização, Slicing e Intervalos no Tempo de Verificação.}}{33}{figure.caption.17}%
+\contentsline {figure}{\numberline {2}{\ignorespaces Pipeline de Transpila\c {c}\~ao via ast2json sugerida pelo Subagente Metodol\'ogico.}}{15}{figure.caption.7}%
+\contentsline {figure}{\numberline {3}{\ignorespaces Pipeline de Verifica\c {c}\~ao Formal Caso~1 (Neur\^onio Python com ESBMC).}}{16}{figure.caption.8}%
+\contentsline {figure}{\numberline {4}{\ignorespaces Superf\'icie de Sa\'ida do Neur\^onio e Distribui\c {c}\~ao das Sa\'idas com os Limites Verificados pelo ESBMC.}}{23}{figure.caption.9}%
+\contentsline {figure}{\numberline {5}{\ignorespaces Superf\'icie de Sa\'ida da MLP e Distribui\c {c}\~ao das Amostras em Rela\c {c}\~ao aos Limites Verificados.}}{25}{figure.caption.10}%
+\contentsline {figure}{\numberline {6}{\ignorespaces Heatmap de Pesos da MLP atestando a origem topol\'ogica das VCCs.}}{25}{figure.caption.11}%
+\contentsline {figure}{\numberline {7}{\ignorespaces Substitui\c {c}\~ao Transcendental no ESBMC: SiLU Exata vs Aproxima\c {c}\~ao SMT Linear.}}{29}{figure.caption.12}%
+\contentsline {figure}{\numberline {8}{\ignorespaces Tempo de verificação vs dimensão da matriz, GEMM com tiling.}}{31}{figure.caption.15}%
+\contentsline {figure}{\numberline {9}{\ignorespaces Caso~3: Tempo por Itera\c {c}\~{a}o do Loop Agente-ESBMC, com decomposi\c {c}\~{a}o entre atraso LLM e verifica\c {c}\~{a}o formal, e Overhead do Verificador por itera\c {c}\~{a}o.}}{32}{figure.caption.16}%
+\contentsline {figure}{\numberline {10}{\ignorespaces M\'aquina de Estados do Agente Aut\^onomo Ralph Loop.}}{32}{figure.caption.17}%
+\contentsline {figure}{\numberline {11}{\ignorespaces Caso~4: Evolu\c {c}\~{a}o da Temperatura, Sinal de Controle PID e Erro de Rastreamento sob Cinco Perfis de Ru\'{i}do de Sensor.}}{34}{figure.caption.18}%
+\contentsline {figure}{\numberline {12}{\ignorespaces Retrato de Fase (Phase Portrait) detalhando a atra\c {c}\~ao do PID sob caos.}}{35}{figure.caption.19}%
+\contentsline {figure}{\numberline {13}{\ignorespaces Distribuição de Casos, Seguros, Adversariais e Timeout.}}{36}{figure.caption.20}%
+\contentsline {figure}{\numberline {14}{\ignorespaces Escalabilidade SMT: Tempo de Verificação vs Tamanho da Rede Neural.}}{37}{figure.caption.21}%
+\contentsline {figure}{\numberline {15}{\ignorespaces Impacto da Otimização, Slicing e Intervalos no Tempo de Verificação.}}{37}{figure.caption.22}%
+\contentsline {figure}{\numberline {16}{\ignorespaces Distribui\c {c}\~ao SMT: A\c {c}\~oes Permitidas vs Intercepta\c {c}\~ao do Safety Shield.}}{38}{figure.caption.23}%
