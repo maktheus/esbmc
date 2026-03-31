@@ -33,6 +33,7 @@ extern "C"
 #include <goto-programs/goto_k_induction.h>
 #include <goto-programs/goto_loop_invariant.h>
 #include <goto-programs/abstract-interpretation/interval_analysis.h>
+#include <goto-programs/abstract-interpretation/float_interval_analysis.h>
 #include <goto-programs/abstract-interpretation/gcse.h>
 #include <goto-programs/loop_numbers.h>
 #include <goto-programs/goto_binary_reader.h>
@@ -2015,6 +2016,17 @@ bool esbmc_parseoptionst::process_goto_program(
     if (cmdline.isset("interval-analysis") || cmdline.isset("goto-contractor"))
     {
       interval_analysis(goto_functions, ns, options);
+    }
+
+    // Float Interval Analysis: extends interval_analysis for IEEE-754 FPA
+    // types. Propagates known float bounds from __ESBMC_assume constraints
+    // before symex, reducing the number of FPA VCCs sent to the SMT solver.
+    // This targets the State Explosion / Core Dump pattern observed when
+    // verifying neural network tensor computations (e.g., DeepSeek MoE router).
+    // Enable with: esbmc <file.c> --float-interval
+    if (cmdline.isset("float-interval"))
+    {
+      float_interval_analysis(goto_functions, ns, options);
     }
 
     if (

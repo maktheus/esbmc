@@ -573,7 +573,11 @@ const struct group_opt_templ all_cmd_options[] = {
      "assumes that Integers will not overflow (Integers)"},
     {"interval-analysis-narrowing",
      NULL,
-     "enables use of narrowing in abstract states (Integers and Reals)"}}},
+     "enables use of narrowing in abstract states (Integers and Reals)"},
+    {"float-interval",
+     NULL,
+     "enable IEEE-754 float interval analysis; propagates float bounds from "
+     "__ESBMC_assume constraints to reduce FPA VCCs sent to the SMT solver"}}},
   {"Miscellaneous options",
    {{"memlimit",
      boost::program_options::value<std::string>()->value_name("limit"),
