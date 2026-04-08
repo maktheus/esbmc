@@ -121,11 +121,30 @@ Nesta etapa, realizamos três frentes de provas formais usando o ESBMC v8.1:
 - **Objetivo:** Provar que qualquer peso no envelope $[-2, 2]$ impede o estouro do score final além de $55.0$.
 - **Nota Técnica:** Devido ao alto grau de não-determinismo float nas matrizes, o solver ultrapassou os limites práticos de tempo (timeout/memory limits do float-point SMT). Recomenda-se para trabalhos futuros o uso de abstração por intervalos ou bit-blasting agressivo para essa propriedade estrutural massiva.
 
-## 6. Arquivos Gerados e Relacionados
-Todos os artefatos desse pipeline estão isolados em `teste_mlp/`:
-- [`mlp_training.py`](file:///home/uchoa/esbmc/pibic/teste_mlp/mlp_training.py): Script criador (PyTorch) que modela, treina e exporta os parâmetros.
-- [`mlp_weights.h`](file:///home/uchoa/esbmc/pibic/teste_mlp/mlp_weights.h): O "cérebro" treinado da rede exportado como floats C.
-- [`verify_mlp.c`](file:///home/uchoa/esbmc/pibic/teste_mlp/verify_mlp.c): O harness de validação original (Float).
-- [`verify_mlp_qnn.c`](file:///home/uchoa/esbmc/pibic/teste_mlp/verify_mlp_qnn.c): O modelo quantizado em Ponto Fixo verificado com sucesso.
-- [`verify_dead_neurons.c`](file:///home/uchoa/esbmc/pibic/teste_mlp/verify_dead_neurons.c): Script de Auditoria de Grafos (Dead Neurons).
-- [`verify_mlp_architecture.c`](file:///home/uchoa/esbmc/pibic/teste_mlp/verify_mlp_architecture.c): Validador de Robustez Aritmética.
+
+## 7. Pipeline Padrão Ouro (Enterprise Export)
+
+Para alinhar o projeto com as práticas de Big Techs (TensorFlow Lite / CMSIS-NN), implementamos um pipeline automatizado de exportação e quantização.
+
+### Fluxo Implementado:
+1. **Treinamento Estável**: PyTorch com sementes fixas para reprodutibilidade.
+2. **Exportação Intermediária (ONNX)**: Uso do formato universal para desacoplar o treino do deploy.
+3. **Conversão SavedModel**: Passagem obrigatória pelo ecossistema TensorFlow para otimização.
+4. **Quantização Post-Training (PTQ - INT8)**: Redução do modelo para inteiros de 8 bits com calibração via dataset representativo (XOR inputs).
+5. **C Header Export**: Geração do FlatBuffer em hexadecimal (`mlp_model_quantized.h`) para integração direta com **TFLite Micro**.
+
+### Comparativo de Precisão (INT8 Fidelity):
+| Input | PyTorch (Float32) | TFLite (INT8) | Erro Absoluto |
+|---|---|---|---|
+| `[0, 0]` | 0.0046 | 0.0039 | 0.0007 |
+| `[0, 1]` | 0.9835 | 0.9844 | 0.0008 |
+| `[1, 0]` | 0.9514 | 0.9492 | 0.0022 |
+| `[1, 1]` | 0.0053 | 0.0039 | 0.0014 |
+
+**Conclusão**: O erro máximo de quantização foi de **0.0022 (0.2%)**, o que é insignificante para a lógica do XOR, validando a eficácia da ferramenta profissional em detrimento do código manual.
+
+### Arquivos do Pipeline Ouro:
+- [`convert_to_tflite.py`](file:///home/uchoa/esbmc/pibic/teste_mlp/convert_to_tflite.py): Orquestrador de conversão e quantização.
+- [`validate_precision.py`](file:///home/uchoa/esbmc/pibic/teste_mlp/validate_precision.py): Auditor de fidelidade matemática.
+- [`mlp_model_quantized.tflite`](file:///home/uchoa/esbmc/pibic/teste_mlp/mlp_model_quantized.tflite): O artefato binário final pronto para hardware.
+- [`mlp_model_quantized.h`](file:///home/uchoa/esbmc/pibic/teste_mlp/mlp_model_quantized.h): Header C para o firmware.

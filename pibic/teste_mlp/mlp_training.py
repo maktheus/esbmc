@@ -20,6 +20,10 @@ class MLP(nn.Module):
         return x
 
 def train():
+    # Reproducibility
+    torch.manual_seed(42)
+    np.random.seed(42)
+
     # XOR data
     X = torch.tensor([[0,0], [0,1], [1,0], [1,1]], dtype=torch.float32)
     y = torch.tensor([[0], [1], [1], [0]], dtype=torch.float32)
@@ -72,7 +76,18 @@ def export_weights(model, filename):
         
         f.write("#endif\n")
 
+def export_onnx(model, filename):
+    model.eval()
+    dummy_input = torch.randn(1, 2)
+    torch.onnx.export(model, dummy_input, filename, 
+                      input_names=['input'], 
+                      output_names=['output'],
+                      dynamic_axes={'input': {0: 'batch_size'}, 'output': {0: 'batch_size'}})
+    print(f"Model exported to {filename}")
+
 if __name__ == "__main__":
     trained_model = train()
+    torch.save(trained_model.state_dict(), "mlp_model.pth")
     export_weights(trained_model, "mlp_weights.h")
     print("Weights exported to mlp_weights.h")
+    export_onnx(trained_model, "mlp_model.onnx")
