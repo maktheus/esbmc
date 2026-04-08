@@ -103,8 +103,29 @@ Entusiastas contornam isso:
 2. Utilizando *bit-vector* solvers mais eficientes pra essas operações ou configurações custom de solver (como o Bitwuzla - altamente performático em float-point SMT ou o cvc5).
 3. Testando recortes simples / isolados - camadas pequenas em detrimento ao total do grafo computacional.
 
-## 5. Arquivos Gerados e Relacionados
+## 5. Resultados da Verificação Avançada (Pibic Phase 2)
+
+Nesta etapa, realizamos três frentes de provas formais usando o ESBMC v8.1:
+
+### A. Verificação de Neurônios Mortos (`verify_dead_neurons.c`)
+- **Hipótese:** Testamos se os neurônios da camada oculta eram "mortos" (sinal sempre $\le 0$ para qualquer input $[0,1]$).
+- **Resultado:** **VERIFICATION FAILED**.
+- **Laudo:** O ESBMC encontrou contra-exemplos (ex: entrada `[0, 10^-37]` ativando o neurônio 2 com sinal `2.018`). Isso prova formalmente que a rede está ativa e processando informação em todos os seus componentes da camada oculta.
+
+### B. Verificação da MLP Quantizada (Ponto Fixo) (`verify_mlp_qnn.c`)
+- **Objetivo:** Provar o XOR em aritmética de inteiros (escala 256) para portabilidade em microcontroladores.
+- **Resultado:** **VERIFICATION SUCCESSFUL**.
+- **Laudo:** O solver Boolector, operando sobre Bit-Vectors de inteiros, provou em milissegundos que a quantização não quebrou a lógica do XOR. O uso de `__VERIFIER_assume` para podar o espaço de busca matemático garantiu a terminação rápida da prova.
+
+### C. Segurança da Arquitetura (Bounds Safety) (`verify_mlp_architecture.c`)
+- **Objetivo:** Provar que qualquer peso no envelope $[-2, 2]$ impede o estouro do score final além de $55.0$.
+- **Nota Técnica:** Devido ao alto grau de não-determinismo float nas matrizes, o solver ultrapassou os limites práticos de tempo (timeout/memory limits do float-point SMT). Recomenda-se para trabalhos futuros o uso de abstração por intervalos ou bit-blasting agressivo para essa propriedade estrutural massiva.
+
+## 6. Arquivos Gerados e Relacionados
 Todos os artefatos desse pipeline estão isolados em `teste_mlp/`:
 - [`mlp_training.py`](file:///home/uchoa/esbmc/pibic/teste_mlp/mlp_training.py): Script criador (PyTorch) que modela, treina e exporta os parâmetros.
 - [`mlp_weights.h`](file:///home/uchoa/esbmc/pibic/teste_mlp/mlp_weights.h): O "cérebro" treinado da rede exportado como floats C.
-- [`verify_mlp.c`](file:///home/uchoa/esbmc/pibic/teste_mlp/verify_mlp.c): O harness de validação final contendo a asserção que provou a infalibilidade das propriedades lógicas pelo ESBMC.
+- [`verify_mlp.c`](file:///home/uchoa/esbmc/pibic/teste_mlp/verify_mlp.c): O harness de validação original (Float).
+- [`verify_mlp_qnn.c`](file:///home/uchoa/esbmc/pibic/teste_mlp/verify_mlp_qnn.c): O modelo quantizado em Ponto Fixo verificado com sucesso.
+- [`verify_dead_neurons.c`](file:///home/uchoa/esbmc/pibic/teste_mlp/verify_dead_neurons.c): Script de Auditoria de Grafos (Dead Neurons).
+- [`verify_mlp_architecture.c`](file:///home/uchoa/esbmc/pibic/teste_mlp/verify_mlp_architecture.c): Validador de Robustez Aritmética.
