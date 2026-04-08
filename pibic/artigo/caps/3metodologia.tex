@@ -1,7 +1,7 @@
 \chapter{Metodologia}
 \label{cap:metodologia}
 
-Este capítulo descreve os procedimentos metodológicos adotados para verificação formal de sistemas de Inteligência Artificial Generativa, GenAI utilizando o verificador de modelos ESBMC (\textit{Efficient SMT-Based Context-Bounded Model Checker}). A investigação foi estruturada em seis estudos de caso complementares. O Caso~1 \'{e} organizado em uma hierarquia de quatro n\'{i}veis de verificabilidade, do neur\^{o}nio isolado ao bloco MLP SwiGLU estilo DeepSeek, culminando na arquitetura de abstra\c{c}\~{a}o Python sobre o \textit{core} nativo C++.
+Este capítulo descreve os procedimentos metodológicos adotados para verificação formal de sistemas de Inteligência Artificial Generativa, GenAI utilizando o verificador de modelos ESBMC (\textit{Efficient SMT-Based Context-Bounded Model Checker}). A investigação foi estruturada em seis estudos de caso complementares. O Caso~1 \'{e} organizado em uma hierarquia de quatro n\'{i}veis de verificabilidade, do neur\^{o}nio isolado ao bloco MLP SwiGLU estilo DeepSeek, culminando na arquitetura de abstracao Python sobre o \textit{core} nativo C++.
 
 \section{Visão Geral da Abordagem}
 
@@ -15,12 +15,12 @@ A metodologia geral segue o ciclo de verificação formal baseado em SMT, confor
     \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{figure}
 
-Para cada caso de uso, as primitivas magnas da verifica\c{c}\~ao baseada em \textit{Satisfiability Modulo Theories} (SMT) foram sistematicamente definidas:
+Para cada caso de uso, as primitivas magnas da verificacao baseada em \textit{Satisfiability Modulo Theories} (SMT) foram sistematicamente definidas:
 
 \begin{alineas}
-    \item \textbf{Pr\'e-condi\c{c}\~oes e Hip\'oteses de Ambiente (\texttt{\_\_ESBMC\_assume})}: O comando \texttt{assume(expr)} n\~ao verifica se a express\~ao \'e verdadeira, mas instrui o \textit{solver} SMT a descartar qualquer estado ou caminho de execu\c{c}\~ao onde \texttt{expr} seja falsa. Na pr\'atica, atua limitando a \'arvore de busca (\textit{state space pruning}). Em contextos de Redes Neurais e Matrizes, isso \'e imperativo para fixar o tamanho de tensores ou assumir intervalos de normaliza\c{c}\~ao (como vari\'aveis contidas entre $[0,1]$ ou entropia estoc\'astica de ru\'ido). Sem essa diretiva de restri\c{c}\~ao (\textit{Constraint Injection}), o verificador SMT buscaria contra-exemplos ao longo de toda a vastid\~ao dos N\'umeros Reais nas abstra\c{c}\~oes \textit{floating-point}, estourando absurdamente a mem\'oria e o tempo limite (\textit{State Explosion Problem});
-    \item \textbf{Propriedades de Seguran\c{c}a e Invariantes Cr\'iticos (\texttt{assert})}: Diferentemente do \textit{assume}, o comando \texttt{assert(expr)} \'e o desafio de prova estrita. Ele instrui o ESBMC a verificar rigorosa e exaustivamente que \texttt{expr} \textbf{nunca} pode ser violada sob as hip\'oteses ativas. Tratando-se de Modelos Preditivos ou Sistemas de Controle Cr\'iticos, ele materializa o teto operacional impenetr\'avel (ex.: um atuador rob\'otico nunca excede o limite el\'etrico, uma sa\'ida algor\'itmica n\~ao passa dos \textit{bounds} estruturais). Se existir matematicamente qualquer combina\c{c}\~ao \textit{corner-case} de vari\'aveis que fure esta barreira de l\'ogica de primeira ordem, o \textit{solver} deduzir\'a essa combina\c{c}\~ao \textit{bit} a \textit{bit} e entregar\'a um contra-exemplo SMT palp\'avel reproduzindo a cat\'astrofe programada;
-    \item \textbf{M\'etricas de Avalia\c{c}\~ao}: Tempo de verifica\c{c}\~ao SMT (overhead do solver), escalabilidade do desenrolamento de la\c{c}os (\textit{loop unwinding constraints}) e efic\'acia na detec\c{c}\~ao formal de \textit{bugs} atrav\'es das primitivas supracitadas.
+    \item \textbf{Pr\'e-condic\~oes e Hip\'oteses de Ambiente (\texttt{\_\_ESBMC\_assume})}: O comando \texttt{assume(expr)} nao verifica se a expressao \'e verdadeira, mas instrui o \textit{solver} SMT a descartar qualquer estado ou caminho de execucao onde \texttt{expr} seja falsa. Na pratica, atua limitando a arvore de busca (\textit{state space pruning}). Em contextos de Redes Neurais e Matrizes, isso \'e imperativo para fixar o tamanho de tensores ou assumir intervalos de normalizacao (como variaveis contidas entre $[0,1]$ ou entropia estocastica de ru\'ido). Sem essa diretiva de restricao (\textit{Constraint Injection}), o verificador SMT buscaria contra-exemplos ao longo de toda a vastidao dos N\'umeros Reais nas abstrac\~oes \textit{floating-point}, estourando absurdamente a mem\'oria e o tempo limite (\textit{State Explosion Problem});
+    \item \textbf{Propriedades de Seguranca e Invariantes Cr\'iticos (\texttt{assert})}: Diferentemente do \textit{assume}, o comando \texttt{assert(expr)} \'e o desafio de prova estrita. Ele instrui o ESBMC a verificar rigorosa e exaustivamente que \texttt{expr} \textbf{nunca} pode ser violada sob as hip\'oteses ativas. Tratando-se de Modelos Preditivos ou Sistemas de Controle Cr\'iticos, ele materializa o teto operacional impenetravel (ex.: um atuador rob\'otico nunca excede o limite el\'etrico, uma sa\'ida algor\'itmica nao passa dos \textit{bounds} estruturais). Se existir matematicamente qualquer combinacao \textit{corner-case} de variaveis que fure esta barreira de l\'ogica de primeira ordem, o \textit{solver} deduzira essa combinacao \textit{bit} a \textit{bit} e entregara um contra-exemplo SMT palpavel reproduzindo a catastrofe programada;
+    \item \textbf{M\'etricas de Avaliacao}: Tempo de verificacao SMT (overhead do solver), escalabilidade do desenrolamento de lacos (\textit{loop unwinding constraints}) e eficacia na deteccao formal de \textit{bugs} atrav\'es das primitivas supracitadas.
 \end{alineas}
 
 \section{A Abordagem QNNVerifier (Literatura Base)}
@@ -36,16 +36,22 @@ Parte vital da estratégia deste trabalho orbita nas avaliações do \textit{QNN
 
 O reflexo dos procedimentos descritos inspirou as experimentações a seguir, especialmente a recriação deste ambiente nativamente no \textit{esbmc-python}.
 
-\section{Caso 1 (N\'ivel 1) Abordagem QNN Simulada em Python Nativo}
+\section{Caso 1 (Nivel 1) Abordagem QNN Simulada em Python Nativo}
 
-O primeiro caso de uso corresponde ao \textbf{N\'ivel 1} da hierarquia de verifica\c{c}\~ao proposta: a verifica\c{c}\~ao de raciocínios e arquiteturas inspiradas na metodologia \textit{QNNVerifier}. Neste caso, simulamos uma QNN (Rede Neural Quantizada) isolada diretamente na abstração da linguagem Python, implementando modelagem em Ponto Fixo (\textit{fixed-point arithmetic}) e a pré-propagação artificial das margens limitadas que usualmente caberiam ao Frama-C EVA, antes suportado só em código C. O objetivo é atestar a fluidez sintática do Python em lidar com injeções explícitas de fronteiras algorítmicas SMT enquanto as converte pro nativo do C++.
+O primeiro caso de uso corresponde ao \textbf{N\'ivel 1} da hierarquia de verificacao proposta: a verificacao de raciocínios e arquiteturas inspiradas na metodologia \textit{QNNVerifier}. Neste caso, simulamos uma QNN (Rede Neural Quantizada) isolada diretamente na abstração da linguagem Python, implementando modelagem em Ponto Fixo (\textit{fixed-point arithmetic}) e a pré-propagação artificial das margens limitadas que usualmente caberiam ao Frama-C EVA, antes suportado só em código C. O objetivo é atestar a fluidez sintática do Python em lidar com injeções explícitas de fronteiras algorítmicas SMT enquanto as converte pro nativo do C++.
 
 \subsection{Arquitetura do Modelo: Quantização e Simulação EVA}
 
-O modelo repaginado (\texttt{mlp\_qnn.py}) consiste em uma \textit{Multilayer Perceptron} (3 neurônios em uma camada oculta) com ativa\c{c}\~ao ReLU. Suas transformações quantizadas para 8-bits fracionários (Escala de 256) assumiram a frente.
-Para traduzir as manipulações para o Python, construiu-se macros de aritmética base em inteiros (\texttt{fxp\_add}, \texttt{fxp\_mult}) e conversões nas extremidades flutuantes do embarcado (\texttt{float\_to\_fxp}).
+O modelo repaginado (\texttt{mlp\_qnn.py}) consiste em uma \textit{Multilayer Perceptron} (3 neurônios em uma camada oculta) com ativacao ReLU. Suas transformações quantizadas para 8-bits fracionários (Escala de 256) assumiram a frente. 
 
-Um neurônio típico passou à respectiva equação truncada quantizada:
+\textbf{Como o código funciona na prática (Explicação Simplificada):}
+Normalmente, a Inteligência Artificial trabalha com números "quebrados" de alta precisão (como 0.123456). Contudo, chips pequenos (como os de um robô ou relógio inteligente) sofrem para processar isso e frequentemente usam matemática de "Ponto Fixo" (inteiros puros). Para testar no Python o que vai rodar lá no chip físico, criamos funções simuladoras, como:
+\begin{itemize}
+    \item \texttt{float\_to\_fxp}: Pega um número quebrado (ex: 0.5) e transforma em um inteiro robusto (ex: 128) "enganando" o sistema;
+    \item \texttt{fxp\_add} e \texttt{fxp\_mult}: Fazem a soma e a multiplicação desses números inteiros já pre-calculando o corte (truncamento) que um chip físico faria para não travar por excesso de memória (o famoso \textit{overflow}).
+\end{itemize}
+
+O neurônio é matematicamente reduzido à equação truncada quantizada a seguir:
 \begin{equation}\label{eq:neuron_fxp}
 out_{fxp} = \text{ReLU}_{fxp}(\texttt{fxp\_add}( \texttt{fxp\_mult}(x_1, w_1), \dots ))
 \end{equation}
@@ -69,27 +75,63 @@ if not (h1 >= 0 and h1 <= 153):
     return 0, 0, 0  # Rejeita os caminhos hipoteticos impossiveis pelo EVA simulado
 \end{lstlisting}
 
-\subsection{Propriedades Formais (\textit{Asserts})}
+\textbf{O que esse código impede?} Se o verificador tentar testar uma combinação insana de variáveis que resultasse em $h_1 = 200$, o código freia a execução (\texttt{return 0}) dizendo: \textit{"Não teste isso, é matematicamente impossível na vida real"}. Essa "tesourada" na árvore de probabilidades acelera o SMT drasticamente. O processo visual deste escudo de segurança na topologia é visível na \autoref{fig:fluxo_eva_simulado}.
+
+\begin{figure}[htb]
+\centering
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning}
+\begin{tikzpicture}[
+    font=\sffamily,
+    node distance=1.8cm,
+    >=latex,
+    box/.style={draw, thick, rectangle, rounded corners, fill=blue!10, draw=blue!50!black, text centered, minimum height=1cm, minimum width=2.5cm},
+    decision/.style={draw, thick, diamond, fill=yellow!20, draw=orange, text centered, aspect=2, inner sep=2pt},
+    action/.style={draw, thick, rectangle, fill=red!10, draw=red!50!black, text centered, minimum height=0.8cm, rounded corners},
+    arrow/.style={thick, ->}
+]
+    \node (input) [box] {Entrada Neuronal ($in_1, in_2$)};
+    \node (mult) [box, below=of input] {Multiplicação Inteira (\texttt{fxp\_mult})};
+    \node (add) [box, right=of mult] {Acúmulo Truncado (\texttt{fxp\_add})};
+    \node (relu) [box, below=of add] {Ativação ReLU ($h_1$)};
+    
+    \node (check) [decision, below=of relu, yshift=-0.5cm] {$0 \le h_1 \le 153$?};
+    \node (reject) [action, right=of check] {Poda: Caminho Rejeitado};
+    \node (accept) [action, fill=green!10, draw=green!50!black, below=of check] {Propagação SMT Continua};
+    
+    \draw [arrow] (input) -- (mult);
+    \draw [arrow] (mult) -- (add);
+    \draw [arrow] (add) -- (relu);
+    \draw [arrow] (relu) -- (check);
+    \draw [arrow] (check) -- node[above] {Não} (reject);
+    \draw [arrow] (check) -- node[left] {Sim} (accept);
+    
+\end{tikzpicture}
+\caption{Diagrama esquemático da injeção de limitadores em Python (Simulação EVA). O sistema intercepta o cálculo fixo e bloqueia ativamente estados absurdos antes de desafiar o verificador.}
+\label{fig:fluxo_eva_simulado}
+\end{figure}
+
+
+\subsection{Propriedades Formais (Asserts)}
 
 A validação recaiu sobre comprovações finais equivalentes:
 \begin{alineas}
-    \item \textbf{Pr\'e-condi\c{c}\~ao Numérica}: $x_1, x_2 \in [0.0, 1.0]$;
+    \item \textbf{Pr\'e-condicao Numérica}: $x_1, x_2 \in [0.0, 1.0]$;
     \item \textbf{Reversão Float na Cauda (\textit{Output})}: A predição fixa integral $out_{fxp}$ volta a flutuação $out_{f}$ puramente no contexto embutido para asserção mais compreensível.
-    \item \textbf{Atestado de Limite (\textit{assert})}: Avaliou-se robustez onde as entradas n\~{a}o-determinísticas provam exaustivamente que $0.0 \leq out_{f} \leq 0.65$ (considerando o ruído computacional ínfimo inerente da poda fracionária do fixed-point de 8-bits).
+    \item \textbf{Atestado de Limite (\textit{assert})}: Avaliou-se robustez onde as entradas nao-determinísticas provam exaustivamente que $0.0 \leq out_{f} \leq 0.65$ (considerando o ruído computacional ínfimo inerente da poda fracionária do fixed-point de 8-bits).
 \end{alineas}
 
 O verificador formal Python foi invocado com desenrolar de lógicas padrão induzidas.
 
-\subsection{Pipeline de Verifica\c{c}\~ao}
+\subsection{Pipeline de Verificacao}
 
 O processo engloba o roteamento nativo C++ absorvendo sintaxes complexas de modeladores modernos de IA mantidos num ambiente orquestrador acessível em Python. A Figura~\ref{fig:python_to_smt} demonstra visualmente a conversão de dependências pelo módulo \texttt{ast2json}.
 
 \begin{figure}[htb]
-    \caption{\label{fig:python_to_smt}Pipeline de Transpila\c{c}\~ao via ast2json sugerida pelo Subagente Metodol\'ogico.}
+    \caption{\label{fig:python_to_smt}Pipeline de Transpilacao via ast2json sugerida pelo Subagente Metodol\'ogico.}
     \begin{center}
         \includegraphics[width=0.98\textwidth]{plot_python_to_smt.png}
     \end{center}
-    \legend{Fonte: Elaborada pelo autor (Simula\c{c}\~ao Multi-Agent), 2026.}
+    \legend{Fonte: Elaborada pelo autor (Simulacao Multi-Agent), 2026.}
 \end{figure}
 
 
@@ -108,21 +150,21 @@ Adicionalmente, um kernel de multiplicação de matrizes (\textit{GEMM}) com \te
 O comando utilizado foi o \texttt{esbmc} com os parâmetros: \\
 \texttt{attention\_kernel.cpp -{}-multi-property -{}-memory-leak-check -{}-overflow-check}.
 
-\section{Caso 3 --- Loop Neuro-Simb\'{o}lico, Agente LLM + ESBMC}
+\section{Caso 3 --- Loop Neuro-Simbolico, Agente LLM + ESBMC}
 
-O terceiro caso simula um ciclo aut\^{o}nomo de gera\c{c}\~{a}o e verifica\c{c}\~{a}o de c\'{o}digo, modelando o fluxo \textbf{Ralph Loop}: o agente requisita ao LLM um trecho de c\'{o}digo C, submete ao ESBMC e, caso o verificador produza um contra-exemplo, repassa o diagn\'{o}stico ao LLM para refinamento imediato. O script principal \'{e} \texttt{mock\_agent.py}.
+O terceiro caso simula um ciclo aut\^{o}nomo de geracao e verificacao de c\'{o}digo, modelando o fluxo \textbf{Ralph Loop}: o agente requisita ao LLM um trecho de c\'{o}digo C, submete ao ESBMC e, caso o verificador produza um contra-exemplo, repassa o diagn\'{o}stico ao LLM para refinamento imediato. O script principal \'{e} \texttt{mock\_agent.py}.
 
 \subsection{Arquitetura do Agente}
 
-O agente executa at\'{e} 5 itera\c{c}\~{o}es. Cada itera\c{c}\~{a}o \'{e} composta por tr\^{e}s etapas:
+O agente executa at\'{e} 5 iteracoes. Cada iteracao \'{e} composta por tr\^{e}s etapas:
 
 \begin{alineas}
-    \item \textbf{Gera\c{c}\~{a}o LLM}: simula atraso de 0,5 a 2,0 segundos e retorna um trecho de c\'{o}digo C. Na itera\c{c}\~{a}o 0, o c\'{o}digo cont\'{e}m deliberadamente um \textit{buffer overflow} via \texttt{strcpy} num buffer de 10 bytes com entrada de 20 bytes; a partir da itera\c{c}\~{a}o 1, o c\'{o}digo \'{e} corrigido com \texttt{strncpy};
-    \item \textbf{Verifica\c{c}\~{a}o ESBMC}: o verificador \'{e} invocado com \texttt{--overflow-check --memory-leak-check}. A sa\'{i}da \'{e} analisada em busca de \texttt{VERIFICATION SUCCESSFUL};
-    \item \textbf{Feedback sem\^{a}ntico}: em caso de falha, o contra-exemplo do ESBMC, contendo o \textit{offset} exato da viola\c{c}\~{a}o e o estado do programa naquele ponto, \'{e} repassado como prompt de corre\c{c}\~{a}o ao LLM.
+    \item \textbf{Geracao LLM}: simula atraso de 0,5 a 2,0 segundos e retorna um trecho de c\'{o}digo C. Na iteracao 0, o c\'{o}digo cont\'{e}m deliberadamente um \textit{buffer overflow} via \texttt{strcpy} num buffer de 10 bytes com entrada de 20 bytes; a partir da iteracao 1, o c\'{o}digo \'{e} corrigido com \texttt{strncpy};
+    \item \textbf{Verificacao ESBMC}: o verificador \'{e} invocado com \texttt{--overflow-check --memory-leak-check}. A sa\'{i}da \'{e} analisada em busca de \texttt{VERIFICATION SUCCESSFUL};
+    \item \textbf{Feedback sem\^{a}ntico}: em caso de falha, o contra-exemplo do ESBMC, contendo o \textit{offset} exato da violacao e o estado do programa naquele ponto, \'{e} repassado como prompt de correcao ao LLM.
 \end{alineas}
 
-Os tempos e resultados de cada itera\c{c}\~{a}o s\~{a}o registrados em \texttt{case3\_agent\_stats.csv}:
+Os tempos e resultados de cada iteracao sao registrados em \texttt{case3\_agent\_stats.csv}:
 
 \begin{lstlisting}[language=Python, numbers=none]
 cmd = ["esbmc", filename,
@@ -136,12 +178,12 @@ success = "VERIFICATION SUCCESSFUL" in result.stdout
 
 \subsection{Propriedade Verificada}
 
-O ESBMC detecta que \texttt{strcpy(buffer, input)} com \texttt{sizeof(buffer)=10} e \texttt{sizeof(input)=20} constitui um acesso fora dos limites da mem\'{o}ria, produzindo um contra-exemplo concreto com o \textit{offset} exato da viola\c{c}\~{a}o que \'{e} devolvido como feedback ao agente LLM.
+O ESBMC detecta que \texttt{strcpy(buffer, input)} com \texttt{sizeof(buffer)=10} e \texttt{sizeof(input)=20} constitui um acesso fora dos limites da mem\'{o}ria, produzindo um contra-exemplo concreto com o \textit{offset} exato da violacao que \'{e} devolvido como feedback ao agente LLM.
 
 
 \section{Caso 4 --- Controladores Neurais e Planta de Sistema em Malha Fechada}
 
-O quarto caso verifica formalmente a seguran\c{c}a de um controlador PID digital operando em malha fechada sobre uma planta t\'{e}rmica, sob condi\c{c}\~{o}es de ru\'{i}do n\~{a}o-determin\'{i}stico nos sensores. A implementa\c{c}\~{a}o (\texttt{pid\_controller.c}) mimetiza sistemas embarcados cr\'{i}ticos onde ru\'{i}dos de sensor comprometem a estabilidade.
+O quarto caso verifica formalmente a seguranca de um controlador PID digital operando em malha fechada sobre uma planta t\'{e}rmica, sob condicoes de ru\'{i}do nao-determin\'{i}stico nos sensores. A implementacao (\texttt{pid\_controller.c}) mimetiza sistemas embarcados cr\'{i}ticos onde ru\'{i}dos de sensor comprometem a estabilidade.
 
 \subsection{Modelo da Planta e do Controlador}
 
@@ -157,9 +199,9 @@ onde $r_h = 0,1\,^{\circ}\text{C/\%}$, $r_c = 2,0\,^{\circ}\text{C}$ e $\Delta t
 u_k = K_p\,e_k + K_i\!\sum_{j=0}^{k} e_j\,\Delta t + K_d\,\frac{e_k - e_{k-1}}{\Delta t}, \quad u_k \in [0, 100]
 \end{equation}
 
-\subsection{Inje\c{c}\~{a}o de Caos e Propriedade de Seguran\c{c}a}
+\subsection{Injecao de Caos e Propriedade de Seguranca}
 
-O sensor recebe ru\'{i}do n\~{a}o-determin\'{i}stico escolhido pelo pr\'{o}prio \textit{solver}:
+O sensor recebe ru\'{i}do nao-determin\'{i}stico escolhido pelo pr\'{o}prio \textit{solver}:
 
 \begin{lstlisting}[language=C, numbers=none]
 float noise = nondet_float();
@@ -168,13 +210,13 @@ float measured = true_temp + noise; // Pior caso buscado pelo solver
 assert(temp < 150.0f);             // Invariante de seguranca
 \end{lstlisting}
 
-A invariante de seguran\c{c}a verificada para $\forall k \in [0, 10]$ e $\forall\,\text{noise} \in [-5, +5]$ \'{e}:
+A invariante de seguranca verificada para $\forall k \in [0, 10]$ e $\forall\,\text{noise} \in [-5, +5]$ \'{e}:
 
 \begin{equation}\label{eq:safety}
 T_k < T_{\text{MAX}} = 150\,^{\circ}\text{C}
 \end{equation}
 
-O ESBMC executa \textit{Bounded Model Checking} com \texttt{--unwind~11 --floatbv}, desenrolando simbolicamente todos os 10 passos do la\c{c}o e explorando exaustivamente o espa\c{c}o de ru\'{i}do para tentar violar a asser\c{c}\~{a}o.
+O ESBMC executa \textit{Bounded Model Checking} com \texttt{--unwind~11 --floatbv}, desenrolando simbolicamente todos os 10 passos do laco e explorando exaustivamente o espaco de ru\'{i}do para tentar violar a assercao.
 
 
 \section{A Dicotomia Arquitetural: Orquestracao Python vs. Core Nativo C/C++}

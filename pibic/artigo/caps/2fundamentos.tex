@@ -18,6 +18,71 @@ O \textit{Bounded Model Checking} é uma técnica baseada em satisfatibilidade l
     \item Verificação da fórmula por um \textit{solver} SMT.
 \end{enumerate}
 
+\subsection{Satisfatibilidade Logica (SAT e SMT)}
+
+O Bounded Model Checking se apoia fortemente em resolvedores (\textit{solvers}) SAT e SMT para determinar a validade das propriedades verificadas.
+
+O problema de \textbf{Satisfatibilidade Booleana (SAT)} busca encontrar uma atribuição de valores verdade (verdadeiro ou falso) para um conjunto de variáveis booleanas que torne uma fórmula lógica verdadeira. Embora seja extremamente eficiente para problemas puramente lógicos usando operadores como AND, OR e NOT, o SAT possui baixa expressividade para lidar diretamente com construções complexas de linguagens de programação, como aritmética de inteiros ou pontos flutuantes.
+
+Para superar essa limitação, utiliza-se o \textbf{Satisfatibilidade Módulo Teorias (SMT)}, que é uma extensão do SAT. O SMT integra o poder de decisão booleana do SAT com teorias matemáticas específicas (como vetores de bits, arrays e números reais). Isso permite que o \textit{solver} compreenda e verifique propriedades sobre tipos de dados da linguagem, como \texttt{int} e \texttt{float}, e operações aritméticas. No contexto do ESBMC, o código C ou Python é traduzido em fórmulas SMT que são verificadas por \textit{solvers} modernos como Z3 ou Bitwuzla.
+
+\begin{figure}[htb]
+\centering
+\usetikzlibrary{shapes.geometric, arrows.meta, fit, backgrounds, positioning}
+\begin{tikzpicture}[
+    font=\sffamily,
+    auto,
+    node distance=1cm and 1.5cm,
+    >=Stealth,
+    base/.style={draw, thick, align=center, minimum height=1cm, minimum width=2.8cm},
+    io/.style={base, trapezium, trapezium left angle=70, trapezium right angle=110, fill=green!10, draw=green!40!black, minimum width=3cm},
+    solver/.style={base, rectangle, fill=red!10, draw=red!40!black, rounded corners, minimum height=1.2cm, font=\sffamily\bfseries},
+    theory/.style={base, rectangle, fill=orange!10, draw=orange!40!black, minimum width=3.2cm, font=\sffamily\small},
+    container/.style={draw=gray!50, dashed, thick, inner sep=0.6cm, fill=gray!2, rounded corners},
+    line/.style={draw, thick, ->}
+]
+
+    % --- Caminho SAT ---
+    \node (sat_in) [io] {Fórmula Booleana};
+    \node (sat_sol) [solver, below=of sat_in] {Resolvedor SAT};
+    \node (sat_out) [io, below=of sat_sol] {SAT / UNSAT};
+    
+    \draw [line] (sat_in) -- (sat_sol);
+    \draw [line] (sat_sol) -- (sat_out);
+    
+    \node[above=0.3cm of sat_in, font=\bfseries\large] {Fluxo SAT};
+
+    % --- Caminho SMT ---
+    \node (smt_in) [io, right=4cm of sat_in] {Fórmula SMT \\ \footnotesize (ex: $x > 5 \wedge y < 0$)};
+    
+    % Componentes internos do SMT
+    \node (sat_engine) [solver, below=of smt_in, fill=red!20] {Motor SAT};
+    \node (theory1) [theory, right=1.2cm of sat_engine] {Resolv. de Teoria \\ (BitVectors)};
+    \node (theory2) [theory, below=0.5cm of theory1] {Resolv. de Teoria \\ (Reais)};
+    \node (theory3) [theory, above=0.5cm of theory1] {Resolv. de Teoria \\ (Arrays)};
+    
+    % Container do Resolvedores SMT
+    \begin{scope}[on background layer]
+        \node (smt_box) [container, fit=(sat_engine) (theory1) (theory2) (theory3)] {};
+        \node [below right, font=\bfseries, color=gray!60!black] at (smt_box.north west) {Resolvedor SMT};
+    \end{scope}
+    
+    \node (smt_out) [io, below=of smt_box] {SAT / UNSAT};
+
+    % Conexões no Fluxo SMT
+    \draw [line] (smt_in) -- (sat_engine);
+    \draw [thick, <->] (sat_engine.east) -- node[anchor=south, font=\scriptsize, yshift=2pt] {Check} (theory1.west);
+    \draw [thick, <->] (sat_engine.east) -- node[anchor=north, sloped, font=\scriptsize] {Lemmas} (theory2.west);
+    \draw [thick, <->] (sat_engine.east) -- node[anchor=south, sloped, font=\scriptsize] {Lemmas} (theory3.west);
+    \draw [line] (sat_engine.south) -- (smt_out);
+    
+    \node[above=0.3cm of smt_in, font=\bfseries\large] {Fluxo SMT};
+
+\end{tikzpicture}
+\caption{Comparação entre os fluxos de execução de resolvedores SAT e SMT. O resolvedor SMT estende a capacidade do motor SAT ao integrar resolvedores de teorias especializados para lidar com tipos de dados complexos através de um ciclo de verificação e geração de lemas.}
+\label{fig:sat_smt}
+\end{figure}
+
 \section{O Verificador ESBMC}
 
 O ESBMC (\textit{Efficient SMT-Based Context-Bounded Model Checker}) é um verificador de código aberto que estende o BMC para programas multicore e sistemas dinâmicos. Ele suporta linguagens como C, C++, Python e CUDA. 

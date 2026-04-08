@@ -3,23 +3,23 @@
 
 Este capítulo apresenta os resultados parciais obtidos, organizados por caso de uso. Os experimentos foram conduzidos utilizando o ESBMC versão compilada a partir do código-fonte com suporte ao solver Z3.
 
-\section{Caso 1 Verifica\c{c}\~ao Formal de Neur\^onio com ReLU}
+\section{Caso 1 Verificacao Formal de Neuronio com ReLU}
 
-\subsection{Metodologia de Execu\c{c}\~ao}
+\subsection{Metodologia de Execucao}
 
-A verifica\c{c}\~ao do neurônio (\texttt{neuron.py}) foi executada localmente via linha de comando:
+A verificacao do neurônio (\texttt{neuron.py}) foi executada localmente via linha de comando:
 
 \begin{lstlisting}[language=bash, numbers=none]
 esbmc pibic/1_python_models/neuron.py --floatbv --k-induction
 \end{lstlisting}
 
-O \textit{frontend} Python do ESBMC (baseado em \texttt{ast2json}) converte o c\'odigo-fonte diretamente para \texttt{GOTO-Programs}, a representa\c{c}\~ao intermedi\'aria interna do verificador. A execu\c{c}\~ao simb\'olica trata as vari\'aveis n\~ao inicializadas (\texttt{in1}, \texttt{in2}) como valores n\~ao-determin\'isticos. 
+O \textit{frontend} Python do ESBMC (baseado em \texttt{ast2json}) converte o c\'odigo-fonte diretamente para \texttt{GOTO-Programs}, a representacao intermediaria interna do verificador. A execucao simb\'olica trata as variaveis nao inicializadas (\texttt{in1}, \texttt{in2}) como valores nao-determin\'isticos. 
 
-Neste caso de uso, as primitivas magnas da verifica\c{c}\~ao \textbf{foram meticulosamente selecionadas}:
-- A estrutura condicional \texttt{if in1 >= 0.0 and in1 <= 1.0} \'e automaticamente convertida em uma restrin\c{c}\~ao de ambiente, ou \textbf{\textit{pre-condi\c{c}\~ao}} (\texttt{\_\_ESBMC\_assume}), pelo \textit{solver}. Essa \textit{assumption} \'e vital: sem ela, o ESBMC tentaria provar o modelo para qualquer n\'umero de ponto flutuante ($-\infty$ a $+\infty$), o que causaria violac\~ao dos limites te\'oricos e explos\~ao do espa\c{c}o de estados SMT. Assumir que as vari\'aveis de entrada est\~ao contidas em $[0, 1]$ (pixel normalizado) poda ramos computacionalmente intrat\'aveis.
-- A condi\c{c}\~ao s'imbolica \textbf{\textit{assert}} (\texttt{assert out <= 0.6}) representa nosso invariante de seguran\c{c}a estrito a ser provado. Foi selecionada especificamente para consolidar matematicamente a fronteira de ativa\c{c}\~ao m\'axima do neur\^onio, fornecendo uma base axiom\'atica impenetravel para ataques sobrepostas no espectro.
+Neste caso de uso, as primitivas magnas da verificacao \textbf{foram meticulosamente selecionadas}:
+- A estrutura condicional \texttt{if in1 >= 0.0 and in1 <= 1.0} \'e automaticamente convertida em uma restrincao de ambiente, ou \textbf{\textit{pre-condicao}} (\texttt{\_\_ESBMC\_assume}), pelo \textit{solver}. Essa \textit{assumption} \'e vital: sem ela, o ESBMC tentaria provar o modelo para qualquer n\'umero de ponto flutuante ($-\infty$ a $+\infty$), o que causaria violacao dos limites te\'oricos e explosao do espaco de estados SMT. Assumir que as variaveis de entrada estao contidas em $[0, 1]$ (pixel normalizado) poda ramos computacionalmente intrataveis.
+- A condicao s'imbolica \textbf{\textit{assert}} (\texttt{assert out <= 0.6}) representa nosso invariante de seguranca estrito a ser provado. Foi selecionada especificamente para consolidar matematicamente a fronteira de ativacao maxima do neuronio, fornecendo uma base axiomatica impenetravel para ataques sobrepostas no espectro.
 
-\subsection{Resultado da Verifica\c{c}\~ao do Emulador QNN}
+\subsection{Resultado da Verificacao do Emulador QNN}
 
 O ESBMC retornou o veredicto \textbf{VERIFICATION SUCCESSFUL} confirmando a eficácia do método misto (Python limitando as fronteiras via simulacro de EVA):
 
@@ -29,17 +29,17 @@ O ESBMC retornou o veredicto \textbf{VERIFICATION SUCCESSFUL} confirmando a efic
     \item \textbf{Validade Matemática}: A integridade cruzou-se satisfatoriamente: não existe nenhuma atribuição de ruídos $x \in [0, 1]$ capaz de perturbar a integridade analítica final quantizada que limitava $out > 0.65$ após o \textit{shift-right}.
 \end{alineas}
 
-A \autoref{fig:case1_plot} ilustra, de forma visual, a superf\'icie de sa\'idas do neur\^onio sobre todo o dom\'inio de entrada $[0,1]^2$ e a distribui\c{c}\~ao dos valores de sa\'ida obtidos por amostragem densa ($10^4$ pontos), comprovando que 100\% das amostras respeitam os \textit{bounds} formalmente verificados.
+A \autoref{fig:case1_plot} ilustra, de forma visual, a superf\'icie de sa\'idas do neuronio sobre todo o dom\'inio de entrada $[0,1]^2$ e a distribuicao dos valores de sa\'ida obtidos por amostragem densa ($10^4$ pontos), comprovando que 100\% das amostras respeitam os \textit{bounds} formalmente verificados.
 
 \begin{figure}[htb]
-    \caption{\label{fig:case1_plot}Superf\'icie de Sa\'ida do Neur\^onio e Distribui\c{c}\~ao das Sa\'idas com os Limites Verificados pelo ESBMC.}
+    \caption{\label{fig:case1_plot}Superf\'icie de Sa\'ida do Neuronio e Distribuicao das Sa\'idas com os Limites Verificados pelo ESBMC.}
     \begin{center}
         \includegraphics[width=0.95\textwidth]{case1_plot.png}
     \end{center}
     \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{figure}
 
-\subsection{An\'alise dos Benchmarks QNN na Literatura Base}
+\subsection{Analise dos Benchmarks QNN na Literatura Base}
 
 O Caso 1 prova uma viabilidade local de modelagem, entretanto a base paramétrica original que referenciamos, \textbf{o QNNVerifier original (\cite{gopinath2021verifying})}, extraiu e balizou benchmarks fundamentais em C que dão base ao escopo das simulações que estamos almejando replicar perfeitamente em \textit{esbmc-python}. Na literatura, os autores avaliaram três grandes compilações:
 \begin{enumerate}
@@ -50,15 +50,15 @@ O Caso 1 prova uma viabilidade local de modelagem, entretanto a base paramétric
 
 As amarrações extraídas pela técnica deles (Intervalos injetados pelo Frama-C + Discretização em Ponto-Fixo) atestaram primariamente uma lei severa de correlação computacional: O tempo de \textit{solver} decai enormemente em matrizes quantizadas com agressividade ($ < 16$ bits de inteiros). Esta simbiose entre as ferramentas tornou o motor \textit{ESBMC/Z3} drasticamente veloz, destronando tempos literais do Marabou (Estado-da-Arte desenvolvido por Stanford/Oxford para redes flutuantes não modificadas) e aproximando-se da velocidade do \textit{Neurify}. Esses são os balizadores a serem mirados neste experimento em Python.
 
-\subsection{Verifica\c{c}\~ao de M\'ultiplas Camadas (MLP Quantizada)}
+\subsection{Verificacao de M\'ultiplas Camadas (MLP Quantizada)}
 
-Para estender o conceito de neur\^onio \'unico sob a mesma topologia, uma arquitetura de \textit{Multilayer Perceptron} (MLP) com duas camadas (sendo a oculta composta por tr\^es neur\^onios com ativa\c{c}\~ao ReLU e uma camada de sa\'ida) suportou a conversão rígida descrita na metodologia. O limite anal\'itico rigoroso determinou que a sa\'ida m\'axima do tensor quantizado compensa o realinhamento da escala $S$.
+Para estender o conceito de neuronio \'unico sob a mesma topologia, uma arquitetura de \textit{Multilayer Perceptron} (MLP) com duas camadas (sendo a oculta composta por tr\^es neuronios com ativacao ReLU e uma camada de sa\'ida) suportou a conversão rígida descrita na metodologia. O limite anal\'itico rigoroso determinou que a sa\'ida maxima do tensor quantizado compensa o realinhamento da escala $S$.
 
-O ESBMC concluiu a an\'alise do modelo MLP modificado (\texttt{mlp\_qnn.py}) sob a prova indutiva \texttt{k=15}. A amplia\c{c}\~ao da arquitetura exige o desdobramento na gera\c{c}\~ao formal (\textit{Verification Conditions}). Tais instru\c{c}\~oes derivam fisicamente do desenrolamento simb\'olico integral de cada multiplica\c{c}\~ao vetorial em inteiros combinada as restrições inferidas simuladamente pelo Módulo Abstrato. 
-Diferente da heurística \textit{float} que gastava dezenas de segundos no truncamento de precisão infinitesimal, o pareamento dos axiomas em Bitvectores Int8 forçou ao encerramento seguro sob os Limites do Desenvolvedor através do status final de \textbf{VERIFICATION SUCCESSFUL}. A \autoref{fig:case1_mlp_plot} apresenta a topologia resultante de decis\~ao dessa MLP e atesta que nenhuma das amostras testadas extrapola as fronteiras validadas formalmente pelo \textit{solver}.
+O ESBMC concluiu a analise do modelo MLP modificado (\texttt{mlp\_qnn.py}) sob a prova indutiva \texttt{k=15}. A ampliacao da arquitetura exige o desdobramento na geracao formal (\textit{Verification Conditions}). Tais instruc\~oes derivam fisicamente do desenrolamento simb\'olico integral de cada multiplicacao vetorial em inteiros combinada as restrições inferidas simuladamente pelo Módulo Abstrato. 
+Diferente da heurística \textit{float} que gastava dezenas de segundos no truncamento de precisão infinitesimal, o pareamento dos axiomas em Bitvectores Int8 forçou ao encerramento seguro sob os Limites do Desenvolvedor através do status final de \textbf{VERIFICATION SUCCESSFUL}. A \autoref{fig:case1_mlp_plot} apresenta a topologia resultante de decisao dessa MLP e atesta que nenhuma das amostras testadas extrapola as fronteiras validadas formalmente pelo \textit{solver}.
 
 \begin{figure}[htb]
-    \caption{\label{fig:case1_mlp_plot}Superf\'icie de Sa\'ida da MLP e Distribui\c{c}\~ao das Amostras em Rela\c{c}\~ao aos Limites Verificados.}
+    \caption{\label{fig:case1_mlp_plot}Superf\'icie de Sa\'ida da MLP e Distribuicao das Amostras em Relacao aos Limites Verificados.}
     \begin{center}
         \includegraphics[width=0.95\textwidth]{case1_mlp_plot.png}
     \end{center}
@@ -70,128 +70,24 @@ Diferente da heurística \textit{float} que gastava dezenas de segundos no trunc
     \begin{center}
         \includegraphics[width=0.95\textwidth]{plot_case1_weights.png}
     \end{center}
-    \legend{Fonte: Elaborada pelo autor (Subagente Gr\'afico), 2026.}
+    \legend{Fonte: Elaborada pelo autor (Subagente Grafico), 2026.}
 \end{figure}
 
-\subsection{Extens\~{a}o ao Dom\'{i}nio Generativo: Verifica\c{c}\~{a}o Modular de Transformers}
+\subsection{Extensao ao Dom\'{i}nio Generativo: Verificacao Modular de Transformers}
 
-O Caso~1 prova a viabilidade da abordagem para um neur\^{o}nio isolado. A quest\~{a}o central de pesquisa \'{e}: \textbf{como essa abordagem escala para arquiteturas generativas modernas} como DeepSeek, Llama ou GPT? A resposta consiste em uma hierarquia de verificabilidade, diretamente ancorada no QNNVerifier~\cite{gopinath2021verifying}:
+O Caso~1 provou a viabilidade computacional da abordagem SMT de limitadores fixos para um neur\^{o}nio isolado e uma MLP pequena. O experimento estendeu a hierarquia de avaliação (Níveis 3 e 4) aos \textbf{Blocos de Transformer} e \textbf{Blocos MLP Gated (DeepSeek-R1)} em \textit{stubs} especializados de \textit{C}.
 
-\begin{alineas}
-    \item \textbf{N\'{i}vel 1, atual}: Neur\^{o}nio \'{u}nico ou MLP pequena com pesos fixos. Solver conclui em segundos, propriedades provadas exaustivamente;
+Enquanto os detalhamentos técnicos sobre os tensores (dimensão de embedding $d=4$ e entrada simbólica $x \in [-1,1]^4$) e as deduções axiomáticas (\textit{Verifiability Properties P1-P4}) estão expostos no material de Metodologia, os resultados destas experimentações atestam a robusteza operacional dos verificadores modulares.
 
-    \item \textbf{N\'{i}vel 2}: Redes de classifica\c{c}\~{a}o com quantiza\c{c}\~{a}o \texttt{Fixed16/Fixed32}, como as 52 topologias do QNNVerifier. Alto desempenho com otimiza\c{c}\~{o}es de \textit{slicing} e infer\^{e}ncia de intervalos;
+\subsubsection{Como a SiLU \'e Organizada no Stub e o Veredicto de Verificacao}
 
-    \item \textbf{N\'{i}vel 3, Blocos de Transformer}: Cabeca de aten\c{c}\~{a}o \textit{single-head} com dimens\~{a}o de embedding reduzida e pesos fixos quantizados. \textbf{Implementado neste trabalho} em \texttt{attention\_block\_stub.c}, demonstrado a seguir;
-
-    \item \textbf{N\'{i}vel 4, Bloco MLP Gated}: Blocos MLP de LLMs como DeepSeek-R1 (fun\c{c}\~{a}o SwiGLU com ativa\c{c}\~{a}o SiLU). \textbf{Implementado neste trabalho} em \texttt{deepseek\_mlp\_stub.c}: pesos fixos quantizados, entrada simb\'{o}lica $x \in [-1,1]^4$, quatro propriedades de seguran\c{c}a provadas, detalhado a seguir.
-\end{alineas}
-
-\subsection{Nivel 3: Verifica\c{c}\~{a}o Modular da Cabeca de Aten\c{c}\~{a}o de Transformer}
-
-O arquivo \texttt{attention\_block\_stub.c} implementa uma cabeca de aten\c{c}\~{a}o \textit{single-head} com dimens\~{a}o $d=4$ e sequ\^{e}ncia $\text{SEQ}=2$, com pesos $W_Q, W_K, W_V \in \mathbb{R}^{4 \times 4}$ fixados como constantes, representando uma camada quantizada de LLM. As entradas $x_0, x_1 \in [-1,1]^4$ s\~{a}o vari\'{a}veis simb\'{o}licas n\~{a}o-determin\'{i}sticas.
-
-S\~{a}o verificadas tr\^{e}s propriedades formais:
-
-\begin{equation}
-\text{P1:}\quad s_{ij} = \frac{q_i \cdot k_j}{\sqrt{d}} \in [-3.0,\, 3.0] \quad \forall\, x_0, x_1 \in [-1,1]^4
-\end{equation}
-
-\begin{equation}
-\text{P2:}\quad \alpha_{ij} \in [0,\,1] \;\wedge\; \textstyle\sum_j \alpha_{ij} \in [0.99,\,1.01]
-\end{equation}
-
-\begin{equation}
-\text{P3:}\quad \| \text{out}_i \|_{\infty} \leq 1.0 \quad \text{(norma L-}\infty\text{ da sa\'{i}da da cabeca)}
-\end{equation}
-
-O trecho central do \textit{stub} ilustra como o ESBMC recebe entradas simb\'{o}licas e verifica as propriedades via \texttt{assert}:
-
-\begin{lstlisting}[language=C, numbers=none]
-/* Entrada simbolica: token embeddings em [-1, 1]^D */
-float x0[D], x1[D];
-for (int i = 0; i < D; i++) {
-    x0[i] = nondet_float();
-    __ESBMC_assume(x0[i] >= -1.0f && x0[i] <= 1.0f);
-}
-/* Projeta Q, K, V; calcula scores e softmax */
-float s00 = dot(q0, k0) * 0.5f;   /* 1/sqrt(4) */
-assert(s00 >= -3.0f && s00 <= 3.0f);    /* P1 */
-assert(a00 >= 0.0f && a00 <= 1.0f);     /* P2 */
-assert(out0[i] >= -1.0f && out0[i] <= 1.0f); /* P3 */
-\end{lstlisting}
-
-O comando de verifica\c{c}\~{a}o \'{e}:
-
-\begin{lstlisting}[language=bash, numbers=none]
-esbmc verification/attention_block_stub.c \
-      --floatbv --unwind 4 \
-      --overflow-check --no-unwinding-assertions
-\end{lstlisting}
-
-Este experimento valida o N\'{i}vel~3 da hierarquia. O N\'{i}vel~4, detalhado a seguir, aplica a mesma estrat\'{e}gia ao bloco MLP com ativa\c{c}\~{a}o SiLU, a estrutura nuclear do DeepSeek.
-
-\subsection{Nivel 4: Verifica\c{c}\~{a}o Modular do Bloco SwiGLU, DeepSeek}
-
-O arquivo \texttt{deepseek\_mlp\_stub.c} implementa um bloco MLP \textit{Gated} com ativa\c{c}\~{a}o SiLU, identico em estrutura a uma camada \textit{feed-forward} do DeepSeek-R1 e Llama-3.x:
-
-\begin{equation}\label{eq:swiglu}
-\text{out} = W_2 \cdot \bigl(\text{SiLU}(W_1 x) \odot (W_3 x)\bigr)
-\end{equation}
-
-onde $\text{SiLU}(z) = z \cdot \sigma(z)$ e $\sigma$ \'{e} a fun\c{c}\~{a}o sigm\'{o}ide. Para o \textit{solver} SMT operar sobre fun\c{c}\~{o}es transcendentais, substituimos $\sigma$ por uma aproxima\c{c}\~{a}o linear conservadora verificavel:
-
-\begin{equation}\label{eq:sigma_approx}
-\sigma_{\text{approx}}(z) = \text{clip}(0.25z + 0.5,\; 0,\; 1) \quad \Rightarrow \quad \sigma_{\text{approx}} \in [0,1]\; \forall\,z
-\end{equation}
-
-S\~{a}o verificadas quatro propriedades formais com entrada simb\'{o}lica $x \in [-1,1]^4$:
-
-\begin{center}
-\begin{tabular}{c|l|l}
-\hline
-\textbf{Prop.} & \textbf{Invariante} & \textbf{Bound Anal\'{i}tico} \\
-\hline
-P1 & $\text{SiLU}(W_1 x) \in [-0.15,\;2.0]$ & $\|W_1 x\|_\infty \leq 2$; SiLU mon\'{o}tona \\
-P2 & $W_3 x \in [-2.0,\;2.0]$ & $\sum_j|W_3[i][j]|\leq 2$ \\
-P3 & $\text{gated}[i] \in [-4.0,\;4.0]$ & $|P1| \times |P2| \leq 4$ \\
-P4 & $\text{out}[i] \in [-6.0,\;6.0]$ & $\|W_2\|_1 \times 4 \leq 7.2$ \\
-\hline
-\end{tabular}
-\end{center}
-
-O trecho central do \textit{stub} mostra a estrutura verificada:
-
-\begin{lstlisting}[language=C, numbers=none]
-/* Aproximacao linear de sigma, verificavel pelo solver SMT */
-float sigma_approx(float z) {
-    float s = 0.25f * z + 0.5f;
-    if (s < 0.0f) s = 0.0f;
-    if (s > 1.0f) s = 1.0f;
-    return s;
-}
-/* SwiGLU: out = W2 * (SiLU(W1*x) * (W3*x)) */
-matvec4x4(W1, x, h1);
-for (int i = 0; i < D; i++) silu_h1[i] = h1[i] * sigma_approx(h1[i]);
-matvec4x4(W3, x, h3);
-for (int i = 0; i < D; i++) {
-    gated[i] = silu_h1[i] * h3[i];
-    assert(gated[i] >= -4.0f && gated[i] <= 4.0f); /* P3 */
-}
-matvec4x4(W2, gated, out);
-for (int i = 0; i < D; i++)
-    assert(out[i] >= -6.0f && out[i] <= 6.0f);     /* P4 */
-\end{lstlisting}
-
-\subsubsection{Como a SiLU \'e Organizada no Stub}
-
-A ativa\c{c}\~{a}o SiLU \'{e} definida como:
+A ativacao SiLU \'{e} definida como:
 
 \begin{equation}\label{eq:silu_def}
 \text{SiLU}(z) = z \cdot \sigma(z) = \frac{z}{1 + e^{-z}}
 \end{equation}
 
-Diferente da ReLU, que corta abruptamente em zero, a SiLU \'{e} suave e n\~{a}o-mon\'{o}tona: permite valores levemente negativos pr\'{o}ximos a $z \approx -1$, conferindo ao modelo maior expressividade. O bloco de c\'{o}digo verificado segue o fluxo ilustrado abaixo:
+Diferente da ReLU, que corta abruptamente em zero, a SiLU \'{e} suave e nao-mon\'{o}tona: permite valores levemente negativos pr\'{o}ximos a $z \approx -1$, conferindo ao modelo maior expressividade. O bloco de c\'{o}digo verificado segue o fluxo ilustrado abaixo:
 
 \begin{center}
 \begin{tabular}{l}
@@ -205,43 +101,43 @@ $\quad\quad\quad\quad \text{out}$ \\
 \end{tabular}
 \end{center}
 
-O desafio fundamental \'{e} que $\sigma(z) = 1/(1+e^{-z})$ \'{e} uma fun\c{c}\~{a}o transcendental: o \textit{solver} SMT n\~{a}o det\'{e}m axiomas internos para $\exp(\cdot)$, tratando-a como fun\c{c}\~{a}o n\~{a}o-interpretada e produzindo resultado \texttt{UNKNOWN}. A solu\c{c}\~{a}o adotada \'{e} substituir $\sigma$ por uma aproxima\c{c}\~{a}o linear conservadora, v\'{a}lida e verificavel:
+O desafio fundamental \'{e} que $\sigma(z) = 1/(1+e^{-z})$ \'{e} uma funcao transcendental: o \textit{solver} SMT nao det\'{e}m axiomas internos para $\exp(\cdot)$, tratando-a como funcao nao-interpretada e produzindo resultado \texttt{UNKNOWN}. A solucao adotada \'{e} substituir $\sigma$ por uma aproximacao linear conservadora, v\'{a}lida e verificavel:
 
 \begin{equation}\label{eq:sigma_linear}
 \sigma_{\text{approx}}(z) = \text{clip}\!\left(0.25z + 0.5,\; 0,\; 1\right) \;\in\; [0,1] \quad \forall\, z
 \end{equation}
 
-Essa express\~{a}o \'{e} a tangente de $\sigma$ em $z=0$ (exata nesse ponto) com \textit{clipping} que preserva os limites globais. Ao substituir transcri\c{c}\~oes exponenciais complexas por diretrizes retil\'ineas liminares, transmutamos geometricamente o \textit{state space}: O \textit{solver} SMT (Z3/Bitwuzla), que usualmente declararia estado \texttt{UNKNOWN} ou sofreria \textit{timeout} perante c\'alculos anal\'iticos de pontos flutuantes indecid\'iveis para fun\c{c}\~oes transcendentalistas cont\'inuas, agora perfaz opera\c{c}\~oes literais fragmentadas lineares (simples somas e clivagens de restri\c{c}\~ao comparativa). O resultado atesta que o salto heur\'istico proporciona \textit{verificabilidade aut\^entica em tempo real} sem comprometer as margens param\'etricas operacionais do tensor iterado.
+Essa expressao \'{e} a tangente de $\sigma$ em $z=0$ (exata nesse ponto) com \textit{clipping} que preserva os limites globais. Ao substituir transcric\~oes exponenciais complexas por diretrizes retil\'ineas liminares, transmutamos geometricamente o \textit{state space}: O \textit{solver} SMT (Z3/Bitwuzla), que usualmente declararia estado \texttt{UNKNOWN} ou sofreria \textit{timeout} perante calculos anal\'iticos de pontos flutuantes indecid\'iveis para func\~oes transcendentalistas cont\'inuas, agora perfaz operac\~oes literais fragmentadas lineares (simples somas e clivagens de restricao comparativa). O resultado atesta que o salto heur\'istico proporciona \textit{verificabilidade aut\^entica em tempo real} sem comprometer as margens param\'etricas operacionais do tensor iterado.
 
 \begin{figure}[htb]
-    \caption{\label{fig:silu_approx}Substitui\c{c}\~ao Transcendental no ESBMC: SiLU Exata vs Aproxima\c{c}\~ao SMT Linear.}
+    \caption{\label{fig:silu_approx}Substituicao Transcendental no ESBMC: SiLU Exata vs Aproximacao SMT Linear.}
     \begin{center}
         \includegraphics[width=0.9\textwidth]{plot_silu_approx.png}
     \end{center}
     \legend{Fonte: Elaborada pelo autor (Subagente Curvas), 2026.}
 \end{figure}
 
-\subsubsection{Limitac\~{o}es e Por Que Ocorrem}
+\subsubsection{Limitacoes e Por Que Ocorrem}
 
-A Tabela~\ref{tab:niveis_limitacoes} sumariza os pontos que n\~{a}o s\~{a}o completamente solucion\'{a}veis no estado atual e a causa t\'{e}cnica de cada um.
+A Tabela~\ref{tab:niveis_limitacoes} sumariza os pontos que nao sao completamente solucion\'{a}veis no estado atual e a causa t\'{e}cnica de cada um.
 
 \begin{table}[htb]
-\caption{Limita\c{c}\~{o}es da Verifica\c{c}\~{a}o Modular de LLMs com ESBMC.}
+\caption{Limitacoes da Verificacao Modular de LLMs com ESBMC.}
 \label{tab:niveis_limitacoes}
 \begin{center}
 \begin{tabular}{p{2.8cm}|p{4.2cm}|p{4.5cm}}
 \hline
-\textbf{Limitac\~{a}o} & \textbf{Causa T\'{e}cnica} & \textbf{Impacto} \\
+\textbf{Limitacao} & \textbf{Causa T\'{e}cnica} & \textbf{Impacto} \\
 \hline
-\texttt{exp()} n\~{a}o verific\'{a}vel & Z3/Bitwuzla trata $\exp$ como fun\c{c}\~{a}o n\~{a}o-interpretada; nenhum axioma SMT para ela & $\sigma$ exata gera \texttt{UNKNOWN}; aproxima\c{c}\~{a}o linear perde precis\~{a}o em $|z| > 2$ \\
+\texttt{exp()} nao verific\'{a}vel & Z3/Bitwuzla trata $\exp$ como funcao nao-interpretada; nenhum axioma SMT para ela & $\sigma$ exata gera \texttt{UNKNOWN}; aproximacao linear perde precisao em $|z| > 2$ \\
 \hline
-Dimens\~{a}o $d=4$ vs $d=4096$ & BMC cresce com $D^2$ multiplica\c{c}\~{o}es simb\'{o}licas; $d=4096$ gera ${\sim}16$M opera\c{c}\~{o}es $\to$ \textit{timeout} & Verificamos fatia representativa, n\~{a}o o modelo completo \\
+Dimensao $d=4$ vs $d=4096$ & BMC cresce com $D^2$ multiplicacoes simb\'{o}licas; $d=4096$ gera ${\sim}16$M operacoes $\to$ \textit{timeout} & Verificamos fatia representativa, nao o modelo completo \\
 \hline
-Sequ\^{e}ncia SEQ=2 & Cada token adicional duplica o grafo de execu\c{c}\~{a}o simb\'{o}lica & SEQ=512 \'{e} invi\'{a}vel sem indu\c{c}\~{a}o-$k$ sobre SEQ \\
+Sequ\^{e}ncia SEQ=2 & Cada token adicional duplica o grafo de execucao simb\'{o}lica & SEQ=512 \'{e} invi\'{a}vel sem inducao-$k$ sobre SEQ \\
 \hline
-Bounds conservadores & $\sigma_{\text{approx}}$ superestima $\sigma$ em valores extremos & P4 (\texttt{out $\in$ [-6,6]}) \'{e} v\'{a}lido mas n\~{a}o \textit{tight}; \texttt{--interval-analysis} aperta \\
+Bounds conservadores & $\sigma_{\text{approx}}$ superestima $\sigma$ em valores extremos & P4 (\texttt{out $\in$ [-6,6]}) \'{e} v\'{a}lido mas nao \textit{tight}; \texttt{--interval-analysis} aperta \\
 \hline
-Sem RMSNorm & Normaliza\c{c}\~{a}o divide por norma simb\'{o}lica (poss\'{i}vel zero) & Exige \texttt{\_\_ESBMC\_assume(norm > eps)} expl\'{i}cito \\
+Sem RMSNorm & Normalizacao divide por norma simb\'{o}lica (poss\'{i}vel zero) & Exige \texttt{\_\_ESBMC\_assume(norm > eps)} expl\'{i}cito \\
 \hline
 \end{tabular}
 \end{center}
@@ -255,7 +151,7 @@ esbmc verification/deepseek_mlp_stub.c \
       --overflow-check --no-unwinding-assertions
 \end{lstlisting}
 
-Este resultado demonstra que a verifica\c{c}\~{a}o modular de blocos MLP de LLMs \'{e} \textbf{concretamente vi\'{a}vel} com o ESBMC. A chave \'{e} a substitui\c{c}\~{a}o de fun\c{c}\~{o}es transcendentais, como $\exp$ e $\sigma$, por aproxima\c{c}\~{o}es lineares conservadoras que o \textit{solver} SMT consegue raciocinar diretamente, sem perda das garantias de seguran\c{c}a. A mesma metodologia se aplica diretamente ao \textit{logit clamp} final do Llama, \`{a}s camadas de normaliza\c{c}\~{a}o RMSNorm e a qualquer componente cr\'{i}tico de modelos quantizados em \texttt{Fixed16}.
+Este resultado demonstra que a verificacao modular de blocos MLP de LLMs \'{e} \textbf{concretamente vi\'{a}vel} com o ESBMC. A chave \'{e} a substituicao de funcoes transcendentais, como $\exp$ e $\sigma$, por aproximacoes lineares conservadoras que o \textit{solver} SMT consegue raciocinar diretamente, sem perda das garantias de seguranca. A mesma metodologia se aplica diretamente ao \textit{logit clamp} final do Llama, \`{a}s camadas de normalizacao RMSNorm e a qualquer componente cr\'{i}tico de modelos quantizados em \texttt{Fixed16}.
 
 
 
@@ -264,13 +160,13 @@ Este resultado demonstra que a verifica\c{c}\~{a}o modular de blocos MLP de LLMs
 
 \subsection{Kernel de Atenção}
 
-A verifica\c{c}\~ao do kernel \texttt{attention\_kernel.cpp} confirmou a aus\^encia de \textit{buffer overflows} e vazamentos de mem\'oria para a condi\c{c}\~ao for\c{c}ada onde $\texttt{seq\_len} \in [1, 10]$.
+A verificacao do kernel \texttt{attention\_kernel.cpp} confirmou a aus\^encia de \textit{buffer overflows} e vazamentos de mem\'oria para a condicao forcada onde $\texttt{seq\_len} \in [1, 10]$.
 
-A aplica\c{c}\~ao de \texttt{\_\_ESBMC\_assume(seq\_len <= 10)} associado ao fato do array ser não-determinístico é primordial neste Kernel: em Bounded Model Checking (BMC), la\c{c}os (\textit{loops}) demandam um limite seguro computacional para sua t\'ecnica de desenrolamento (\textit{unwinding}). Sem o \texttt{assume} isolando o comprimento do *batch/sequence*, a \'arvore de \textit{pointers} cresceria infinitamente. Simultaneamente, as op\c{c}\~oes passadas via \textit{flags} como \texttt{--overflow-check} instanciam automaticamente diretivas SMT do tipo \textbf{\textit{asserts gen\'ericas}} sob a matriz operada, assegurando com certeza formal que acessos c\'riticos como \texttt{query[i]} e \texttt{key[i]} est\~ao indexados perfeitamente nas posi\c{c}\~oes VRAM (Virtual RAM) leg\'itimas em toda e qualquer amostragem daquela \textit{boundary}.
+A aplicacao de \texttt{\_\_ESBMC\_assume(seq\_len <= 10)} associado ao fato do array ser não-determinístico é primordial neste Kernel: em Bounded Model Checking (BMC), lacos (\textit{loops}) demandam um limite seguro computacional para sua t\'ecnica de desenrolamento (\textit{unwinding}). Sem o \texttt{assume} isolando o comprimento do *batch/sequence*, a arvore de \textit{pointers} cresceria infinitamente. Simultaneamente, as opc\~oes passadas via \textit{flags} como \texttt{--overflow-check} instanciam automaticamente diretivas SMT do tipo \textbf{\textit{asserts gen\'ericas}} sob a matriz operada, assegurando com certeza formal que acessos c\'riticos como \texttt{query[i]} e \texttt{key[i]} estao indexados perfeitamente nas posic\~oes VRAM (Virtual RAM) leg\'itimas em toda e qualquer amostragem daquela \textit{boundary}.
 
 \subsection{Escalabilidade do GEMM}
 
-Para o kernel de multiplicação de matrizes com \textit{tiling}, foi realizada uma análise de escalabilidade variando a dimensão $N$. Os resultados est\~{a}o sumarizados na \autoref{tab:gemm_tempo} e visualizados na \autoref{fig:case2_plot}.
+Para o kernel de multiplicação de matrizes com \textit{tiling}, foi realizada uma análise de escalabilidade variando a dimensão $N$. Os resultados estao sumarizados na \autoref{tab:gemm_tempo} e visualizados na \autoref{fig:case2_plot}.
 
 \begin{table}[htb]
 \caption{Tempo de verificação do kernel GEMM em função da dimensão da matriz.}
@@ -299,14 +195,14 @@ Para o kernel de multiplicação de matrizes com \textit{tiling}, foi realizada 
     \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{figure}
 
-O crescimento exponencial do tempo de verifica\c{c}\~ao com o tamanho da matriz confirma que a verifica\c{c}\~ao formal completa \'e invi\'avel para matrizes de LLMs em escala real (ex.: dimens\~ao 4096) ou at\'e mesmo blocos medianos. A \autoref{fig:case2_plot} projeta a continuidade dessa escala exponencial para matrizes de dimens\~ao $60 \times 60$, na qual o \textit{solver} atinge uma inviabilidade computacional pr\'atica estimando-se tempos imensur\'aveis sob hardware convencional. Entretanto, a abordagem permanece \textbf{altamente eficaz} para verificar a corretude da l\'ogica, especialmente do algoritmo de \textit{tiling}, em inst\^ancias reduzidas (vide an\'alise da \textit{Small Scope Hypothesis}).
+O crescimento exponencial do tempo de verificacao com o tamanho da matriz confirma que a verificacao formal completa \'e inviavel para matrizes de LLMs em escala real (ex.: dimensao 4096) ou at\'e mesmo blocos medianos. A \autoref{fig:case2_plot} projeta a continuidade dessa escala exponencial para matrizes de dimensao $60 \times 60$, na qual o \textit{solver} atinge uma inviabilidade computacional pratica estimando-se tempos imensuraveis sob hardware convencional. Entretanto, a abordagem permanece \textbf{altamente eficaz} para verificar a corretude da l\'ogica, especialmente do algoritmo de \textit{tiling}, em inst\^ancias reduzidas (vide analise da \textit{Small Scope Hypothesis}).
 
-\section{Caso 3 --- Loop Neuro-Simb\'{o}lico}
+\section{Caso 3 --- Loop Neuro-Simbolico}
 
-O agente simulado executou com sucesso o ciclo completo de 5 itera\c{c}\~{o}es. Os resultados detalhados s\~{a}o apresentados na \autoref{fig:case3_plot}.
+O agente simulado executou com sucesso o ciclo completo de 5 iteracoes. Os resultados detalhados sao apresentados na \autoref{fig:case3_plot}.
 
 \begin{figure}[htb]
-    \caption{\label{fig:case3_plot}Caso~3: Tempo por Itera\c{c}\~{a}o do Loop Agente-ESBMC, com decomposi\c{c}\~{a}o entre atraso LLM e verifica\c{c}\~{a}o formal, e Overhead do Verificador por itera\c{c}\~{a}o.}
+    \caption{\label{fig:case3_plot}Caso~3: Tempo por Iteracao do Loop Agente-ESBMC, com decomposicao entre atraso LLM e verificacao formal, e Overhead do Verificador por iteracao.}
     \begin{center}
         \includegraphics[width=0.98\textwidth]{case3_plot.png}
     \end{center}
@@ -314,7 +210,7 @@ O agente simulado executou com sucesso o ciclo completo de 5 itera\c{c}\~{o}es. 
 \end{figure}
 
 \begin{figure}[htb]
-    \caption{\label{fig:agent_statemachine}M\'aquina de Estados do Agente Aut\^onomo Ralph Loop.}
+    \caption{\label{fig:agent_statemachine}Maquina de Estados do Agente Autonomo Ralph Loop.}
     \begin{center}
         \includegraphics[width=0.95\textwidth]{plot_agent_statemachine.png}
     \end{center}
@@ -322,11 +218,11 @@ O agente simulado executou com sucesso o ciclo completo de 5 itera\c{c}\~{o}es. 
 \end{figure}
 
 \begin{alineas}
-    \item \textbf{Itera\c{c}\~{a}o 0}: O ESBMC detectou o \textit{buffer overflow} no c\'{o}digo com \texttt{strcpy}, produzindo um contra-exemplo concreto com o \textit{offset} exato da viola\c{c}\~{a}o. O tempo total foi de $\approx\!2{,}0$\,s, dos quais apenas $\approx\!0{,}6$\,s foram do verificador formal e o restante do atraso simulado do LLM;
-    \item \textbf{Itera\c{c}\~{o}es 1 a 4}: O c\'{o}digo corrigido com \texttt{strncpy} recebeu \texttt{VERIFICATION SUCCESSFUL} consistentemente, com tempo do verificador inferior a 0,65\,s em todas as itera\c{c}\~{o}es.
+    \item \textbf{Iteracao 0}: O ESBMC detectou o \textit{buffer overflow} no c\'{o}digo com \texttt{strcpy}, produzindo um contra-exemplo concreto com o \textit{offset} exato da violacao. O tempo total foi de $\approx\!2{,}0$\,s, dos quais apenas $\approx\!0{,}6$\,s foram do verificador formal e o restante do atraso simulado do LLM;
+    \item \textbf{Iteracoes 1 a 4}: O c\'{o}digo corrigido com \texttt{strncpy} recebeu \texttt{VERIFICATION SUCCESSFUL} consistentemente, com tempo do verificador inferior a 0,65\,s em todas as iteracoes.
 \end{alineas}
 
-O painel direito da \autoref{fig:case3_plot} evidencia que o \textit{overhead} do ESBMC \'{e} \textbf{constante e inferior a 1 segundo} para \textit{snippets} de c\'{o}digo gerado por LLMs, independentemente da itera\c{c}\~{a}o. O custo computacional da verifica\c{c}\~{a}o formal \'{e} marginal frente ao ganho de seguran\c{c}a. Neste sistema ag\^entico, O LLM gera naturalmente l\'ogicas reativas, mas o orquestrador Ralph codifica as restri\c{c}\~oes estritas via \textbf{\textit{\_\_ESBMC\_assume}} e \textbf{\textit{assert}}. Crucialmente, durante o \textit{feedback loop}, o extrator sem\^antico converte a sa\'ida densa e formal nativa do solver (\textit{Trace}: \texttt{Violated property: array `buffer` upper bound}) em uma reinje\c{c}\~ao de prompt (\textit{Prompt}: "Fix index-out-of-bounds at line X when input exceeds sizeof(buffer)"). Esta tradu\c{c}\~ao org\^anica da prova mec\^anica em direcionalidade de linguagem natural cristaliza a camada de confian\c{c}a (\textit{trust layer}) aut\^onoma num rigoroso ciclo neuro-simb\'olico.
+O painel direito da \autoref{fig:case3_plot} evidencia que o \textit{overhead} do ESBMC \'{e} \textbf{constante e inferior a 1 segundo} para \textit{snippets} de c\'{o}digo gerado por LLMs, independentemente da iteracao. O custo computacional da verificacao formal \'{e} marginal frente ao ganho de seguranca. Neste sistema ag\^entico, O LLM gera naturalmente l\'ogicas reativas, mas o orquestrador Ralph codifica as restric\~oes estritas via \textbf{\textit{\_\_ESBMC\_assume}} e \textbf{\textit{assert}}. Crucialmente, durante o \textit{feedback loop}, o extrator sem\^antico converte a sa\'ida densa e formal nativa do solver (\textit{Trace}: \texttt{Violated property: array `buffer` upper bound}) em uma reinjecao de prompt (\textit{Prompt}: "Fix index-out-of-bounds at line X when input exceeds sizeof(buffer)"). Esta traducao org\^anica da prova mec\^anica em direcionalidade de linguagem natural cristaliza a camada de confianca (\textit{trust layer}) autonoma num rigoroso ciclo neuro-simb\'olico.
 
 
 \section{Caso 4 --- Controlador PID com Engenharia do Caos e SMT}
@@ -334,7 +230,7 @@ O painel direito da \autoref{fig:case3_plot} evidencia que o \textit{overhead} d
 O verificador formal comprovou, via \texttt{VERIFICATION SUCCESSFUL}, que o controlador PID mant\'{e}m $T < 150\,^{\circ}$C para todos os 10 passos e para qualquer ru\'{i}do em $[-5, +5]$. A \autoref{fig:case4_plot} apresenta a din\^{a}mica completa simulada com os par\^{a}metros reais do c\'{o}digo, para cinco perfis de ru\'{i}do distintos.
 
 \begin{figure}[htb]
-    \caption{\label{fig:case4_plot}Caso~4: Evolu\c{c}\~{a}o da Temperatura, Sinal de Controle PID e Erro de Rastreamento sob Cinco Perfis de Ru\'{i}do de Sensor.}
+    \caption{\label{fig:case4_plot}Caso~4: Evolucao da Temperatura, Sinal de Controle PID e Erro de Rastreamento sob Cinco Perfis de Ru\'{i}do de Sensor.}
     \begin{center}
         \includegraphics[width=0.98\textwidth]{case4_plot.png}
     \end{center}
@@ -342,7 +238,7 @@ O verificador formal comprovou, via \texttt{VERIFICATION SUCCESSFUL}, que o cont
 \end{figure}
 
 \begin{figure}[htb]
-    \caption{\label{fig:pid_phase}Retrato de Fase (Phase Portrait) detalhando a atra\c{c}\~ao do PID sob caos.}
+    \caption{\label{fig:pid_phase}Retrato de Fase (Phase Portrait) detalhando a atracao do PID sob caos.}
     \begin{center}
         \includegraphics[width=0.85\textwidth]{plot_pid_phase_portrait.png}
     \end{center}
@@ -350,14 +246,14 @@ O verificador formal comprovou, via \texttt{VERIFICATION SUCCESSFUL}, que o cont
 \end{figure}
 
 \begin{alineas}
-    \item \textbf{Painel inferior direito}: O erro de rastreamento $e(t) = \text{setpoint} - T_{\text{medido}}$ converge para zero em todos os perfis dentro dos 10 passos, comprovando a estabilidade do controlador mesmo sob caos estoc\'{a}stico. Ressalta-se formalmente que este Bounded Model Checking parametrizou o escudo (\textit{shield}) limitando o \textit{Engine} essencialmente nas capta\c{c}\~oes ruidosas originadas no sensor (\textit{sensor-side}); an\'alises sist\^emicas projetando a modelagem \textit{Chaos Engineering} na perturba\c{c}\~ao final dos tuchos e motores atuadores (\textit{actuator-side}) consistem em desenvolvimentos vitais para os trabalhos subsequentes focados em intera\c{c}\~oes eletromec\^anicas robustas.
+    \item \textbf{Painel inferior direito}: O erro de rastreamento $e(t) = \text{setpoint} - T_{\text{medido}}$ converge para zero em todos os perfis dentro dos 10 passos, comprovando a estabilidade do controlador mesmo sob caos estoc\'{a}stico. Ressalta-se formalmente que este Bounded Model Checking parametrizou o escudo (\textit{shield}) limitando o \textit{Engine} essencialmente nas captac\~oes ruidosas originadas no sensor (\textit{sensor-side}); analises sist\^emicas projetando a modelagem \textit{Chaos Engineering} na perturbacao final dos tuchos e motores atuadores (\textit{actuator-side}) consistem em desenvolvimentos vitais para os trabalhos subsequentes focados em interac\~oes eletromec\^anicas robustas.
 \end{alineas}
 
-\subsection{Verifica\c{c}\~ao de Biblioteca de Controle C++ Famosa (Arduino PID)}
+\subsection{Verificacao de Biblioteca de Controle C++ Famosa (Arduino PID)}
 
-Para demonstrar a aplicabilidade da abordagem de verifica\c{c}\~ao formal formal a sistemas de controle reais em produ\c{c}\~ao e consolidar o m\'etodo de Engenharia do Caos, a biblioteca padr\~ao da ind\'ustria \textit{Arduino-PID-Library} (de Brett Beauregard) foi clonada diretamente do reposit\'orio oficial no GitHub. Foi desenvolvido um \textit{harness} em C++ (escrevendo \textit{mock} para as fun\c{c}\~oes temporais em placa, como \texttt{millis()}) que encapsula a inst\^ancia e execu\c{c}\~ao da classe \texttt{PID} sob a mesma planta t\'ermica e modelo de inje\c{c}\~ao de ru\'ido sensoriais variando entre $[-5, +5]$.
+Para demonstrar a aplicabilidade da abordagem de verificacao formal formal a sistemas de controle reais em producao e consolidar o m\'etodo de Engenharia do Caos, a biblioteca padrao da ind\'ustria \textit{Arduino-PID-Library} (de Brett Beauregard) foi clonada diretamente do reposit\'orio oficial no GitHub. Foi desenvolvido um \textit{harness} em C++ (escrevendo \textit{mock} para as func\~oes temporais em placa, como \texttt{millis()}) que encapsula a inst\^ancia e execucao da classe \texttt{PID} sob a mesma planta t\'ermica e modelo de injecao de ru\'ido sensoriais variando entre $[-5, +5]$.
 
-O orquestrador ESBMC consumiu o c\'odigo C++ limpo (\texttt{PID\_v1.cpp}) sem qualquer modifica\c{c}\~ao ou \textit{downgrade} pragm\'atico na abstra\c{c}\~ao original em objeto. Ap\'os explorar os caminhos por \textit{Bounded Model Checking} (\texttt{-{}-floatbv -{}-unwind~11}), o \textit{solver} emitiu \textbf{VERIFICATION SUCCESSFUL}. O experimento atesta, com endosso formal, que algoritmos famosos \textit{open-source} blindados por invariantes SMT s\~ao robustos o suficiente para integra\c{c}\~ao direta nos fluxos cr\'iticos.
+O orquestrador ESBMC consumiu o c\'odigo C++ limpo (\texttt{PID\_v1.cpp}) sem qualquer modificacao ou \textit{downgrade} pragmatico na abstracao original em objeto. Ap\'os explorar os caminhos por \textit{Bounded Model Checking} (\texttt{-{}-floatbv -{}-unwind~11}), o \textit{solver} emitiu \textbf{VERIFICATION SUCCESSFUL}. O experimento atesta, com endosso formal, que algoritmos famosos \textit{open-source} blindados por invariantes SMT sao robustos o suficiente para integracao direta nos fluxos cr\'iticos.
 
 
 \section{Caso 5   The Ralph Loop Concept e Validação em Larga Escala}
@@ -405,7 +301,7 @@ A verificação sistemática de políticas dinâmicas de \textit{Reinforcement L
 Em suma, durante a exploração exaustiva promovida pelo solver \textit{Bitwuzla/Z3}, o verificador esmiuçou todo o \textit{Phase Space} dos vetores de estado cinemático possíveis ($S$). A asserção formal delimitou rigidamente que a magnitude da modulação expedida ao volante atuador não poderia transpor os tensores físicos permitidos (fixados pela física no espaço entre $[-1.0, 1.0]$). A descoberta metódica de contra-exemplos SMT operou podando ativamente os impulsos neurais perigosos (aquelas perturbações \textit{out-of-distribution}) provando de forma esmagadora a eficácia arquitetural do modelo ESBMC interceptador em cenários complexos pré-implantação robótica.
 
 \begin{figure}[htb]
-    \caption{\label{fig:rl_shield}Distribui\c{c}\~ao SMT: A\c{c}\~oes Permitidas vs Intercepta\c{c}\~ao do Safety Shield.}
+    \caption{\label{fig:rl_shield}Distribuicao SMT: Ac\~oes Permitidas vs Interceptacao do Safety Shield.}
     \begin{center}
         \includegraphics[width=0.9\textwidth]{plot_rl_shield.png}
     \end{center}

@@ -31,3 +31,6 @@ src/CPackConfig.cmake
 src/CPackSourceConfig.cmake
 
 venv/
+
+chat_venv/
+global_esbmc_binary/

@@ -13,16 +13,16 @@ A relevância deste estudo reside na necessidade de mitigar riscos em ambientes 
 
 \section{Geral}
 
-O objetivo principal deste projeto é investigar e implementar metodologias de verificação formal para componentes de IA Generativa e sistemas de controle baseados em redes neurais, utilizando o verificador de modelos ESBMC para garantir propriedades de segurança, robustez e corretude lógica.
+O objetivo principal deste projeto é investigar e estender metodologias de verificação formal para componentes de IA Generativa e Redes Neurais Quantizadas, utilizando o verificador de modelos ESBMC para garantir propriedades de segurança, limites operacionais estritos e corretude lógica tanto em abstrações de alto nível (Python) quanto \textit{kernels} de baixo nível.
 
-\section{Específicos}
+\section{Especificos}
 
-Para atingir o objetivo geral, a pesquisa foi estruturada em três níveis de complexidade crescente:
+Para atingir o objetivo geral, a pesquisa foi estruturada em níveis de complexidade e arquitetura crescentes:
 
 \begin{itemize}
-    \item \textbf{Nível 1 — Verificação de Segurança em Redes Neurais}: Desenvolver modelos em C e Python para componentes básicos de redes neurais, garantindo que a saída do modelo permaneça dentro de uma região segura (\textit{post-condition}) para um conjunto de entradas delimitado. Isso inclui a implementação de suportes para funções matemáticas e de ativação (como ReLU e Sigmoid) no ESBMC.
+    \item \textbf{Verificação de Redes Neurais Quantizadas (QNN Simulation)}: Transpor a lógica de verificação de limitadores matemáticos (\textit{Fixed-Point} e simulação EVA) da linguagem C nativa para Python (\texttt{esbmc-python}), provendo um mecanismo de asserção de limites diretos em modelos de \textit{Multilayer Perceptron}.
     
-    \item \textbf{Nível 2 — Verificação de Controladores Neurais}: Expandir a análise para redes neurais especificamente projetadas para controle de sistemas dinâmicos, verificando propriedades locais de corretude e segurança do código do controlador.
+    \item \textbf{Nível 1 — Verificação de Segurança de \textit{Kernels} e Stubs}: Desenvolver modelos em C e Python para componentes essenciais de IA (como a ativação ReLU e tensores de Atenção), garantindo que a saída do modelo permaneça dentro de uma região segura (\textit{post-condition}) e livre de vazamentos de memória.
     
     \item \textbf{Nível 3 — Verificação de Propriedades de Sistema (Malha Fechada)}: Realizar a verificação formal de propriedades de alto nível do sistema completo (planta + controlador neural). Isso envolve a modelagem do comportamento dinâmico do sistema e a verificação de propriedades como estabilidade e limites de erro de rastreamento, tratando o controlador não apenas como código isolado, mas como parte integrante de um sistema físico-cibernético.
     
