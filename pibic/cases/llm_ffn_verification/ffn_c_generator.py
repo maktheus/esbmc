@@ -51,11 +51,15 @@ class VerifConfig:
     output_lb: Optional[float] = None
     output_ub: Optional[float] = None
 
-    # Path to gelu_lut.h (relative or absolute)
-    gelu_lut_header: str = "gelu_lut.h"
+    # Path to activation LUT header (auto-selected based on layer.activation)
+    # Set explicitly to override: "gelu_lut.h" or "silu_lut.h"
+    lut_header: Optional[str] = None
 
     # ESBMC loop unwind hint (printed as a comment; pass via CLI)
     unwind_hint: Optional[int] = None
+
+    # --- backwards-compat alias (ignored; use lut_header)
+    gelu_lut_header: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------
@@ -63,10 +67,14 @@ class VerifConfig:
 # ---------------------------------------------------------------------------
 
 def _fmt_float(v: float) -> str:
-    """Format float as C float literal with 7 significant digits."""
+    """Format float as a valid C float literal (always has a decimal point)."""
     if np.isnan(v):
         return "0.0f /*NaN replaced*/"
-    return f"{v:.7g}f"
+    s = f"{v:.7g}"
+    # Ensure there is a decimal point so the 'f' suffix is valid C
+    if "." not in s and "e" not in s and "E" not in s:
+        s += ".0"
+    return s + "f"
 
 
 def _array_1d_literal(arr: np.ndarray, indent: int = 4) -> str:
@@ -104,6 +112,20 @@ def generate_c(
     """
     D_MODEL = layer.d_model
     D_FF    = layer.d_ff
+
+    # Select activation LUT header
+    act = layer.activation.lower()
+    if cfg.lut_header is not None:
+        lut_header = cfg.lut_header
+    elif cfg.gelu_lut_header is not None:
+        lut_header = cfg.gelu_lut_header
+    elif act in ("silu", "swish"):
+        lut_header = "silu_lut.h"
+    else:
+        lut_header = "gelu_lut.h"
+
+    lut_fn = "siluLUT" if act in ("silu", "swish") else "geluLUT"
+    act_label = "SiLU" if act in ("silu", "swish") else "GeLU"
 
     # Compute automatic output bound if not provided
     out_mag = layer.max_output_magnitude(input_bound=max(abs(cfg.input_lb), abs(cfg.input_ub)))
@@ -165,7 +187,7 @@ def generate_c(
  *
  * Layer index : {layer.source_layer_idx}
  * Dimensions  : d_model={D_MODEL}, d_ff={D_FF}
- * Activation  : {layer.activation.upper()} (via LUT)
+ * Activation  : {act_label} (via LUT → {lut_header})
  * Input range : [{cfg.input_lb}, {cfg.input_ub}]
  * Output bound: [{out_lb:.4f}, {out_ub:.4f}]
  *
@@ -182,7 +204,7 @@ def generate_c(
  */
 
 #include <math.h>
-#include "{cfg.gelu_lut_header}"
+#include "{lut_header}"
 
 /* ---- Dimensions --------------------------------------------------------- */
 #define D_MODEL {D_MODEL}
@@ -218,7 +240,7 @@ int main(void) {{
         __ESBMC_assume(input[i] <= {_fmt_float(cfg.input_ub)});
     }}
 
-    /* --- Layer 1: up-projection + GeLU ------------------------------------ */
+    /* --- Layer 1: up-projection + {act_label} ------------------------------------ */
     /* pre_act[j] = W1[j] · input + b1[j]  */
     float pre_act[D_FF];
     for (int j = 0; j < D_FF; j++) {{
@@ -229,10 +251,10 @@ int main(void) {{
         pre_act[j] = acc;
     }}
 {assert_hidden}
-    /* Apply GeLU via lookup table */
+    /* Apply {act_label} via lookup table */
     float hidden[D_FF];
     for (int j = 0; j < D_FF; j++) {{
-        hidden[j] = geluLUT(pre_act[j]);
+        hidden[j] = {lut_fn}(pre_act[j]);
     }}
 
     /* --- Layer 2: down-projection ----------------------------------------- */

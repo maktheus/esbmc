@@ -45,6 +45,13 @@ from ffn_c_generator import VerifConfig, generate_c
 
 try:
     from esbmc_caller import run_esbmc, VerificationResult
+    # Patch binary path to the bundled ESBMC if the build one is missing
+    import esbmc_caller as _ec
+    import os as _os
+    if not _os.path.exists(_ec.ESBMC_BIN):
+        _BUNDLED = str(_HERE.parent.parent / "QNNVerifier" / "esbmc-6.8.0" / "esbmc")
+        if _os.path.exists(_BUNDLED):
+            _ec.ESBMC_BIN = _BUNDLED
     _HAS_ESBMC_CALLER = True
 except ImportError:
     _HAS_ESBMC_CALLER = False
@@ -116,6 +123,20 @@ class _SimpleResult:
     timeout_occurred: bool
 
 
+def _find_esbmc_bin() -> str:
+    """Locate ESBMC binary: system PATH → bundled copy."""
+    import shutil
+    if shutil.which("esbmc"):
+        return "esbmc"
+    bundled = str(_HERE.parent.parent / "QNNVerifier" / "esbmc-6.8.0" / "esbmc")
+    if Path(bundled).exists():
+        return bundled
+    raise FileNotFoundError(
+        "ESBMC binary not found. Install it or ensure the bundled copy is present at:\n"
+        f"  {bundled}"
+    )
+
+
 def _run_esbmc_direct(
     c_path: str,
     d_model: int,
@@ -126,8 +147,9 @@ def _run_esbmc_direct(
     import subprocess
 
     unwind = max(d_ff, d_model) + 1
+    esbmc_bin = _find_esbmc_bin()
     cmd = [
-        "esbmc", c_path,
+        esbmc_bin, c_path,
         "--floatbv",
         "--overflow-check",
         "--bounds-check",
@@ -185,11 +207,12 @@ def verify_ffn_layer(
     output_dir_path.mkdir(parents=True, exist_ok=True)
 
     c_path = str(output_dir_path / f"ffn_layer{layer.source_layer_idx}_verify.c")
-    lut_src = _HERE / "gelu_lut.h"
-    lut_dst = output_dir_path / "gelu_lut.h"
-    if lut_src.exists() and not lut_dst.exists():
-        import shutil
-        shutil.copy(lut_src, lut_dst)
+    import shutil
+    for lut_name in ("gelu_lut.h", "silu_lut.h"):
+        lut_src = _HERE / lut_name
+        lut_dst = output_dir_path / lut_name
+        if lut_src.exists() and not lut_dst.exists():
+            shutil.copy(lut_src, lut_dst)
 
     # 1. Generate C harness
     cfg = VerifConfig(
