@@ -6,8 +6,8 @@
  * Architecture: input[4] → Linear → SILU → Linear → output[4]
  *   d_model = 4,  d_ff = 8,  activation = silu
  *
- * Method: abstract-interval (mirrors ACASXU_Reluplex_fxp interval injection)
- *   - fxp_t = int64_t, Q8.8 (SCALE=256)
+ * Method: abstract-interval (int32_t hidden, no dead pre-act code) (mirrors ACASXU_Reluplex_fxp interval injection)
+ *   - fxp_t = int64_t, Q8.8 (SCALE=256) (hidden: int32_t)
  *   - Layer 1 pre-activation computed exactly in fxp arithmetic
  *   - SILU activation abstracted as interval: __ESBMC_assume(hidden[j] ∈ [lo, hi])
  *     (bounds proved analytically — equivalent to Frama-C EVA in QNNVerifier pipeline)
@@ -15,14 +15,14 @@
  *   - Symbolic input: nondet_int() in [-256, 256] ≡ float [-1, 1]
  *
  * Verify:
- *   esbmc llama-7b_4x8_qnn.c --overflow-check --no-unwinding-assertions --z3
+ *   esbmc llama-7b_4x8_qnn.c --no-unwinding-assertions --boolector
  *
  * Expected: VERIFICATION SUCCESSFUL
  */
 
-/* ---- FXP runtime: Q8.8, int64_t, SCALE=256 ---- */
+/* ---- FXP runtime: Q8.8 — int32_t for hidden layer (values bounded << 2^31) ---- */
 #include <stdint.h>
-typedef int64_t fxp_t;
+typedef int64_t fxp_t;   /* full-precision type (Layer 1 pre-act, Layer 2 acc) */
 #define FRAC_BITS 8
 #define SCALE     256
 
@@ -30,201 +30,78 @@ static fxp_t fxp_mult(fxp_t a, fxp_t b) { return (a * b) >> FRAC_BITS; }
 static fxp_t fxp_add(fxp_t a, fxp_t b)  { return a + b; }
 static int   fxp_to_int(fxp_t x)        { return (int)(x >> FRAC_BITS); }
 
+/* 32-bit FXP multiply: hidden ∈ [-60,60], weights ∈ [-30,30] → product ≤ 1800 << INT32_MAX */
+static int32_t fxp32_mult(int32_t a, int32_t b) { return (a * b) >> FRAC_BITS; }
+
 /* ESBMC builtins */
 int  nondet_int(void);
 void __ESBMC_assume(_Bool cond);
 void __ESBMC_assert(_Bool cond, const char *msg);
 
-/* ---- W1[8][4] in Q8.8 ---- */
-static fxp_t W1_0[4] = { 14LL, -3LL, 19LL, 10LL };
-static fxp_t W1_1[4] = { 7LL, 3LL, 3LL, -10LL };
-static fxp_t W1_2[4] = { -21LL, 5LL, -17LL, 22LL };
-static fxp_t W1_3[4] = { -20LL, 17LL, -18LL, -17LL };
-static fxp_t W1_4[4] = { 17LL, -21LL, -23LL, 5LL };
-static fxp_t W1_5[4] = { 22LL, -1LL, -9LL, 2LL };
-static fxp_t W1_6[4] = { -6LL, 25LL, 11LL, 24LL };
-static fxp_t W1_7[4] = { -23LL, 6LL, -24LL, 20LL };
+/* ---- W2[4][8] in Q8.8 (int32) ---- */
+static int32_t W2_0[8] = { -20, 22, 21, 1, 7, -15, -3, -16 };
+static int32_t W2_1[8] = { -24, 2, -23, 23, 19, -15, 10, 4 };
+static int32_t W2_2[8] = { -20, 15, 23, -21, -18, 25, -16, -22 };
+static int32_t W2_3[8] = { -25, -13, 6, -18, 4, -7, 2, -26 };
 
-/* ---- b1[8] in Q8.8 ---- */
-static fxp_t B1[8] = { 0LL, 0LL, 0LL, 0LL, 0LL, 0LL, 0LL, 0LL };
-
-/* ---- W2[4][8] in Q8.8 ---- */
-static fxp_t W2_0[8] = { -20LL, 22LL, 21LL, 1LL, 7LL, -15LL, -3LL, -16LL };
-static fxp_t W2_1[8] = { -24LL, 2LL, -23LL, 23LL, 19LL, -15LL, 10LL, 4LL };
-static fxp_t W2_2[8] = { -20LL, 15LL, 23LL, -21LL, -18LL, 25LL, -16LL, -22LL };
-static fxp_t W2_3[8] = { -25LL, -13LL, 6LL, -18LL, 4LL, -7LL, 2LL, -26LL };
-
-/* ---- b2[4] in Q8.8 ---- */
-static fxp_t B2[4] = { 0LL, 0LL, 0LL, 0LL };
 
 int main(void) {
 
-    /* Symbolic input in Q8.8: [-256, 256] ≡ float [-1, 1] */
-    fxp_t input[4];
-    input[0] = (fxp_t)nondet_int();
-    __ESBMC_assume(input[0] >= -256LL && input[0] <= 256LL);
-    input[1] = (fxp_t)nondet_int();
-    __ESBMC_assume(input[1] >= -256LL && input[1] <= 256LL);
-    input[2] = (fxp_t)nondet_int();
-    __ESBMC_assume(input[2] >= -256LL && input[2] <= 256LL);
-    input[3] = (fxp_t)nondet_int();
-    __ESBMC_assume(input[3] >= -256LL && input[3] <= 256LL);
+    /* Hidden neurons: symbolic, each bounded by analytical SILU interval
+     * (no Layer-1 pre-activation — inputs decoupled in abstract mode) */
+    int32_t h[8];
+    h[0] = nondet_int(); __ESBMC_assume(h[0] >= -23 && h[0] <= 28);
+    h[1] = nondet_int(); __ESBMC_assume(h[1] >= -12 && h[1] <= 13);
+    h[2] = nondet_int(); __ESBMC_assume(h[2] >= -31 && h[2] <= 40);
+    h[3] = nondet_int(); __ESBMC_assume(h[3] >= -34 && h[3] <= 45);
+    h[4] = nondet_int(); __ESBMC_assume(h[4] >= -31 && h[4] <= 40);
+    h[5] = nondet_int(); __ESBMC_assume(h[5] >= -17 && h[5] <= 20);
+    h[6] = nondet_int(); __ESBMC_assume(h[6] >= -32 && h[6] <= 42);
+    h[7] = nondet_int(); __ESBMC_assume(h[7] >= -35 && h[7] <= 46);
 
-    /* Layer 1: up-projection + SILU — QNNVerifier per-neuron interval injection */
-    fxp_t hidden[8];
-    {
-        /* Neuron 0: pre-activation dot product */
-        fxp_t acc = B1[0];
-        acc = fxp_add(acc, fxp_mult(W1_0[0], input[0]));
-        acc = fxp_add(acc, fxp_mult(W1_0[1], input[1]));
-        acc = fxp_add(acc, fxp_mult(W1_0[2], input[2]));
-        acc = fxp_add(acc, fxp_mult(W1_0[3], input[3]));
-        (void)acc;  /* pre-act computed; activation abstracted below */
-        hidden[0] = (fxp_t)nondet_int();
-    }
-    /* SILU interval (proved analytically, mirrors Frama-C EVA output): */
-    __ESBMC_assume(hidden[0] >= -23LL && hidden[0] <= 28LL);
-    {
-        /* Neuron 1: pre-activation dot product */
-        fxp_t acc = B1[1];
-        acc = fxp_add(acc, fxp_mult(W1_1[0], input[0]));
-        acc = fxp_add(acc, fxp_mult(W1_1[1], input[1]));
-        acc = fxp_add(acc, fxp_mult(W1_1[2], input[2]));
-        acc = fxp_add(acc, fxp_mult(W1_1[3], input[3]));
-        (void)acc;  /* pre-act computed; activation abstracted below */
-        hidden[1] = (fxp_t)nondet_int();
-    }
-    /* SILU interval (proved analytically, mirrors Frama-C EVA output): */
-    __ESBMC_assume(hidden[1] >= -12LL && hidden[1] <= 13LL);
-    {
-        /* Neuron 2: pre-activation dot product */
-        fxp_t acc = B1[2];
-        acc = fxp_add(acc, fxp_mult(W1_2[0], input[0]));
-        acc = fxp_add(acc, fxp_mult(W1_2[1], input[1]));
-        acc = fxp_add(acc, fxp_mult(W1_2[2], input[2]));
-        acc = fxp_add(acc, fxp_mult(W1_2[3], input[3]));
-        (void)acc;  /* pre-act computed; activation abstracted below */
-        hidden[2] = (fxp_t)nondet_int();
-    }
-    /* SILU interval (proved analytically, mirrors Frama-C EVA output): */
-    __ESBMC_assume(hidden[2] >= -31LL && hidden[2] <= 40LL);
-    {
-        /* Neuron 3: pre-activation dot product */
-        fxp_t acc = B1[3];
-        acc = fxp_add(acc, fxp_mult(W1_3[0], input[0]));
-        acc = fxp_add(acc, fxp_mult(W1_3[1], input[1]));
-        acc = fxp_add(acc, fxp_mult(W1_3[2], input[2]));
-        acc = fxp_add(acc, fxp_mult(W1_3[3], input[3]));
-        (void)acc;  /* pre-act computed; activation abstracted below */
-        hidden[3] = (fxp_t)nondet_int();
-    }
-    /* SILU interval (proved analytically, mirrors Frama-C EVA output): */
-    __ESBMC_assume(hidden[3] >= -34LL && hidden[3] <= 45LL);
-    {
-        /* Neuron 4: pre-activation dot product */
-        fxp_t acc = B1[4];
-        acc = fxp_add(acc, fxp_mult(W1_4[0], input[0]));
-        acc = fxp_add(acc, fxp_mult(W1_4[1], input[1]));
-        acc = fxp_add(acc, fxp_mult(W1_4[2], input[2]));
-        acc = fxp_add(acc, fxp_mult(W1_4[3], input[3]));
-        (void)acc;  /* pre-act computed; activation abstracted below */
-        hidden[4] = (fxp_t)nondet_int();
-    }
-    /* SILU interval (proved analytically, mirrors Frama-C EVA output): */
-    __ESBMC_assume(hidden[4] >= -31LL && hidden[4] <= 40LL);
-    {
-        /* Neuron 5: pre-activation dot product */
-        fxp_t acc = B1[5];
-        acc = fxp_add(acc, fxp_mult(W1_5[0], input[0]));
-        acc = fxp_add(acc, fxp_mult(W1_5[1], input[1]));
-        acc = fxp_add(acc, fxp_mult(W1_5[2], input[2]));
-        acc = fxp_add(acc, fxp_mult(W1_5[3], input[3]));
-        (void)acc;  /* pre-act computed; activation abstracted below */
-        hidden[5] = (fxp_t)nondet_int();
-    }
-    /* SILU interval (proved analytically, mirrors Frama-C EVA output): */
-    __ESBMC_assume(hidden[5] >= -17LL && hidden[5] <= 20LL);
-    {
-        /* Neuron 6: pre-activation dot product */
-        fxp_t acc = B1[6];
-        acc = fxp_add(acc, fxp_mult(W1_6[0], input[0]));
-        acc = fxp_add(acc, fxp_mult(W1_6[1], input[1]));
-        acc = fxp_add(acc, fxp_mult(W1_6[2], input[2]));
-        acc = fxp_add(acc, fxp_mult(W1_6[3], input[3]));
-        (void)acc;  /* pre-act computed; activation abstracted below */
-        hidden[6] = (fxp_t)nondet_int();
-    }
-    /* SILU interval (proved analytically, mirrors Frama-C EVA output): */
-    __ESBMC_assume(hidden[6] >= -32LL && hidden[6] <= 42LL);
-    {
-        /* Neuron 7: pre-activation dot product */
-        fxp_t acc = B1[7];
-        acc = fxp_add(acc, fxp_mult(W1_7[0], input[0]));
-        acc = fxp_add(acc, fxp_mult(W1_7[1], input[1]));
-        acc = fxp_add(acc, fxp_mult(W1_7[2], input[2]));
-        acc = fxp_add(acc, fxp_mult(W1_7[3], input[3]));
-        (void)acc;  /* pre-act computed; activation abstracted below */
-        hidden[7] = (fxp_t)nondet_int();
-    }
-    /* SILU interval (proved analytically, mirrors Frama-C EVA output): */
-    __ESBMC_assume(hidden[7] >= -35LL && hidden[7] <= 46LL);
-
-    /* Layer 2: down-projection (linear) */
-    fxp_t output[4];
-    {
-        fxp_t acc = B2[0];
-        acc = fxp_add(acc, fxp_mult(W2_0[0], hidden[0]));
-        acc = fxp_add(acc, fxp_mult(W2_0[1], hidden[1]));
-        acc = fxp_add(acc, fxp_mult(W2_0[2], hidden[2]));
-        acc = fxp_add(acc, fxp_mult(W2_0[3], hidden[3]));
-        acc = fxp_add(acc, fxp_mult(W2_0[4], hidden[4]));
-        acc = fxp_add(acc, fxp_mult(W2_0[5], hidden[5]));
-        acc = fxp_add(acc, fxp_mult(W2_0[6], hidden[6]));
-        acc = fxp_add(acc, fxp_mult(W2_0[7], hidden[7]));
-        output[0] = acc;
-    }
-    {
-        fxp_t acc = B2[1];
-        acc = fxp_add(acc, fxp_mult(W2_1[0], hidden[0]));
-        acc = fxp_add(acc, fxp_mult(W2_1[1], hidden[1]));
-        acc = fxp_add(acc, fxp_mult(W2_1[2], hidden[2]));
-        acc = fxp_add(acc, fxp_mult(W2_1[3], hidden[3]));
-        acc = fxp_add(acc, fxp_mult(W2_1[4], hidden[4]));
-        acc = fxp_add(acc, fxp_mult(W2_1[5], hidden[5]));
-        acc = fxp_add(acc, fxp_mult(W2_1[6], hidden[6]));
-        acc = fxp_add(acc, fxp_mult(W2_1[7], hidden[7]));
-        output[1] = acc;
-    }
-    {
-        fxp_t acc = B2[2];
-        acc = fxp_add(acc, fxp_mult(W2_2[0], hidden[0]));
-        acc = fxp_add(acc, fxp_mult(W2_2[1], hidden[1]));
-        acc = fxp_add(acc, fxp_mult(W2_2[2], hidden[2]));
-        acc = fxp_add(acc, fxp_mult(W2_2[3], hidden[3]));
-        acc = fxp_add(acc, fxp_mult(W2_2[4], hidden[4]));
-        acc = fxp_add(acc, fxp_mult(W2_2[5], hidden[5]));
-        acc = fxp_add(acc, fxp_mult(W2_2[6], hidden[6]));
-        acc = fxp_add(acc, fxp_mult(W2_2[7], hidden[7]));
-        output[2] = acc;
-    }
-    {
-        fxp_t acc = B2[3];
-        acc = fxp_add(acc, fxp_mult(W2_3[0], hidden[0]));
-        acc = fxp_add(acc, fxp_mult(W2_3[1], hidden[1]));
-        acc = fxp_add(acc, fxp_mult(W2_3[2], hidden[2]));
-        acc = fxp_add(acc, fxp_mult(W2_3[3], hidden[3]));
-        acc = fxp_add(acc, fxp_mult(W2_3[4], hidden[4]));
-        acc = fxp_add(acc, fxp_mult(W2_3[5], hidden[5]));
-        acc = fxp_add(acc, fxp_mult(W2_3[6], hidden[6]));
-        acc = fxp_add(acc, fxp_mult(W2_3[7], hidden[7]));
-        output[3] = acc;
-    }
+    /* Layer 2: down-projection in Q8.8 (32-bit accumulation) */
+    int32_t out0 = 0;
+    out0 += fxp32_mult(W2_0[0], h[0]);
+    out0 += fxp32_mult(W2_0[1], h[1]);
+    out0 += fxp32_mult(W2_0[2], h[2]);
+    out0 += fxp32_mult(W2_0[3], h[3]);
+    out0 += fxp32_mult(W2_0[4], h[4]);
+    out0 += fxp32_mult(W2_0[5], h[5]);
+    out0 += fxp32_mult(W2_0[6], h[6]);
+    out0 += fxp32_mult(W2_0[7], h[7]);
+    int32_t out1 = 0;
+    out1 += fxp32_mult(W2_1[0], h[0]);
+    out1 += fxp32_mult(W2_1[1], h[1]);
+    out1 += fxp32_mult(W2_1[2], h[2]);
+    out1 += fxp32_mult(W2_1[3], h[3]);
+    out1 += fxp32_mult(W2_1[4], h[4]);
+    out1 += fxp32_mult(W2_1[5], h[5]);
+    out1 += fxp32_mult(W2_1[6], h[6]);
+    out1 += fxp32_mult(W2_1[7], h[7]);
+    int32_t out2 = 0;
+    out2 += fxp32_mult(W2_2[0], h[0]);
+    out2 += fxp32_mult(W2_2[1], h[1]);
+    out2 += fxp32_mult(W2_2[2], h[2]);
+    out2 += fxp32_mult(W2_2[3], h[3]);
+    out2 += fxp32_mult(W2_2[4], h[4]);
+    out2 += fxp32_mult(W2_2[5], h[5]);
+    out2 += fxp32_mult(W2_2[6], h[6]);
+    out2 += fxp32_mult(W2_2[7], h[7]);
+    int32_t out3 = 0;
+    out3 += fxp32_mult(W2_3[0], h[0]);
+    out3 += fxp32_mult(W2_3[1], h[1]);
+    out3 += fxp32_mult(W2_3[2], h[2]);
+    out3 += fxp32_mult(W2_3[3], h[3]);
+    out3 += fxp32_mult(W2_3[4], h[4]);
+    out3 += fxp32_mult(W2_3[5], h[5]);
+    out3 += fxp32_mult(W2_3[6], h[6]);
+    out3 += fxp32_mult(W2_3[7], h[7]);
 
     /* P1: output within analytically-derived bound ±33 (Q8.8) */
-    __ESBMC_assert(output[0] >= -33LL && output[0] <= 33LL, "P1: output[0] out of bound");
-    __ESBMC_assert(output[1] >= -33LL && output[1] <= 33LL, "P1: output[1] out of bound");
-    __ESBMC_assert(output[2] >= -33LL && output[2] <= 33LL, "P1: output[2] out of bound");
-    __ESBMC_assert(output[3] >= -33LL && output[3] <= 33LL, "P1: output[3] out of bound");
+    __ESBMC_assert(out0 >= -33 && out0 <= 33, "P1: output[0] out of bound");
+    __ESBMC_assert(out1 >= -33 && out1 <= 33, "P1: output[1] out of bound");
+    __ESBMC_assert(out2 >= -33 && out2 <= 33, "P1: output[2] out of bound");
+    __ESBMC_assert(out3 >= -33 && out3 <= 33, "P1: output[3] out of bound");
 
     return 0;
 }

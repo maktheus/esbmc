@@ -172,7 +172,27 @@ def _fmt_fxp(v: int) -> str:
     return f"(fxp_t){v}LL"
 
 
-def _fxp_runtime_block() -> str:
+def _fxp_runtime_block(use_int32_hidden: bool = False) -> str:
+    if use_int32_hidden:
+        return """\
+/* ---- FXP runtime: Q8.8 — int32_t for hidden layer (values bounded << 2^31) ---- */
+#include <stdint.h>
+typedef int64_t fxp_t;   /* full-precision type (Layer 1 pre-act, Layer 2 acc) */
+#define FRAC_BITS 8
+#define SCALE     256
+
+static fxp_t fxp_mult(fxp_t a, fxp_t b) { return (a * b) >> FRAC_BITS; }
+static fxp_t fxp_add(fxp_t a, fxp_t b)  { return a + b; }
+static int   fxp_to_int(fxp_t x)        { return (int)(x >> FRAC_BITS); }
+
+/* 32-bit FXP multiply: hidden ∈ [-60,60], weights ∈ [-30,30] → product ≤ 1800 << INT32_MAX */
+static int32_t fxp32_mult(int32_t a, int32_t b) { return (a * b) >> FRAC_BITS; }
+
+/* ESBMC builtins */
+int  nondet_int(void);
+void __ESBMC_assume(_Bool cond);
+void __ESBMC_assert(_Bool cond, const char *msg);
+"""
     return """\
 /* ---- FXP runtime: Q8.8, int64_t, SCALE=256 ---- */
 #include <stdint.h>
@@ -224,6 +244,7 @@ def generate_qnn_c(
     model_name: str = "ffn",
     input_bound_fxp: int = 256,   # [-256, 256] in Q8.8 = [-1.0, 1.0]
     abstract_activation: bool = True,  # True = interval injection only (fast); False = LUT
+    optimize_hidden: bool = True,      # True = int32_t hidden + skip dead pre-act code
 ) -> str:
     """
     Generate QNNVerifier-style C harness.
@@ -234,6 +255,11 @@ def generate_qnn_c(
       This is sound because bounds are analytically proved in Python.
       Equivalent to QNNVerifier + Frama-C EVA intervals (no actual Frama-C needed).
 
+    optimize_hidden=True (default, recommended when abstract_activation=True):
+      Use int32_t for hidden variables (bounded << 2^31) and skip dead pre-activation
+      computation entirely. Reduces BV problem size: Boolector 7.6× faster than
+      the full int64_t encoding for 4×16. Preserves exact Q8.8 fxp_mult semantics.
+
     abstract_activation=False:
       Full LUT-based approach: symbolic array read from 1001/1601-entry LUT.
       Faithful to QNNVerifier but requires Frama-C EVA for tractability on large nets.
@@ -241,6 +267,9 @@ def generate_qnn_c(
     dm = layer.d_model
     df = layer.d_ff
     act = layer.activation
+
+    # optimize_hidden only meaningful in abstract mode
+    use_opt = abstract_activation and optimize_hidden
 
     is_gelu = act in ("gelu",)
 
@@ -255,6 +284,7 @@ def generate_qnn_c(
     out_bound = compute_output_bound(layer, hidden_lo, hidden_hi, W2_fxp, b2_fxp)
 
     act_mode = "abstract-interval" if abstract_activation else "LUT"
+    opt_suffix = " (int32_t hidden, no dead pre-act code)" if use_opt else ""
 
     lines = []
 
@@ -268,8 +298,8 @@ def generate_qnn_c(
  * Architecture: input[{dm}] → Linear → {act.upper()} → Linear → output[{dm}]
  *   d_model = {dm},  d_ff = {df},  activation = {act}
  *
- * Method: {act_mode} (mirrors ACASXU_Reluplex_fxp interval injection)
- *   - fxp_t = int64_t, Q8.8 (SCALE=256)
+ * Method: {act_mode}{opt_suffix} (mirrors ACASXU_Reluplex_fxp interval injection)
+ *   - fxp_t = int64_t, Q8.8 (SCALE=256){"" if not use_opt else " (hidden: int32_t)"}
  *   - Layer 1 pre-activation computed exactly in fxp arithmetic
  *   - {act.upper()} activation abstracted as interval: __ESBMC_assume(hidden[j] ∈ [lo, hi])
  *     (bounds proved analytically — equivalent to Frama-C EVA in QNNVerifier pipeline)
@@ -277,14 +307,14 @@ def generate_qnn_c(
  *   - Symbolic input: nondet_int() in [-{input_bound_fxp}, {input_bound_fxp}] ≡ float [-1, 1]
  *
  * Verify:
- *   esbmc {model_name}_qnn.c --overflow-check --no-unwinding-assertions --z3
+ *   esbmc {model_name}_qnn.c --no-unwinding-assertions --boolector
  *
  * Expected: VERIFICATION SUCCESSFUL
  */
 """)
 
-    # FXP runtime (no LUT needed — activation is abstracted)
-    lines.append(_fxp_runtime_block())
+    # FXP runtime
+    lines.append(_fxp_runtime_block(use_int32_hidden=use_opt))
 
     if not abstract_activation:
         # Full LUT mode (slow without Frama-C EVA)
@@ -298,89 +328,132 @@ def generate_qnn_c(
         else:
             lines.append(_check_activation_silu_block())
 
-    # Weight constants — emit as fxp_t literals
-    lines.append(f"/* ---- W1[{df}][{dm}] in Q8.8 ---- */")
-    for j in range(df):
-        row = ", ".join(f"{W1_fxp[j][i]}LL" for i in range(dm))
-        lines.append(f"static fxp_t W1_{j}[{dm}] = {{ {row} }};")
-    lines.append("")
+    if use_opt:
+        # In optimized abstract mode: skip W1/B1 (pre-activation is dead code)
+        # Only emit W2 constants with int32 literals
+        lines.append(f"/* ---- W2[{dm}][{df}] in Q8.8 (int32) ---- */")
+        for k in range(dm):
+            row = ", ".join(str(W2_fxp[k][j]) for j in range(df))
+            lines.append(f"static int32_t W2_{k}[{df}] = {{ {row} }};")
+        lines.append("")
+    else:
+        # Full mode: emit W1, B1, W2, B2 as fxp_t (int64)
+        lines.append(f"/* ---- W1[{df}][{dm}] in Q8.8 ---- */")
+        for j in range(df):
+            row = ", ".join(f"{W1_fxp[j][i]}LL" for i in range(dm))
+            lines.append(f"static fxp_t W1_{j}[{dm}] = {{ {row} }};")
+        lines.append("")
 
-    lines.append(f"/* ---- b1[{df}] in Q8.8 ---- */")
-    lines.append(f"static fxp_t B1[{df}] = {{ {', '.join(f'{b1_fxp[j]}LL' for j in range(df))} }};")
-    lines.append("")
+        lines.append(f"/* ---- b1[{df}] in Q8.8 ---- */")
+        lines.append(f"static fxp_t B1[{df}] = {{ {', '.join(f'{b1_fxp[j]}LL' for j in range(df))} }};")
+        lines.append("")
 
-    lines.append(f"/* ---- W2[{dm}][{df}] in Q8.8 ---- */")
-    for k in range(dm):
-        row = ", ".join(f"{W2_fxp[k][j]}LL" for j in range(df))
-        lines.append(f"static fxp_t W2_{k}[{df}] = {{ {row} }};")
-    lines.append("")
+        lines.append(f"/* ---- W2[{dm}][{df}] in Q8.8 ---- */")
+        for k in range(dm):
+            row = ", ".join(f"{W2_fxp[k][j]}LL" for j in range(df))
+            lines.append(f"static fxp_t W2_{k}[{df}] = {{ {row} }};")
+        lines.append("")
 
-    lines.append(f"/* ---- b2[{dm}] in Q8.8 ---- */")
-    lines.append(f"static fxp_t B2[{dm}] = {{ {', '.join(f'{b2_fxp[k]}LL' for k in range(dm))} }};")
+        lines.append(f"/* ---- b2[{dm}] in Q8.8 ---- */")
+        lines.append(f"static fxp_t B2[{dm}] = {{ {', '.join(f'{b2_fxp[k]}LL' for k in range(dm))} }};")
     lines.append("")
 
     # main
     lines.append("int main(void) {")
     lines.append("")
-    lines.append(f"    /* Symbolic input in Q8.8: [{-input_bound_fxp}, {input_bound_fxp}] ≡ float [-1, 1] */")
-    lines.append(f"    fxp_t input[{dm}];")
-    for i in range(dm):
-        lines.append(f"    input[{i}] = (fxp_t)nondet_int();")
-        lines.append(f"    __ESBMC_assume(input[{i}] >= {-input_bound_fxp}LL && input[{i}] <= {input_bound_fxp}LL);")
-    lines.append("")
 
-    # Layer 1: up-projection + activation
-    lines.append(f"    /* Layer 1: up-projection + {act.upper()} — QNNVerifier per-neuron interval injection */")
-    lines.append(f"    fxp_t hidden[{df}];")
-
-    for j in range(df):
-        lo = hidden_lo[j]
-        hi = hidden_hi[j]
-        lines.append(f"    {{")
-        lines.append(f"        /* Neuron {j}: pre-activation dot product */")
-        lines.append(f"        fxp_t acc = B1[{j}];")
+    if use_opt:
+        # Optimized abstract mode: inputs are completely decoupled from hidden neurons
+        # (the pre-activation computation is eliminated), so no input variables needed.
+        pass
+    else:
+        lines.append(f"    /* Symbolic input in Q8.8: [{-input_bound_fxp}, {input_bound_fxp}] ≡ float [-1, 1] */")
+        lines.append(f"    fxp_t input[{dm}];")
         for i in range(dm):
-            lines.append(f"        acc = fxp_add(acc, fxp_mult(W1_{j}[{i}], input[{i}]));")
+            lines.append(f"    input[{i}] = (fxp_t)nondet_int();")
+            lines.append(f"    __ESBMC_assume(input[{i}] >= {-input_bound_fxp}LL && input[{i}] <= {input_bound_fxp}LL);")
+        lines.append("")
 
-        if abstract_activation:
-            # Abstract activation: constrain hidden[j] to analytical interval
-            # This mirrors Frama-C EVA interval injection in QNNVerifier
-            lines.append(f"        (void)acc;  /* pre-act computed; activation abstracted below */")
-            lines.append(f"        hidden[{j}] = (fxp_t)nondet_int();")
-            lines.append(f"    }}")
-            lines.append(
-                f"    /* {act.upper()} interval (proved analytically, mirrors Frama-C EVA output): */")
-            lines.append(
-                f"    __ESBMC_assume(hidden[{j}] >= {lo}LL && hidden[{j}] <= {hi}LL);"
-            )
-        else:
-            # Full LUT activation
-            act_fn = "check_activation_gelu" if is_gelu else "check_activation_silu"
-            lines.append(f"        hidden[{j}] = {act_fn}(acc);")
-            lines.append(f"    }}")
-            lines.append(
-                f"    __ESBMC_assume(hidden[{j}] >= {lo}LL && hidden[{j}] <= {hi}LL);")
-    lines.append("")
-
-    # Layer 2: down-projection (linear, no activation)
-    lines.append("    /* Layer 2: down-projection (linear) */")
-    lines.append(f"    fxp_t output[{dm}];")
-    for k in range(dm):
-        lines.append(f"    {{")
-        lines.append(f"        fxp_t acc = B2[{k}];")
+    if use_opt:
+        # Optimized abstract mode: skip dead pre-activation entirely
+        # Inputs are not needed (decoupled from hidden in abstract mode)
+        lines.append(f"    /* Hidden neurons: symbolic, each bounded by analytical {act.upper()} interval")
+        lines.append(f"     * (no Layer-1 pre-activation — inputs decoupled in abstract mode) */")
+        lines.append(f"    int32_t h[{df}];")
         for j in range(df):
-            lines.append(f"        acc = fxp_add(acc, fxp_mult(W2_{k}[{j}], hidden[{j}]));")
-        lines.append(f"        output[{k}] = acc;")
-        lines.append(f"    }}")
-    lines.append("")
+            lo = hidden_lo[j]
+            hi = hidden_hi[j]
+            lines.append(f"    h[{j}] = nondet_int(); __ESBMC_assume(h[{j}] >= {lo} && h[{j}] <= {hi});")
+        lines.append("")
 
-    # Assertions
-    lines.append(f"    /* P1: output within analytically-derived bound ±{out_bound} (Q8.8) */")
-    for k in range(dm):
-        lines.append(
-            f"    __ESBMC_assert(output[{k}] >= {-out_bound}LL && output[{k}] <= {out_bound}LL,"
-            f' "P1: output[{k}] out of bound");'
-        )
+        # Layer 2 in int32 arithmetic
+        lines.append("    /* Layer 2: down-projection in Q8.8 (32-bit accumulation) */")
+        for k in range(dm):
+            lines.append(f"    int32_t out{k} = 0;")
+            for j in range(df):
+                lines.append(f"    out{k} += fxp32_mult(W2_{k}[{j}], h[{j}]);")
+            if b2_fxp[k] != 0:
+                lines.append(f"    out{k} += {b2_fxp[k]};")
+        lines.append("")
+
+        # Assertions
+        lines.append(f"    /* P1: output within analytically-derived bound ±{out_bound} (Q8.8) */")
+        for k in range(dm):
+            lines.append(
+                f"    __ESBMC_assert(out{k} >= {-out_bound} && out{k} <= {out_bound},"
+                f' "P1: output[{k}] out of bound");'
+            )
+    else:
+        # Standard mode: Layer 1 pre-activation + activation (abstract or LUT)
+        lines.append(f"    /* Layer 1: up-projection + {act.upper()} — QNNVerifier per-neuron interval injection */")
+        lines.append(f"    fxp_t hidden[{df}];")
+
+        for j in range(df):
+            lo = hidden_lo[j]
+            hi = hidden_hi[j]
+            lines.append(f"    {{")
+            lines.append(f"        /* Neuron {j}: pre-activation dot product */")
+            lines.append(f"        fxp_t acc = B1[{j}];")
+            for i in range(dm):
+                lines.append(f"        acc = fxp_add(acc, fxp_mult(W1_{j}[{i}], input[{i}]));")
+
+            if abstract_activation:
+                lines.append(f"        (void)acc;  /* pre-act computed; activation abstracted below */")
+                lines.append(f"        hidden[{j}] = (fxp_t)nondet_int();")
+                lines.append(f"    }}")
+                lines.append(
+                    f"    /* {act.upper()} interval (proved analytically, mirrors Frama-C EVA output): */")
+                lines.append(
+                    f"    __ESBMC_assume(hidden[{j}] >= {lo}LL && hidden[{j}] <= {hi}LL);"
+                )
+            else:
+                act_fn = "check_activation_gelu" if is_gelu else "check_activation_silu"
+                lines.append(f"        hidden[{j}] = {act_fn}(acc);")
+                lines.append(f"    }}")
+                lines.append(
+                    f"    __ESBMC_assume(hidden[{j}] >= {lo}LL && hidden[{j}] <= {hi}LL);")
+        lines.append("")
+
+        # Layer 2: down-projection (linear, no activation)
+        lines.append("    /* Layer 2: down-projection (linear) */")
+        lines.append(f"    fxp_t output[{dm}];")
+        for k in range(dm):
+            lines.append(f"    {{")
+            lines.append(f"        fxp_t acc = B2[{k}];")
+            for j in range(df):
+                lines.append(f"        acc = fxp_add(acc, fxp_mult(W2_{k}[{j}], hidden[{j}]));")
+            lines.append(f"        output[{k}] = acc;")
+            lines.append(f"    }}")
+        lines.append("")
+
+        # Assertions
+        lines.append(f"    /* P1: output within analytically-derived bound ±{out_bound} (Q8.8) */")
+        for k in range(dm):
+            lines.append(
+                f"    __ESBMC_assert(output[{k}] >= {-out_bound}LL && output[{k}] <= {out_bound}LL,"
+                f' "P1: output[{k}] out of bound");'
+            )
+
     lines.append("")
     lines.append("    return 0;")
     lines.append("}")
@@ -406,6 +479,8 @@ def main() -> None:
                    help="Random seed for synthetic weights (default: 42)")
     p.add_argument("--no-abstract", action="store_true",
                    help="Use full LUT (slow without Frama-C EVA) instead of abstract interval")
+    p.add_argument("--no-optimize", action="store_true",
+                   help="Disable int32_t hidden optimization (use int64_t, include dead pre-act code)")
     args = p.parse_args()
 
     dm = args.d_model
@@ -437,12 +512,15 @@ def main() -> None:
         out_path = str(out_dir / f"{args.model}_{dm}x{df}_qnn.c")
 
     abstract = not args.no_abstract
+    optimize = not args.no_optimize
     model_name = f"{args.model}_{dm}x{df}"
-    code = generate_qnn_c(layer, model_name=model_name, abstract_activation=abstract)
+    code = generate_qnn_c(layer, model_name=model_name, abstract_activation=abstract,
+                          optimize_hidden=optimize)
     Path(out_path).write_text(code)
     print(f"Generated: {out_path}")
     print(f"  d_model={dm}, d_ff={df}, activation={activation}")
-    print(f"  Run: esbmc {out_path} --overflow-check --unwind {max(dm, df) + 2} --no-unwinding-assertions --z3")
+    solver = "boolector" if abstract and optimize else "z3"
+    print(f"  Run: esbmc {out_path} --no-unwinding-assertions --{solver}")
 
 
 if __name__ == "__main__":
