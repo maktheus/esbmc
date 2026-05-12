@@ -1,0 +1,6 @@
+\babel@toc {brazil}{}\relax 
+\beamer@sectionintoc {1}{Motivação e Contexto}{3}{0}{1}
+\beamer@sectionintoc {2}{Caso de Estudo 1 --- MLP XOR}{5}{0}{2}
+\beamer@sectionintoc {3}{Caso de Estudo 2 --- FFN de LLM}{12}{0}{3}
+\beamer@sectionintoc {4}{Contribuições Desta Sessão}{15}{0}{4}
+\beamer@sectionintoc {5}{Próximos Passos}{17}{0}{5}
