@@ -1,10 +1,10 @@
 /*
- * verify_mlp_qnn.c — Harness de verificação formal (ESBMC)
+ * verify_mlp_qnn.c — Harness de verificacao formal (ESBMC)
  *
- * Gerado por quantize_mlp.py a partir de mlp_weights.h
+ * Gerado por quantize_mlp.py a partir de mlp_model.onnx
  *
- * Modelo: MLP 2→4→1, XOR
- * Quantização: inteiros puros, scale=256 (Q8.8, amigável para ESP32)
+ * Modelo: MLP 2->4->1, XOR
+ * Quantizacao: inteiros puros, scale=256 (Q8.8)
  *
  * Propriedades verificadas (4 casos concretos XOR):
  *   P1: mlp(0,0) <= 0   (XOR = false)
@@ -42,7 +42,6 @@ static int mlp_forward(int x1, int x2) {
         int pre = (x1 * qw_hidden[i][0]) / 256
                 + (x2 * qw_hidden[i][1]) / 256
                 + qb_hidden[i];
-        /* intervalo conservador pós-ReLU (injeção de invariante) */
         __ESBMC_assume(pre >= -1280 && pre <= 1280);
         h[i] = relu_int(pre);
     }

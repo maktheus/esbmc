@@ -1,52 +1,71 @@
 """
-quantize_mlp.py — Lê mlp_weights.h, quantiza para inteiros (scale=256) e gera verify_mlp_qnn.c
+quantize_mlp.py — Lê pesos do MLP (via ONNX ou mlp_weights.h), quantiza para
+inteiros (scale=256) e gera verify_mlp_qnn.c pronto para ESBMC.
 
 Pipeline completo:
-  mlp_training.py  →  mlp_weights.h
+  mlp_training.py  →  mlp_model.onnx  (ou mlp_weights.h como fallback)
                               ↓
                      quantize_mlp.py   ←── este script
                               ↓
                     verify_mlp_qnn.c
                               ↓
   esbmc verify_mlp_qnn.c --no-unwinding-assertions --boolector
+
+Uso:
+  python quantize_mlp.py                   # usa mlp_model.onnx (padrão)
+  python quantize_mlp.py --source h        # usa mlp_weights.h
+  python quantize_mlp.py --source onnx     # usa mlp_model.onnx
 """
 
 import re
+import sys
+import argparse
 
+ONNX_FILE    = "mlp_model.onnx"
 WEIGHTS_FILE = "mlp_weights.h"
 OUTPUT_FILE  = "verify_mlp_qnn.c"
-SCALE        = 256          # Q8.8 — inteiro puro, amigável para ESP32/embed
-HIDDEN_BOUND = 5.0          # limites conservadores pós-ReLU (evita busca infinita no SMT)
+SCALE        = 256          # Q8.8
+HIDDEN_BOUND = 5.0
 
 # ---------------------------------------------------------------------------
-# 1. Parseia mlp_weights.h
+# 1. Carrega pesos — ONNX (padrão) ou .h (fallback)
 # ---------------------------------------------------------------------------
 
-def parse_floats(text):
-    """Extrai todos os literais float de uma string."""
-    return [float(x.rstrip('f')) for x in re.findall(r'-?\d+\.\d+(?:e[+-]?\d+)?f?', text)]
+parser = argparse.ArgumentParser()
+parser.add_argument("--source", choices=["onnx", "h"], default="onnx",
+                    help="Fonte dos pesos: 'onnx' (padrão) ou 'h'")
+args = parser.parse_args()
 
-with open(WEIGHTS_FILE) as f:
-    src = f.read()
+if args.source == "onnx":
+    from onnx_mlp_extractor import extract_mlp_weights
+    weights  = extract_mlp_weights(ONNX_FILE)
+    w_hidden = weights["w_hidden"]   # list[list[float]] [4][2]
+    b_hidden = weights["b_hidden"]   # list[float] [4]
+    w_out    = weights["w_out"]      # list[float] [4]
+    b_out    = weights["b_out"]      # float
+    source_label = ONNX_FILE
+else:
+    def parse_floats(text):
+        return [float(x.rstrip('f')) for x in re.findall(r'-?\d+\.\d+(?:e[+-]?\d+)?f?', text)]
 
-# w_hidden[4][2]
-m = re.search(r'w_hidden\[4\]\[2\]\s*=\s*\{([^;]+)\}', src, re.DOTALL)
-vals = parse_floats(m.group(1))
-w_hidden = [[vals[i*2], vals[i*2+1]] for i in range(4)]
+    with open(WEIGHTS_FILE) as f:
+        src = f.read()
 
-# b_hidden[4]
-m = re.search(r'b_hidden\[4\]\s*=\s*\{([^;]+)\}', src, re.DOTALL)
-b_hidden = parse_floats(m.group(1))
+    m = re.search(r'w_hidden\[4\]\[2\]\s*=\s*\{([^;]+)\}', src, re.DOTALL)
+    vals = parse_floats(m.group(1))
+    w_hidden = [[vals[i*2], vals[i*2+1]] for i in range(4)]
 
-# w_out[4]
-m = re.search(r'w_out\[4\]\s*=\s*\{([^;]+)\}', src, re.DOTALL)
-w_out = parse_floats(m.group(1))
+    m = re.search(r'b_hidden\[4\]\s*=\s*\{([^;]+)\}', src, re.DOTALL)
+    b_hidden = parse_floats(m.group(1))
 
-# b_out
-m = re.search(r'b_out\s*=\s*(-?\d+\.\d+(?:e[+-]?\d+)?f?)', src)
-b_out = float(m.group(1).rstrip('f'))
+    m = re.search(r'w_out\[4\]\s*=\s*\{([^;]+)\}', src, re.DOTALL)
+    w_out = parse_floats(m.group(1))
 
-print("=== Pesos lidos de mlp_weights.h ===")
+    m = re.search(r'b_out\s*=\s*(-?\d+\.\d+(?:e[+-]?\d+)?f?)', src)
+    b_out = float(m.group(1).rstrip('f'))
+    source_label = WEIGHTS_FILE
+
+print(f"=== Pesos lidos de {source_label} ===")
 for i, row in enumerate(w_hidden):
     print(f"  w_hidden[{i}] = {row}")
 print(f"  b_hidden   = {b_hidden}")
@@ -74,7 +93,7 @@ print(f"  qw_out     = {qw_out}")
 print(f"  qb_out     = {qb_out}")
 
 # ---------------------------------------------------------------------------
-# 3. Valida manualmente as 4 entradas XOR (simulação Python antes do ESBMC)
+# 3. Valida as 4 entradas XOR (simulação Python antes do ESBMC)
 # ---------------------------------------------------------------------------
 
 def relu(x): return max(0, x)
@@ -102,14 +121,14 @@ for x1, x2, expect_true in inputs_xor:
     f_score  = mlp_float(x1/SCALE, x2/SCALE)
     q_score  = mlp_qnn(x1, x2)
     q_pass   = (q_score > 0) == expect_true
-    status   = "✓" if q_pass else "✗ FALHOU"
-    print(f"  ({x1//SCALE},{x2//SCALE}): float={f_score:.3f}  quant={q_score}  esperado={'T' if expect_true else 'F'}  {status}")
+    status   = "OK" if q_pass else "FALHOU"
+    print(f"  ({x1//SCALE},{x2//SCALE}): float={f_score:.3f}  quant={q_score}  esperado={'T' if expect_true else 'F'}  [{status}]")
     if not q_pass:
         ok = False
 
 if not ok:
-    print("\n[AVISO] Modelo quantizado não satisfaz todas as propriedades XOR!")
-    print("        Verifique os pesos ou aumente a precisão da quantização.")
+    print("\n[AVISO] Modelo quantizado nao satisfaz todas as propriedades XOR!")
+    sys.exit(1)
 else:
     print("\n[OK] Modelo quantizado satisfaz XOR para todas as 4 entradas.")
 
@@ -119,12 +138,12 @@ else:
 
 c = f"""\
 /*
- * verify_mlp_qnn.c — Harness de verificação formal (ESBMC)
+ * verify_mlp_qnn.c — Harness de verificacao formal (ESBMC)
  *
- * Gerado por quantize_mlp.py a partir de {WEIGHTS_FILE}
+ * Gerado por quantize_mlp.py a partir de {source_label}
  *
- * Modelo: MLP 2→4→1, XOR
- * Quantização: inteiros puros, scale={SCALE} (Q8.8, amigável para ESP32)
+ * Modelo: MLP 2->4->1, XOR
+ * Quantizacao: inteiros puros, scale={SCALE} (Q8.8)
  *
  * Propriedades verificadas (4 casos concretos XOR):
  *   P1: mlp(0,0) <= 0   (XOR = false)
@@ -162,7 +181,6 @@ static int mlp_forward(int x1, int x2) {{
         int pre = (x1 * qw_hidden[i][0]) / {SCALE}
                 + (x2 * qw_hidden[i][1]) / {SCALE}
                 + qb_hidden[i];
-        /* intervalo conservador pós-ReLU (injeção de invariante) */
         __ESBMC_assume(pre >= -{q_bound} && pre <= {q_bound});
         h[i] = relu_int(pre);
     }}
