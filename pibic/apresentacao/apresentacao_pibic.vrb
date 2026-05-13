@@ -1,0 +1,33 @@
+\frametitle{Próximo Passo --- Verificação de Neurônios Mortos}
+\begin{columns}
+    \column{0.5\textwidth}
+    \textbf{Definição}: neurônio \emph{morto} é aquele cuja ReLU sempre retorna 0
+    independente da entrada --- contribuição nula para a saída.
+
+    \vspace{0.5em}
+    \textbf{Abordagem com ESBMC}:
+    \begin{itemize}
+      \item Entradas \textbf{simbólicas} (nondet) com domínio $[0,256]^2$
+      \item Para cada neurônio $i$: assert que $h_i = 0$ sempre
+      \item \textcolor{failred}{\textbf{FAILED}} $\Rightarrow$ neurônio está vivo
+      \item \textcolor{okgreen}{\textbf{SUCCESS}} $\Rightarrow$ neurônio é morto
+    \end{itemize}
+
+    \column{0.48\textwidth}
+    \begin{lstlisting}[style=cstyle, title=verify\_dead\_neurons.c (próximo)]
+int x1 = nondet_int();
+int x2 = nondet_int();
+__ESBMC_assume(x1 >= 0 && x1 <= 256);
+__ESBMC_assume(x2 >= 0 && x2 <= 256);
+
+/* Calcular h[i]... */
+
+/* FAILED = neuronio vivo (existe input)
+   SUCCESS = neuronio sempre morto   */
+__ESBMC_assert(h[0] == 0,
+  "neuronio 0 sempre morto?");
+__ESBMC_assert(h[1] == 0,
+  "neuronio 1 sempre morto?");
+/* ... */
+    \end{lstlisting}
+  \end{columns}

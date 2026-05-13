@@ -1,0 +1,762 @@
+\documentclass[aspectratio=169]{beamer}
+
+% ── Tema ──────────────────────────────────────────────────────────────────────
+\usetheme{Madrid}
+\usecolortheme{seahorse}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+% ── Pacotes ───────────────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath, amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{graphicx}
+
+% ── TikZ styles (definidos no preambulo para evitar conflito com beamer #1) ───
+\tikzset{
+  pipeblue/.style={draw, rounded corners, fill=blue!20, minimum height=0.75cm,
+                   minimum width=3cm, text centered, font=\small, inner sep=3pt},
+  pipeorange/.style={draw, rounded corners, fill=orange!20, minimum height=0.75cm,
+                     minimum width=3cm, text centered, font=\small, inner sep=3pt},
+  pipeorangedash/.style={draw, dashed, rounded corners, fill=orange!10, minimum height=0.75cm,
+                         minimum width=3cm, text centered, font=\small, inner sep=3pt},
+  pipepurple/.style={draw, rounded corners, fill=purple!15, minimum height=0.75cm,
+                     minimum width=3cm, text centered, font=\small, inner sep=3pt},
+  pipeyellow/.style={draw, rounded corners, fill=yellow!30, minimum height=0.75cm,
+                     minimum width=3cm, text centered, font=\small, inner sep=3pt},
+  pipered/.style={draw, rounded corners, fill=red!10, minimum height=0.75cm,
+                  minimum width=3cm, text centered, font=\small, inner sep=3pt},
+  pipegreen/.style={draw, rounded corners, fill=green!20, minimum height=0.75cm,
+                    minimum width=3cm, text centered, font=\small, inner sep=3pt},
+  pipegreendk/.style={draw, rounded corners, fill=green!30, minimum height=0.75cm,
+                      minimum width=3cm, text centered, font=\small, inner sep=3pt},
+  motblue/.style={draw, rounded corners, fill=blue!15, minimum width=2.8cm,
+                  minimum height=0.6cm, text centered, font=\small},
+  motorange/.style={draw, rounded corners, fill=orange!20, minimum width=2.8cm,
+                    minimum height=0.6cm, text centered, font=\small},
+  motred/.style={draw, rounded corners, fill=red!10, minimum width=2.8cm,
+                 minimum height=0.6cm, text centered, font=\small},
+  motgreen/.style={draw, rounded corners, fill=green!20, minimum width=2.8cm,
+                   minimum height=0.6cm, text centered, font=\small},
+  motgreendk/.style={draw, rounded corners, fill=green!30, minimum width=2.8cm,
+                     minimum height=0.6cm, text centered, font=\small},
+  piparr/.style={-Latex, thick, esbmcblue},
+  piplbl/.style={font=\scriptsize, text=gray},
+}
+
+% ── Cores ─────────────────────────────────────────────────────────────────────
+\definecolor{esbmcblue}{RGB}{0,82,156}
+\definecolor{codegray}{RGB}{245,245,245}
+\definecolor{codegreen}{RGB}{0,128,0}
+\definecolor{codepurple}{RGB}{128,0,128}
+\definecolor{okgreen}{RGB}{0,140,0}
+\definecolor{failred}{RGB}{180,0,0}
+
+% ── Listings ──────────────────────────────────────────────────────────────────
+\lstdefinestyle{cstyle}{
+  language=C,
+  basicstyle=\ttfamily\scriptsize,
+  backgroundcolor=\color{codegray},
+  keywordstyle=\color{esbmcblue}\bfseries,
+  commentstyle=\color{codegreen},
+  stringstyle=\color{codepurple},
+  frame=single,
+  rulecolor=\color{gray!40},
+  breaklines=true,
+  tabsize=2,
+  showstringspaces=false,
+}
+\lstdefinestyle{pystyle}{
+  language=Python,
+  basicstyle=\ttfamily\scriptsize,
+  backgroundcolor=\color{codegray},
+  keywordstyle=\color{esbmcblue}\bfseries,
+  commentstyle=\color{codegreen},
+  stringstyle=\color{codepurple},
+  frame=single,
+  rulecolor=\color{gray!40},
+  breaklines=true,
+  tabsize=2,
+  showstringspaces=false,
+}
+
+% ── Metadados ─────────────────────────────────────────────────────────────────
+\title[Verificação Formal de Redes Neurais]{%
+  Verificação Formal de Redes Neurais com ESBMC}
+
+\subtitle{Pipeline: PyTorch $\to$ ONNX $\to$ Quantização $\to$ Verificação SMT}
+
+\author{Matheus Serrão Uchoa}
+
+\institute{Laboratório de Verificação Formal --- PIBIC}
+
+\date{2026}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\begin{document}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Sumário}
+  \tableofcontents
+\end{frame}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Motivação e Contexto}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{frame}[fragile]{Por que verificar formalmente redes neurais?}
+  \begin{columns}
+    \column{0.55\textwidth}
+    \textbf{Problema}: redes neurais em sistemas críticos
+    \begin{itemize}
+      \item Veículos autônomos
+      \item Diagnóstico médico
+      \item Sistemas embarcados (ESP32, MCUs)
+    \end{itemize}
+    \vspace{0.4em}
+    \textbf{Limitação do teste clássico}:
+    \begin{itemize}
+      \item Testa \emph{amostras} do espaço de entrada
+      \item Não garante comportamento para \emph{todas} as entradas
+    \end{itemize}
+    \vspace{0.4em}
+    \begin{alertblock}{Verificação formal com ESBMC}
+      \centering Prova matemática de propriedades\\para \textbf{todo} input válido
+    \end{alertblock}
+
+    \column{0.42\textwidth}
+    \begin{tikzpicture}[scale=0.9]
+      \node[motblue]    (train)  at (0,3.5) {Treinamento};
+      \node[motorange]  (test)   at (0,2.5) {Teste (amostras)};
+      \node[motred]     (deploy) at (0,1.5) {\textcolor{failred}{Deploy (risco)}};
+      \node[motgreen]   (verify) at (0,0.5) {\textcolor{okgreen}{Verif.\ Formal}};
+      \node[motgreendk] (safe)   at (0,-0.3) {\textcolor{okgreen}{Deploy seguro}};
+      \draw[-Latex] (train)  -- (test);
+      \draw[-Latex] (test)   -- (deploy);
+      \draw[-Latex, dashed, esbmcblue, thick] (test) -- ++(1.8,0) |- (verify);
+      \draw[-Latex] (verify) -- (safe);
+    \end{tikzpicture}
+  \end{columns}
+\end{frame}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\begin{frame}{ESBMC --- Bounded Model Checker}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \textbf{ESBMC} --- Efficient SMT-Based BMC:
+    \begin{itemize}
+      \item Verifica programas C/C++ via SMT
+      \item Solvers: Z3, Boolector, Bitwuzla
+      \item Primitivas essenciais:
+        \begin{itemize}
+          \item \texttt{\_\_ESBMC\_assume(cond)} --- restringe busca
+          \item \texttt{\_\_ESBMC\_assert(cond, msg)} --- propriedade
+        \end{itemize}
+    \end{itemize}
+    \vspace{0.5em}
+    \begin{block}{Por que ponto fixo em vez de float?}
+      \texttt{--floatbv} usa teoria IEEE 754 --- exponencialmente mais difícil.
+      Ponto fixo reduz a \textbf{bit-vector arithmetic}: Z3/Boolector
+      resolvem em segundos.
+    \end{block}
+
+    \column{0.47\textwidth}
+    \begin{exampleblock}{Fluxo de verificação}
+      \begin{enumerate}
+        \item Pesos quantizados $\to$ constantes C
+        \item \texttt{nondet\_int()} para entradas simbólicas
+        \item \texttt{\_\_ESBMC\_assume} para domínio
+        \item \texttt{\_\_ESBMC\_assert} para propriedades
+        \item Solver BV prova (ou refuta) formalmente
+      \end{enumerate}
+    \end{exampleblock}
+  \end{columns}
+\end{frame}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Caso de Estudo 1 --- MLP XOR}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{frame}[fragile]{MLP XOR --- Arquitetura e Problema}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \textbf{Rede}: MLP 2\;$\to$\;4\;$\to$\;1
+    \begin{itemize}
+      \item Tarefa: classificar XOR binário
+      \item Oculta: ReLU \quad Saída: Sigmoid
+      \item Framework: PyTorch
+    \end{itemize}
+    \vspace{0.5em}
+    \begin{center}
+      \begin{tabular}{cc|c}
+        \toprule
+        $x_1$ & $x_2$ & XOR \\
+        \midrule
+        0 & 0 & \textcolor{failred}{0} \\
+        0 & 1 & \textcolor{okgreen}{1} \\
+        1 & 0 & \textcolor{okgreen}{1} \\
+        1 & 1 & \textcolor{failred}{0} \\
+        \bottomrule
+      \end{tabular}
+    \end{center}
+
+    \column{0.47\textwidth}
+    \begin{tikzpicture}[scale=0.85,
+      nd/.style={circle, draw, fill=blue!15, minimum size=0.65cm, font=\scriptsize}]
+      \node[nd] (i1) at (0,2.25) {$x_1$};
+      \node[nd] (i2) at (0,0.75) {$x_2$};
+      \node[nd] (h1) at (2,3.5)  {$h_1$};
+      \node[nd] (h2) at (2,2.25) {$h_2$};
+      \node[nd] (h3) at (2,1.0)  {$h_3$};
+      \node[nd] (h4) at (2,-0.25){$h_4$};
+      \node[nd, fill=green!20] (o) at (4,1.5) {$\hat{y}$};
+      \foreach \src in {i1,i2}
+        \foreach \dst in {h1,h2,h3,h4}
+          \draw[gray!60, ->] (\src) -- (\dst);
+      \foreach \src in {h1,h2,h3,h4}
+          \draw[gray!60, ->] (\src) -- (o);
+      \node[above=0.1cm] at (0,2.9)  {\scriptsize Input};
+      \node[above=0.1cm] at (2,3.9)  {\scriptsize Hidden};
+      \node[above=0.1cm] at (4,2.1)  {\scriptsize Output};
+    \end{tikzpicture}
+  \end{columns}
+\end{frame}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\begin{frame}[fragile]{Pipeline Completo --- MLP XOR}
+  \begin{tikzpicture}
+    \node[pipeblue]       (tr) at (0,0)    {\texttt{mlp\_training.py}};
+    \node[pipeorange]     (on) at (4.2,0)  {\texttt{mlp\_model.onnx}};
+    \node[pipepurple]     (ex) at (8.4,0)  {\texttt{onnx\_mlp\_extractor}};
+    \node[pipeyellow]     (qp) at (8.4,-2) {\texttt{quantize\_mlp.py}};
+    \node[pipered]        (hc) at (8.4,-4) {\texttt{verify\_mlp\_qnn.c}};
+    \node[pipegreen]      (es) at (4.2,-4) {\textbf{ESBMC} / Boolector};
+    \node[pipegreendk]    (ok) at (0,-4)   {\textcolor{okgreen}{\textbf{SUCCESSFUL}}};
+    \node[pipeorangedash] (wh) at (4.2,-2) {\texttt{mlp\_weights.h}};
+
+    \draw[piparr] (tr) -- (on)  node[above,piplbl,midway]{export};
+    \draw[piparr] (on) -- (ex)  node[above,piplbl,midway]{parse};
+    \draw[piparr, dashed] (tr)  -- (wh) node[left,piplbl,midway]{\scriptsize alternativa};
+    \draw[piparr] (ex) -- (qp)  node[right,piplbl,midway]{float};
+    \draw[piparr, dashed] (wh)  -- (qp) node[below,piplbl,midway]{\scriptsize{-{}-source h}};
+    \draw[piparr] (qp) -- (hc)  node[right,piplbl,midway]{Q8.8};
+    \draw[piparr] (hc) -- (es);
+    \draw[piparr] (es) -- (ok);
+  \end{tikzpicture}
+\end{frame}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\begin{frame}[fragile]{Etapa 1 --- Treinamento PyTorch}
+  \begin{columns}
+    \column{0.48\textwidth}
+    \textbf{mlp\_training.py}:
+    \begin{itemize}
+      \item \texttt{torch.manual\_seed(42)}
+      \item Adam, lr\,=\,0.1, 500 épocas
+      \item MSELoss final $\approx$ 0.0001
+    \end{itemize}
+    \vspace{0.5em}
+    \textbf{Saídas}:
+    \begin{enumerate}
+      \item \texttt{mlp\_model.onnx} --- padrão industria
+      \item \texttt{mlp\_model.pth} --- checkpoint
+      \item \texttt{mlp\_weights.h} --- fallback float
+    \end{enumerate}
+    \vspace{0.3em}
+    \begin{alertblock}{Por que ONNX?}
+      Compatível com HuggingFace, ONNX Runtime
+      e ferramentas de verificação formais.
+    \end{alertblock}
+
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=pystyle, title=Arquitetura MLP]
+class MLP(nn.Module):
+  def __init__(self):
+    super().__init__()
+    self.hidden = nn.Linear(2, 4)
+    self.relu   = nn.ReLU()
+    self.output = nn.Linear(4, 1)
+    self.sigmoid= nn.Sigmoid()
+
+  def forward(self, x):
+    x = self.hidden(x)
+    x = self.relu(x)
+    x = self.output(x)
+    x = self.sigmoid(x)
+    return x
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\begin{frame}[fragile]{Etapa 2 --- Extração via ONNX}
+  \begin{columns}
+    \column{0.48\textwidth}
+    \textbf{onnx\_mlp\_extractor.py}:
+    \begin{itemize}
+      \item Lê o grafo ONNX com \texttt{onnx}
+      \item Localiza os dois nós \texttt{Gemm}
+      \item Extrai tensores por nome
+    \end{itemize}
+    \vspace{0.3em}
+    \textbf{Grafo identificado}:
+    \begin{center}
+      \scriptsize
+      \begin{tabular}{lll}
+        \toprule
+        Nó & Op & Tensores \\
+        \midrule
+        1 & Gemm    & \texttt{hidden.weight [4,2]} \\
+          &         & \texttt{hidden.bias [4]} \\
+        2 & ReLU    & --- \\
+        3 & Gemm    & \texttt{output.weight [1,4]} \\
+          &         & \texttt{output.bias [1]} \\
+        4 & Sigmoid & --- \\
+        \bottomrule
+      \end{tabular}
+    \end{center}
+
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=pystyle, title=onnx\_mlp\_extractor.py]
+def extract_mlp_weights(path):
+  model = onnx.load(path)
+  tensors = {}
+  for init in model.graph.initializer:
+    arr = np.frombuffer(
+      init.raw_data,
+      dtype=np.float32
+    ).reshape(init.dims)
+    tensors[init.name] = arr
+
+  gemm = [n for n in model.graph.node
+          if n.op_type == "Gemm"]
+  return {
+    "w_hidden": tensors[
+        gemm[0].input[1]].tolist(),
+    "b_hidden": tensors[
+        gemm[0].input[2]].tolist(),
+    "w_out": tensors[
+        gemm[1].input[1]][0].tolist(),
+    "b_out": float(
+        tensors[gemm[1].input[2]][0]),
+  }
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\begin{frame}{Etapa 3 --- Quantização Q8.8}
+  \begin{block}{Esquema Q8.8 --- scale\,=\,256}
+    \[
+      \hat{w} = \mathrm{round}(w \times 256),
+      \qquad
+      \hat{x} = x \times 256
+      \quad (0 \mapsto 0,\; 1 \mapsto 256)
+    \]
+    \[
+      a \otimes b = \lfloor (a \cdot b) / 256 \rfloor
+    \]
+  \end{block}
+
+  \vspace{0.3em}
+  \begin{center}
+    \small
+    \begin{tabular}{lrrrrl}
+      \toprule
+      & col.\,0 & col.\,1 & col.\,2 & col.\,3 & viés \\
+      \midrule
+      $W_\text{hidden}$ (linhas) & $[-183,-182]$ & $[-750,750]$ & $[-555,-555]$ & $[-153,952]$ & --- \\
+      $b_\text{hidden}$          & 181 & 0 & 555 & 153 & \\
+      $W_\text{out}$             & $-154$ & $1064$ & $-888$ & $-639$ & 1037 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+  \vspace{0.4em}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \textbf{Validação Python pré-ESBMC}:
+    \begin{center}
+      \small
+      \begin{tabular}{cc|rr|c}
+        \toprule
+        $x_1$ & $x_2$ & float & quant & status \\
+        \midrule
+        0 & 0 & $-5.39$ & $-1380$ & \textcolor{okgreen}{OK} \\
+        0 & 1 & $+5.45$ & $+1395$ & \textcolor{okgreen}{OK} \\
+        1 & 0 & $+4.05$ & $+1037$ & \textcolor{okgreen}{OK} \\
+        1 & 1 & $-5.23$ & $-1340$ & \textcolor{okgreen}{OK} \\
+        \bottomrule
+      \end{tabular}
+    \end{center}
+
+    \column{0.47\textwidth}
+    \begin{exampleblock}{Invariante injetada}
+      Para limitar o espaço de busca SMT:
+      \[
+        \texttt{pre} \in [-1280,\; 1280]
+      \]
+      Derivado analiticamente dos pesos.
+      Injetado via \texttt{\_\_ESBMC\_assume}.
+    \end{exampleblock}
+  \end{columns}
+\end{frame}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\begin{frame}[fragile]{Etapa 4 --- Harness de Verificação}
+  \begin{lstlisting}[style=cstyle, title=verify\_mlp\_qnn.c (gerado automaticamente por quantize\_mlp.py)]
+static int qw_hidden[4][2] = {
+    {-183,-182}, {-750,750}, {-555,-555}, {-153,952} };
+static int qb_hidden[4] = {181, 0, 555, 153};
+static int qw_out[4]    = {-154, 1064, -888, -639};
+static int qb_out       = 1037;
+
+static int mlp_forward(int x1, int x2) {
+    int h[4], i;
+    for (i = 0; i < 4; i++) {
+        int pre = (x1 * qw_hidden[i][0]) / 256
+                + (x2 * qw_hidden[i][1]) / 256
+                + qb_hidden[i];
+        __ESBMC_assume(pre >= -1280 && pre <= 1280); /* invariante */
+        h[i] = (pre > 0) ? pre : 0;                 /* ReLU       */
+    }
+    int score = qb_out;
+    for (i = 0; i < 4; i++)
+        score += (h[i] * qw_out[i]) / 256;
+    return score;
+}
+int main(void) {
+    int zero = 0, um = 256;
+    __ESBMC_assert(mlp_forward(zero, zero) <= 0, "P1: XOR(0,0)=false");
+    __ESBMC_assert(mlp_forward(um,   um  ) <= 0, "P2: XOR(1,1)=false");
+    __ESBMC_assert(mlp_forward(zero, um  )  > 0, "P3: XOR(0,1)=true");
+    __ESBMC_assert(mlp_forward(um,   zero)  > 0, "P4: XOR(1,0)=true");
+}
+  \end{lstlisting}
+\end{frame}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\begin{frame}{Resultado --- Verificação Formal do XOR}
+  \begin{center}
+    \Large\textcolor{okgreen}{\textbf{VERIFICATION SUCCESSFUL}}\\[0.3em]
+    \normalsize Solver: Boolector \quad|\quad Tempo solver: \textbf{0.001\,s} \quad|\quad Total: 0.105\,s
+  \end{center}
+  \vspace{0.5em}
+  \begin{columns}
+    \column{0.48\textwidth}
+    \begin{exampleblock}{O que foi provado}
+      Para pesos treinados (PyTorch, seed=42),\\
+      quantizados em Q8.8:\\[0.4em]
+      \begin{tabular}{cl}
+        \textcolor{okgreen}{\checkmark} P1 & \texttt{mlp(0,\;0)} $\leq 0$ \\
+        \textcolor{okgreen}{\checkmark} P2 & \texttt{mlp(1,\;1)} $\leq 0$ \\
+        \textcolor{okgreen}{\checkmark} P3 & \texttt{mlp(0,\;1)} $> 0$ \\
+        \textcolor{okgreen}{\checkmark} P4 & \texttt{mlp(1,\;0)} $> 0$ \\
+      \end{tabular}
+    \end{exampleblock}
+
+    \column{0.48\textwidth}
+    \begin{alertblock}{Teste vs.\ Verificação Formal}
+      \begin{itemize}
+        \item \textbf{Teste}: funciona \emph{nessas} entradas
+        \item \textbf{Verificação}: \emph{matematicamente impossível} falhar com esses pesos
+      \end{itemize}
+    \end{alertblock}
+    \vspace{0.3em}
+    \begin{center}
+      \scriptsize
+      Fonte: \texttt{mlp\_model.onnx}\\
+      Extrator: \texttt{onnx\_mlp\_extractor.py}\\
+      Quantização: Q8.8, scale\,=\,256
+    \end{center}
+  \end{columns}
+\end{frame}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Caso de Estudo 2 --- FFN de LLM}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{frame}{FFN de Transformers --- Contexto}
+  \begin{columns}
+    \column{0.52\textwidth}
+    \textbf{Bloco FFN} em transformer:
+    \[
+      \mathbf{y} = W_2 \cdot \mathrm{GeLU}(W_1 \mathbf{x} + \mathbf{b}_1) + \mathbf{b}_2
+    \]
+    \begin{itemize}
+      \item GPT-2:\quad $d_\text{model}=768$,\; $d_\text{ff}=3072$
+      \item LLaMA-7B:\; $d_\text{model}=4096$,\; $d_\text{ff}=11008$
+    \end{itemize}
+    \vspace{0.4em}
+    \textbf{Desafio}: verificar dimensões reais é intratável.\\
+    \textbf{Solução}: \emph{slice} para dimensão tratável
+    ($d_m=4,\; d_f=8$) e provar sobre pesos reais do modelo.
+
+    \column{0.45\textwidth}
+    \begin{block}{Propriedades verificadas}
+      \begin{enumerate}
+        \item Sem overflow em multiplicação de matrizes
+        \item Pré-ativações dentro de intervalo analítico
+        \item Saída dentro de intervalo derivado
+        \item Sem acesso fora dos limites de arrays
+      \end{enumerate}
+    \end{block}
+  \end{columns}
+\end{frame}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\begin{frame}[fragile]{Método QNNVerifier --- Injeção de Intervalo Abstrato}
+  \begin{block}{Técnica central (ACASXU\_Reluplex\_fxp)}
+    Substituir a ativação não-linear por variável simbólica com limites analíticos:
+    \[
+      h_j = \texttt{nondet\_int()};
+      \quad
+      \texttt{\_\_ESBMC\_assume}\bigl(h_j \in [\ell_j,\; u_j]\bigr)
+    \]
+  \end{block}
+
+  \begin{columns}
+    \column{0.5\textwidth}
+    \textbf{Otimizações descobertas}:
+    \begin{enumerate}
+      \item \textbf{int32\_t} em vez de int64\_t
+      \item \textbf{Código morto eliminado}: em modo abstrato, inputs ficam desacoplados
+      \item \textbf{fxp32\_mult puro}: produto $\ll 2^{31}$
+      \item \textbf{Boolector} em vez de Z3
+    \end{enumerate}
+    \begin{exampleblock}{}
+      \centering \textbf{18--27$\times$ mais rápido}
+    \end{exampleblock}
+
+    \column{0.48\textwidth}
+    \begin{lstlisting}[style=cstyle, title=Harness QNN abstrato]
+int32_t h[D_FF];
+h[0] = nondet_int();
+__ESBMC_assume(
+  h[0] >= -9 && h[0] <= 10);
+/* ... por neuronio j */
+
+int32_t out0 = 0;
+out0 += fxp32_mult(W2_0[0], h[0]);
+/* ... */
+__ESBMC_assert(
+  out0 >= -12 && out0 <= 12,
+  "P1: output[0] bounded");
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\begin{frame}{Resultados --- Verificação FFN (GPT-2 e LLaMA)}
+  \begin{center}
+    \textbf{Método 1} --- Ponto Fixo Q8.8 com proxy ReLU
+    \vspace{0.2em}
+
+    \small
+    \begin{tabular}{llll}
+      \toprule
+      \textbf{Harness} & \textbf{Dimensões} & \textbf{Solver} & \textbf{Resultado} \\
+      \midrule
+      \texttt{mini\_ffn\_fxp\_test.c} & 2$\times$4$\times$2 & Z3 & \textcolor{okgreen}{0.25\,s} \\
+      \texttt{gpt2\_4x8.c}            & 4$\times$8$\times$4 & Z3 & \textcolor{okgreen}{12.4\,s} \\
+      \texttt{llama\_4x8.c}           & 4$\times$8$\times$4 & Z3 & \textcolor{okgreen}{8.6\,s} \\
+      \texttt{gpt2\_4x16.c}           & 4$\times$16$\times$4 & Z3 & \textcolor{failred}{timeout} \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+  \vspace{0.6em}
+  \begin{center}
+    \textbf{Método 2} --- QNNVerifier (ativação exata via intervalo abstrato)
+    \vspace{0.2em}
+
+    \small
+    \begin{tabular}{lllll}
+      \toprule
+      \textbf{Harness} & \textbf{Dims} & \textbf{Ativação} & \textbf{Antes} & \textbf{Depois} \\
+      \midrule
+      \texttt{gpt2\_2x4\_qnn.c}     & 2$\times$4$\times$2  & GeLU & ---        & \textcolor{okgreen}{0.30\,s} \\
+      \texttt{gpt2\_4x8\_qnn.c}     & 4$\times$8$\times$4  & GeLU & 94--115\,s & \textcolor{okgreen}{5.3\,s} \\
+      \texttt{llama-7b\_4x8\_qnn.c} & 4$\times$8$\times$4  & SiLU & 115\,s     & \textcolor{okgreen}{4.3\,s} \\
+      \texttt{gpt2\_4x16\_qnn.c}    & 4$\times$16$\times$4 & GeLU & timeout    & \textcolor{okgreen}{27\,s} \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \vspace{0.2em}
+  \begin{center}
+    \scriptsize ESBMC 6.8.0, Boolector 3.2, Linux x86\_64
+  \end{center}
+\end{frame}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Contribuições Desta Sessão}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{frame}{Contribuições Desenvolvidas Nesta Sessão}
+  \begin{enumerate}
+    \item \textbf{Treinamento real com PyTorch}\\
+          Pesos agora são treinados do zero (seed=42, 500 épocas, loss $\approx 0.0001$)
+
+    \vspace{0.3em}
+    \item \textbf{Export ONNX funcionando} (\texttt{onnxscript} instalado)\\
+          \texttt{mlp\_training.py} exporta \texttt{mlp\_model.onnx} automaticamente
+
+    \vspace{0.3em}
+    \item \textbf{onnx\_mlp\_extractor.py} --- módulo novo\\
+          Extrai pesos do grafo ONNX inspecionando nós \texttt{Gemm}
+
+    \vspace{0.3em}
+    \item \textbf{quantize\_mlp.py refatorado}\\
+          \texttt{-{}-source onnx} (padrão) lê ONNX; \texttt{-{}-source h} usa fallback\\
+          Valida 4 casos XOR em Python antes de gerar o harness
+
+    \vspace{0.3em}
+    \item \textbf{Pipeline end-to-end completo e automatizado}\\
+          3 comandos: treinar $\to$ quantizar $\to$ verificar
+
+    \vspace{0.3em}
+    \item \textbf{Otimizações QNNVerifier (FFN/LLM)}\\
+          int32 + dead-code removal + fxp32\_mult + Boolector = \textbf{18--27$\times$ speedup}
+  \end{enumerate}
+\end{frame}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\begin{frame}[fragile]{Pipeline Final em 3 Comandos}
+  \begin{center}
+  \begin{tikzpicture}
+    \node[pipeblue]    (tr) at (0,0)   {\texttt{python mlp\_training.py}};
+    \node[pipeorange]  (on) at (5,0)   {\texttt{mlp\_model.onnx}};
+    \node[pipeyellow]  (qp) at (10,0)  {\texttt{python quantize\_mlp.py}};
+    \node[pipered]     (hc) at (10,-2) {\texttt{verify\_mlp\_qnn.c}};
+    \node[pipegreen]   (es) at (5,-2)  {\texttt{esbmc ... -{}-boolector}};
+    \node[pipegreendk] (ok) at (0,-2)  {\textcolor{okgreen}{\large\textbf{SUCCESSFUL}}};
+
+    \draw[piparr] (tr) -- (on)  node[above,piplbl,midway]{treina + exporta};
+    \draw[piparr] (on) -- (qp)  node[above,piplbl,midway]{lê via extrator};
+    \draw[piparr] (qp) -- (hc)  node[right,piplbl,midway]{gera C};
+    \draw[piparr] (hc) -- (es);
+    \draw[piparr] (es) -- (ok)  node[below,piplbl,midway]{0.001\,s solver};
+  \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.5em}
+  \begin{columns}
+    \column{0.48\textwidth}
+    \begin{exampleblock}{Propriedades provadas}
+      \begin{tabular}{cl}
+        \textcolor{okgreen}{\checkmark} P1 & XOR(0,0) = false \\
+        \textcolor{okgreen}{\checkmark} P2 & XOR(1,1) = false \\
+        \textcolor{okgreen}{\checkmark} P3 & XOR(0,1) = true \\
+        \textcolor{okgreen}{\checkmark} P4 & XOR(1,0) = true \\
+      \end{tabular}
+    \end{exampleblock}
+
+    \column{0.48\textwidth}
+    \begin{block}{Arquivos principais}
+      \scriptsize
+      \texttt{mlp\_training.py}\\
+      \texttt{onnx\_mlp\_extractor.py} \textbf{(novo)}\\
+      \texttt{quantize\_mlp.py} \textbf{(refatorado)}\\
+      \texttt{verify\_mlp\_qnn.c} \textbf{(gerado)}
+    \end{block}
+  \end{columns}
+\end{frame}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Próximos Passos}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{frame}[fragile]{Próximo Passo --- Verificação de Neurônios Mortos}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \textbf{Definição}: neurônio \emph{morto} é aquele cuja ReLU sempre retorna 0
+    independente da entrada --- contribuição nula para a saída.
+
+    \vspace{0.5em}
+    \textbf{Abordagem com ESBMC}:
+    \begin{itemize}
+      \item Entradas \textbf{simbólicas} (nondet) com domínio $[0,256]^2$
+      \item Para cada neurônio $i$: assert que $h_i = 0$ sempre
+      \item \textcolor{failred}{\textbf{FAILED}} $\Rightarrow$ neurônio está vivo
+      \item \textcolor{okgreen}{\textbf{SUCCESS}} $\Rightarrow$ neurônio é morto
+    \end{itemize}
+
+    \column{0.48\textwidth}
+    \begin{lstlisting}[style=cstyle, title=verify\_dead\_neurons.c (próximo)]
+int x1 = nondet_int();
+int x2 = nondet_int();
+__ESBMC_assume(x1 >= 0 && x1 <= 256);
+__ESBMC_assume(x2 >= 0 && x2 <= 256);
+
+/* Calcular h[i]... */
+
+/* FAILED = neuronio vivo (existe input)
+   SUCCESS = neuronio sempre morto   */
+__ESBMC_assert(h[0] == 0,
+  "neuronio 0 sempre morto?");
+__ESBMC_assert(h[1] == 0,
+  "neuronio 1 sempre morto?");
+/* ... */
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\begin{frame}{Roadmap e Conclusão}
+  \begin{columns}
+    \column{0.48\textwidth}
+    \textbf{Roadmap}:
+    \begin{itemize}
+      \item \textcolor{okgreen}{\checkmark} MLP XOR treinado (PyTorch real)
+      \item \textcolor{okgreen}{\checkmark} Pipeline ONNX end-to-end
+      \item \textcolor{okgreen}{\checkmark} FFN GPT-2 / LLaMA verificado
+      \item \textcolor{okgreen}{\checkmark} QNNVerifier 18--27$\times$ mais rápido
+      \item \textcolor{gray}{$\square$} Verificação de neurônios mortos
+      \item \textcolor{gray}{$\square$} Propriedades de robustez ($\ell_\infty$)
+      \item \textcolor{gray}{$\square$} Frama-C EVA para bounds mais justos
+      \item \textcolor{gray}{$\square$} Escalar para $d_\text{ff} > 16$
+    \end{itemize}
+
+    \column{0.48\textwidth}
+    \begin{exampleblock}{Impacto}
+      \begin{itemize}
+        \item Modelo verificado = \textbf{pronto para deploy seguro}
+        \item Pipeline reutilizável para qualquer MLP ONNX
+        \item Base para escalar a LLMs maiores (slices)
+        \item Speedup de 18--27$\times$ vs.\ estado anterior
+      \end{itemize}
+    \end{exampleblock}
+
+    \vspace{0.5em}
+    \begin{center}
+      \Large\textcolor{esbmcblue}{\texttt{VERIFICATION SUCCESSFUL}}
+    \end{center}
+  \end{columns}
+\end{frame}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\begin{frame}[plain]
+  \begin{center}
+    \vspace{2cm}
+    {\Huge Obrigado!}\\[1.5em]
+    \large
+    Código disponível em:\\[0.5em]
+    \texttt{pibic/teste\_mlp/}\\[0.2em]
+    \texttt{pibic/cases/llm\_ffn\_verification/}\\[1.5em]
+    \normalsize
+    Branch: \texttt{claude/analyze-pibic-code-KfVX4}
+  \end{center}
+\end{frame}
+
+\end{document}
