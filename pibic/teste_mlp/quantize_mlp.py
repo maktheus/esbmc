@@ -103,14 +103,20 @@ def mlp_float(x1, x2):
     score  = sum(hidden[i]*w_out[i] for i in range(4)) + b_out
     return score
 
+def c_trunc_div(a, b):
+    """Integer division truncating toward zero — matches C's '/' on signed ints."""
+    return int(a / b)
+
 def mlp_qnn(x1, x2):
     hidden = []
     for i in range(4):
-        h = (x1 * qw_hidden[i][0]) // SCALE + (x2 * qw_hidden[i][1]) // SCALE + qb_hidden[i]
+        h = (c_trunc_div(x1 * qw_hidden[i][0], SCALE)
+             + c_trunc_div(x2 * qw_hidden[i][1], SCALE)
+             + qb_hidden[i])
         hidden.append(max(0, h))
     score = qb_out
     for i in range(4):
-        score += (hidden[i] * qw_out[i]) // SCALE
+        score += c_trunc_div(hidden[i] * qw_out[i], SCALE)
     return score
 
 inputs_xor = [(0, 0, False), (0, SCALE, True), (SCALE, 0, True), (SCALE, SCALE, False)]

@@ -117,9 +117,14 @@ def compute_hidden_bounds(layer: FFNLayer, input_bound_fxp: int = 256) -> tuple[
 
     for j in range(layer.d_ff):
         max_pre = float(np.sum(np.abs(layer.W1[j]))) * input_bound_f + abs(float(layer.b1[j]))
-        # Activation output bounds
-        hi_f = act(max_pre)
-        lo_f = act(-max_pre)
+        # GeLU and SiLU have an interior negative trough; evaluating only at the
+        # endpoints would give lo ≈ 0 for large max_pre, pruning real executions.
+        # Sample the activation across the full pre-activation range to find the
+        # true minimum and maximum (500 points is sufficient for these smooth functions).
+        x_vals = np.linspace(-max_pre, max_pre, 500)
+        act_vals = np.array([act(float(x)) for x in x_vals])
+        hi_f = float(act_vals.max())
+        lo_f = float(act_vals.min())
         # Add 10% margin and convert to fxp (inclusive)
         lo_fxp = float_to_fxp(min(lo_f, 0.0) * 1.1)
         hi_fxp = float_to_fxp(max(hi_f, 0.0) * 1.1)
