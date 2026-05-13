@@ -677,38 +677,45 @@ __ESBMC_assert(
 \section{Próximos Passos}
 % ══════════════════════════════════════════════════════════════════════════════
 
-\begin{frame}[fragile]{Próximo Passo --- Verificação de Neurônios Mortos}
+\begin{frame}[fragile]{Verificação de Neurônios Mortos --- Resultados}
   \begin{columns}
-    \column{0.5\textwidth}
-    \textbf{Definição}: neurônio \emph{morto} é aquele cuja ReLU sempre retorna 0
-    independente da entrada --- contribuição nula para a saída.
-
-    \vspace{0.5em}
-    \textbf{Abordagem com ESBMC}:
-    \begin{itemize}
-      \item Entradas \textbf{simbólicas} (nondet) com domínio $[0,256]^2$
-      \item Para cada neurônio $i$: assert que $h_i = 0$ sempre
-      \item \textcolor{failred}{\textbf{FAILED}} $\Rightarrow$ neurônio está vivo
-      \item \textcolor{okgreen}{\textbf{SUCCESS}} $\Rightarrow$ neurônio é morto
-    \end{itemize}
-
     \column{0.48\textwidth}
-    \begin{lstlisting}[style=cstyle, title=verify\_dead\_neurons.c (próximo)]
+    \textbf{Definição}: neurônio \emph{morto} --- ReLU sempre retorna 0
+    para toda entrada válida. Contribuição nula $\Rightarrow$ candidato a poda.
+
+    \vspace{0.4em}
+    \textbf{Abordagem}: entradas \textbf{simbólicas} (nondet) em $[0,256]^2$:
+    \begin{lstlisting}[style=cstyle]
 int x1 = nondet_int();
 int x2 = nondet_int();
-__ESBMC_assume(x1 >= 0 && x1 <= 256);
-__ESBMC_assume(x2 >= 0 && x2 <= 256);
-
-/* Calcular h[i]... */
-
-/* FAILED = neuronio vivo (existe input)
-   SUCCESS = neuronio sempre morto   */
-__ESBMC_assert(h[0] == 0,
-  "neuronio 0 sempre morto?");
-__ESBMC_assert(h[1] == 0,
-  "neuronio 1 sempre morto?");
-/* ... */
+__ESBMC_assume(x1>=0 && x1<=256);
+__ESBMC_assume(x2>=0 && x2<=256);
+/* FAILED  = neuronio VIVO
+   SUCCESS = neuronio MORTO */
+__ESBMC_assert(h[i] == 0,
+  "neuronio i sempre morto?");
     \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \begin{exampleblock}{Resultados --- MLP XOR (seed=42)}
+      \small
+      \begin{tabular}{clll}
+        \toprule
+        $h_i$ & Pesos $(w_0,w_1)$ & $b$ & Status \\
+        \midrule
+        0 & $(-183,\,-182)$ & $+181$ & \textcolor{okgreen}{\textbf{VIVO}} \\
+        1 & $(-750,\,+750)$ & $0$    & \textcolor{okgreen}{\textbf{VIVO}} \\
+        2 & $(-555,\,-555)$ & $+555$ & \textcolor{okgreen}{\textbf{VIVO}} \\
+        3 & $(-153,\,+952)$ & $+153$ & \textcolor{okgreen}{\textbf{VIVO}} \\
+        \bottomrule
+      \end{tabular}
+    \end{exampleblock}
+    \vspace{0.3em}
+    \begin{alertblock}{Conclusão formal}
+      \textbf{Nenhum neurônio morto} provado pelo ESBMC.\\
+      Todos os 4 neurônios contribuem para a saída ---
+      o modelo não possui candidatos a poda.
+    \end{alertblock}
   \end{columns}
 \end{frame}
 
@@ -722,7 +729,7 @@ __ESBMC_assert(h[1] == 0,
       \item \textcolor{okgreen}{\checkmark} Pipeline ONNX end-to-end
       \item \textcolor{okgreen}{\checkmark} FFN GPT-2 / LLaMA verificado
       \item \textcolor{okgreen}{\checkmark} QNNVerifier 18--27$\times$ mais rápido
-      \item \textcolor{gray}{$\square$} Verificação de neurônios mortos
+      \item \textcolor{okgreen}{\checkmark} Verificação de neurônios mortos
       \item \textcolor{gray}{$\square$} Propriedades de robustez ($\ell_\infty$)
       \item \textcolor{gray}{$\square$} Frama-C EVA para bounds mais justos
       \item \textcolor{gray}{$\square$} Escalar para $d_\text{ff} > 16$
