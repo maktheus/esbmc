@@ -680,11 +680,7 @@ __ESBMC_assert(
 \begin{frame}[fragile]{Verificação de Neurônios Mortos --- Resultados}
   \begin{columns}
     \column{0.48\textwidth}
-    \textbf{Definição}: neurônio \emph{morto} --- ReLU sempre retorna 0
-    para toda entrada válida. Contribuição nula $\Rightarrow$ candidato a poda.
-
-    \vspace{0.4em}
-    \textbf{Abordagem}: entradas \textbf{simbólicas} (nondet) em $[0,256]^2$:
+    \textbf{Método}: para cada $h_i$, entradas \textbf{simbólicas} em $[0,256]^2$:
     \begin{lstlisting}[style=cstyle]
 int x1 = nondet_int();
 int x2 = nondet_int();
@@ -696,26 +692,43 @@ __ESBMC_assert(h[i] == 0,
   "neuronio i sempre morto?");
     \end{lstlisting}
 
-    \column{0.5\textwidth}
-    \begin{exampleblock}{Resultados --- MLP XOR (seed=42)}
+    \vspace{0.3em}
+    \begin{exampleblock}{Modelo real (seed=42)}
       \small
-      \begin{tabular}{clll}
+      \begin{tabular}{crl}
         \toprule
-        $h_i$ & Pesos $(w_0,w_1)$ & $b$ & Status \\
+        $h_i$ & $b$ & ESBMC \\
         \midrule
-        0 & $(-183,\,-182)$ & $+181$ & \textcolor{okgreen}{\textbf{VIVO}} \\
-        1 & $(-750,\,+750)$ & $0$    & \textcolor{okgreen}{\textbf{VIVO}} \\
-        2 & $(-555,\,-555)$ & $+555$ & \textcolor{okgreen}{\textbf{VIVO}} \\
-        3 & $(-153,\,+952)$ & $+153$ & \textcolor{okgreen}{\textbf{VIVO}} \\
+        0 & $+181$ & \textcolor{okgreen}{\textbf{VIVO}} \\
+        1 & $0$    & \textcolor{okgreen}{\textbf{VIVO}} \\
+        2 & $+555$ & \textcolor{okgreen}{\textbf{VIVO}} \\
+        3 & $+153$ & \textcolor{okgreen}{\textbf{VIVO}} \\
         \bottomrule
       \end{tabular}
+      \quad Nenhum morto.
     \end{exampleblock}
-    \vspace{0.3em}
-    \begin{alertblock}{Conclusão formal}
-      \textbf{Nenhum neurônio morto} provado pelo ESBMC.\\
-      Todos os 4 neurônios contribuem para a saída ---
-      o modelo não possui candidatos a poda.
+
+    \column{0.5\textwidth}
+    \begin{alertblock}{Demonstração: neurônio morto artificial}
+      Modifica $b[1]: 0 \to -1000$\\[0.3em]
+      \textbf{Prova}: $\max(\text{pre}_1) = 750 + (-1000) = -250 \leq 0$\\
+      $\Rightarrow h_1 = \mathrm{ReLU}(\text{pre}_1) = 0$ para toda entrada
     \end{alertblock}
+    \vspace{0.3em}
+    \begin{exampleblock}{Resultado com $b[1]=-1000$}
+      \small
+      \begin{tabular}{crl}
+        \toprule
+        $h_i$ & $b$ & ESBMC \\
+        \midrule
+        0 & $+181$ & \textcolor{okgreen}{\textbf{VIVO}} \\
+        1 & $-1000$ & \textcolor{failred}{\textbf{MORTO}} \\
+        2 & $+555$ & \textcolor{okgreen}{\textbf{VIVO}} \\
+        3 & $+153$ & \textcolor{okgreen}{\textbf{VIVO}} \\
+        \bottomrule
+      \end{tabular}
+      \quad \textcolor{failred}{VERIFICATION SUCCESSFUL}
+    \end{exampleblock}
   \end{columns}
 \end{frame}
 

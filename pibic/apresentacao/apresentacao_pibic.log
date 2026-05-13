@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.5.12)  13 MAY 2026 21:51
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.5.12)  13 MAY 2026 21:56
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1161,10 +1161,13 @@ Overfull \vbox (7.75462pt too high) detected at line 600
 ]
 \openout4 = `apresentacao_pibic.vrb'.
 
- (./apresentacao_pibic.vrb) [17
+ (./apresentacao_pibic.vrb)
+Overfull \vbox (15.22287pt too high) detected at line 733
+ []
 
-]
-[18
+[17
+
+] [18
 
 ] [19
 
@@ -1191,46 +1194,47 @@ Package rerunfilecheck Info: File `apresentacao_pibic.out' has not changed.
 (rerunfilecheck)             Checksum: 9E015356B7428FED2902EADDAA251170;873.
  ) 
 Here is how much of TeX's memory you used:
- 29304 strings out of 476162
- 571926 string characters out of 5794814
+ 29323 strings out of 476162
+ 572345 string characters out of 5794814
  2311975 words of memory out of 5000000
- 50685 multiletter control sequences out of 15000+600000
- 588591 words of font info for 99 fonts, out of 8000000 for 9000
+ 50700 multiletter control sequences out of 15000+600000
+ 591734 words of font info for 107 fonts, out of 8000000 for 9000
  16 hyphenation exceptions out of 8191
  101i,15n,107p,509b,1701s stack positions out of 10000i,1000n,20000p,200000b,200000s
  </root/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ectt1200.600pk> </
 root/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecss2488.600pk> </root/
 .texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ectt1440.600pk> </root/.texl
-ive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsi0700.600pk> </root/.texlive20
-23/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsx0800.600pk> </root/.texlive2023/te
-xmf-var/fonts/pk/ljfour/jknappen/ec/ecsx1200.600pk> </root/.texlive2023/texmf-v
-ar/fonts/pk/ljfour/jknappen/ec/ecsx1440.600pk> </root/.texlive2023/texmf-var/fo
-nts/pk/ljfour/jknappen/ec/ecss0700.600pk> </root/.texlive2023/texmf-var/fonts/p
-k/ljfour/jknappen/ec/ecsi1000.600pk> </root/.texlive2023/texmf-var/fonts/pk/ljf
-our/jknappen/ec/ecrm1095.600pk> </root/.texlive2023/texmf-var/fonts/pk/ljfour/j
-knappen/ec/ectt0800.600pk> </root/.texlive2023/texmf-var/fonts/pk/ljfour/jknapp
-en/ec/ecsx1000.600pk> </root/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec
-/ecsi0800.600pk> </root/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ectt
-1095.600pk> </root/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ectt1000.
-600pk> </root/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecss1000.600pk
-> </root/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecss1200.600pk> </r
-oot/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsi1095.600pk> </root/.
-texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsx1095.600pk> </root/.texli
-ve2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecss0600.600pk> </root/.texlive202
-3/texmf-var/fonts/pk/ljfour/jknappen/ec/ecss0800.600pk> </root/.texlive2023/tex
-mf-var/fonts/pk/ljfour/jknappen/ec/ecss1095.600pk> </root/.texlive2023/texmf-va
-r/fonts/pk/ljfour/jknappen/ec/ecss1440.600pk></usr/share/texlive/texmf-dist/fon
-ts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/typ
-e1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/pub
-lic/amsfonts/cm/cmss10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/am
-sfonts/cm/cmss8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
-cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cms
-y8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msam1
-0.pfb>
-Output written on apresentacao_pibic.pdf (19 pages, 330972 bytes).
+ive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsi1200.600pk> </root/.texlive20
+23/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsi0700.600pk> </root/.texlive2023/te
+xmf-var/fonts/pk/ljfour/jknappen/ec/ecsx0800.600pk> </root/.texlive2023/texmf-v
+ar/fonts/pk/ljfour/jknappen/ec/ecsx1200.600pk> </root/.texlive2023/texmf-var/fo
+nts/pk/ljfour/jknappen/ec/ecsx1440.600pk> </root/.texlive2023/texmf-var/fonts/p
+k/ljfour/jknappen/ec/ecss0700.600pk> </root/.texlive2023/texmf-var/fonts/pk/ljf
+our/jknappen/ec/ecsi1000.600pk> </root/.texlive2023/texmf-var/fonts/pk/ljfour/j
+knappen/ec/ecrm1095.600pk> </root/.texlive2023/texmf-var/fonts/pk/ljfour/jknapp
+en/ec/ectt0800.600pk> </root/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec
+/ecsx1000.600pk> </root/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsi
+0800.600pk> </root/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ectt1095.
+600pk> </root/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ectt1000.600pk
+> </root/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecss1000.600pk> </r
+oot/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecss1200.600pk> </root/.
+texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsi1095.600pk> </root/.texli
+ve2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsx1095.600pk> </root/.texlive202
+3/texmf-var/fonts/pk/ljfour/jknappen/ec/ecss0600.600pk> </root/.texlive2023/tex
+mf-var/fonts/pk/ljfour/jknappen/ec/ecss0800.600pk> </root/.texlive2023/texmf-va
+r/fonts/pk/ljfour/jknappen/ec/ecss1095.600pk> </root/.texlive2023/texmf-var/fon
+ts/pk/ljfour/jknappen/ec/ecss1440.600pk></usr/share/texlive/texmf-dist/fonts/ty
+pe1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/pu
+blic/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/a
+msfonts/cm/cmss10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfont
+s/cm/cmss12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/c
+mss8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.p
+fb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></us
+r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb>
+Output written on apresentacao_pibic.pdf (19 pages, 344581 bytes).
 PDF statistics:
- 1212 PDF objects out of 1440 (max. 8388607)
- 349 compressed objects within 4 object streams
+ 1242 PDF objects out of 1440 (max. 8388607)
+ 362 compressed objects within 4 object streams
  44 named destinations out of 1000 (max. 500000)
- 749 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 785 words of extra memory for PDF output out of 10000 (max. 10000000)
 
