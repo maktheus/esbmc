@@ -13,10 +13,10 @@ __ESBMC_assert(h[i] == 0,
   "neuronio i sempre morto?");
     \end{lstlisting}
 
-    \vspace{0.3em}
+    \vspace{0.15em}
     \begin{exampleblock}{Modelo real (seed=42)}
-      \small
-      \begin{tabular}{crl}
+      \scriptsize
+      \begin{tabular}{@{}crl@{}}
         \toprule
         $h_i$ & $b$ & ESBMC \\
         \midrule
@@ -31,14 +31,15 @@ __ESBMC_assert(h[i] == 0,
 
     \column{0.5\textwidth}
     \begin{alertblock}{Demonstração: neurônio morto artificial}
-      Modifica $b[1]: 0 \to -1000$\\[0.3em]
-      \textbf{Prova}: $\max(\text{pre}_1) = 750 + (-1000) = -250 \leq 0$\\
-      $\Rightarrow h_1 = \mathrm{ReLU}(\text{pre}_1) = 0$ para toda entrada
-    \end{alertblock}
-    \vspace{0.3em}
-    \begin{exampleblock}{Resultado com $b[1]=-1000$}
       \small
-      \begin{tabular}{crl}
+      Modifica $b[1]: 0 \to -1000$\\[0.1em]
+      \textbf{Prova}: $\max(\text{pre}_1)=750-1000=-250\leq 0$\\
+      $\Rightarrow h_1=0$ para toda entrada
+    \end{alertblock}
+    \vspace{0.1em}
+    \begin{exampleblock}{Resultado com $b[1]=-1000$}
+      \scriptsize
+      \begin{tabular}{@{}crl@{}}
         \toprule
         $h_i$ & $b$ & ESBMC \\
         \midrule
