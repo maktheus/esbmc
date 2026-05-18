@@ -280,21 +280,22 @@
     \end{alertblock}
 
     \column{0.5\textwidth}
-    \begin{lstlisting}[style=pystyle, title=Arquitetura MLP]
-class MLP(nn.Module):
-  def __init__(self):
-    super().__init__()
-    self.hidden = nn.Linear(2, 4)
-    self.relu   = nn.ReLU()
-    self.output = nn.Linear(4, 1)
-    self.sigmoid= nn.Sigmoid()
-
-  def forward(self, x):
-    x = self.hidden(x)
-    x = self.relu(x)
-    x = self.output(x)
-    x = self.sigmoid(x)
+    \begin{lstlisting}[style=pystyle, title=Arquitetura MLP (forward)]
+# 2 entradas -> 4 neuronios -> 1 saida
+def forward(self, x):
+    x = self.hidden(x)  # Linear(2,4)
+    x = self.relu(x)    # ReLU
+    x = self.output(x)  # Linear(4,1)
+    x = self.sigmoid(x) # [0,1]
     return x
+
+# Treinamento
+optimizer = optim.Adam(lr=0.1)
+for epoch in range(500):
+    loss = criterion(model(X), y)
+    loss.backward()
+    optimizer.step()
+# Loss final: 0.0001
     \end{lstlisting}
   \end{columns}
 \end{frame}
@@ -331,25 +332,18 @@ class MLP(nn.Module):
     \begin{lstlisting}[style=pystyle, title=onnx\_mlp\_extractor.py]
 def extract_mlp_weights(path):
   model = onnx.load(path)
-  tensors = {}
-  for init in model.graph.initializer:
-    arr = np.frombuffer(
-      init.raw_data,
-      dtype=np.float32
-    ).reshape(init.dims)
-    tensors[init.name] = arr
-
+  # nome -> tensor NumPy (initializers)
+  tensors = {i.name: np.frombuffer(
+      i.raw_data, dtype=np.float32
+    ).reshape(i.dims)
+    for i in model.graph.initializer}
   gemm = [n for n in model.graph.node
           if n.op_type == "Gemm"]
   return {
-    "w_hidden": tensors[
-        gemm[0].input[1]].tolist(),
-    "b_hidden": tensors[
-        gemm[0].input[2]].tolist(),
-    "w_out": tensors[
-        gemm[1].input[1]][0].tolist(),
-    "b_out": float(
-        tensors[gemm[1].input[2]][0]),
+    "w_hidden": tensors[gemm[0].input[1]].tolist(),
+    "b_hidden": tensors[gemm[0].input[2]].tolist(),
+    "w_out":    tensors[gemm[1].input[1]][0].tolist(),
+    "b_out":    float(tensors[gemm[1].input[2]][0]),
   }
     \end{lstlisting}
   \end{columns}
@@ -358,37 +352,31 @@ def extract_mlp_weights(path):
 % ──────────────────────────────────────────────────────────────────────────────
 \begin{frame}{Etapa 3 --- Quantização Q8.8}
   \begin{block}{Esquema Q8.8 --- scale\,=\,256}
-    \[
-      \hat{w} = \mathrm{round}(w \times 256),
-      \qquad
-      \hat{x} = x \times 256
-      \quad (0 \mapsto 0,\; 1 \mapsto 256)
-    \]
-    \[
-      a \otimes b = \lfloor (a \cdot b) / 256 \rfloor
-    \]
+    \small
+    $\hat{w} = \mathrm{round}(w \times 256)$;\quad
+    $\hat{x} = x \times 256$;\quad
+    $a \otimes b = \lfloor a \cdot b / 256 \rfloor$
   \end{block}
 
-  \vspace{0.3em}
-  \begin{center}
-    \small
-    \begin{tabular}{lrrrrl}
-      \toprule
-      & col.\,0 & col.\,1 & col.\,2 & col.\,3 & viés \\
-      \midrule
-      $W_\text{hidden}$ (linhas) & $[-183,-182]$ & $[-750,750]$ & $[-555,-555]$ & $[-153,952]$ & --- \\
-      $b_\text{hidden}$          & 181 & 0 & 555 & 153 & \\
-      $W_\text{out}$             & $-154$ & $1064$ & $-888$ & $-639$ & 1037 \\
-      \bottomrule
-    \end{tabular}
-  \end{center}
-
-  \vspace{0.4em}
+  \vspace{0.2em}
   \begin{columns}
-    \column{0.5\textwidth}
+    \column{0.52\textwidth}
+    \begin{center}
+      \tiny
+      \begin{tabular}{@{}lrrrrl@{}}
+        \toprule
+        & $h_0$ & $h_1$ & $h_2$ & $h_3$ & viés \\
+        \midrule
+        $W_h$ & $[-183,-182]$ & $[-750,750]$ & $[-555,-555]$ & $[-153,952]$ & --- \\
+        $b_h$ & 181 & 0 & 555 & 153 & \\
+        $W_o$ & $-154$ & $1064$ & $-888$ & $-639$ & 1037 \\
+        \bottomrule
+      \end{tabular}
+    \end{center}
+    \vspace{0.2em}
     \textbf{Validação Python pré-ESBMC}:
     \begin{center}
-      \small
+      \scriptsize
       \begin{tabular}{cc|rr|c}
         \toprule
         $x_1$ & $x_2$ & float & quant & status \\
@@ -401,49 +389,59 @@ def extract_mlp_weights(path):
       \end{tabular}
     \end{center}
 
-    \column{0.47\textwidth}
+    \column{0.45\textwidth}
     \begin{exampleblock}{Invariante injetada}
-      Para limitar o espaço de busca SMT:
-      \[
-        \texttt{pre} \in [-1280,\; 1280]
-      \]
-      Derivado analiticamente dos pesos.
-      Injetado via \texttt{\_\_ESBMC\_assume}.
+      \small
+      Limita busca SMT:\\[0.2em]
+      $\texttt{pre} \in [-1280,\; 1280]$\\[0.2em]
+      \scriptsize Derivado dos pesos.\\
+      Via \texttt{\_\_ESBMC\_assume}.
     \end{exampleblock}
   \end{columns}
 \end{frame}
 
 % ──────────────────────────────────────────────────────────────────────────────
 \begin{frame}[fragile]{Etapa 4 --- Harness de Verificação}
-  \begin{lstlisting}[style=cstyle, title=verify\_mlp\_qnn.c (gerado automaticamente por quantize\_mlp.py)]
-static int qw_hidden[4][2] = {
-    {-183,-182}, {-750,750}, {-555,-555}, {-153,952} };
-static int qb_hidden[4] = {181, 0, 555, 153};
-static int qw_out[4]    = {-154, 1064, -888, -639};
-static int qb_out       = 1037;
-
+  \begin{columns}[T]
+    \column{0.56\textwidth}
+    \begin{lstlisting}[style=cstyle, basicstyle=\scriptsize\ttfamily, title=mlp\_forward (Q8.8)]
+/* pesos: ver slide anterior */
 static int mlp_forward(int x1, int x2) {
-    int h[4], i;
-    for (i = 0; i < 4; i++) {
-        int pre = (x1 * qw_hidden[i][0]) / 256
-                + (x2 * qw_hidden[i][1]) / 256
-                + qb_hidden[i];
-        __ESBMC_assume(pre >= -1280 && pre <= 1280); /* invariante */
-        h[i] = (pre > 0) ? pre : 0;                 /* ReLU       */
-    }
-    int score = qb_out;
-    for (i = 0; i < 4; i++)
-        score += (h[i] * qw_out[i]) / 256;
-    return score;
+  int h[4], i;
+  for (i = 0; i < 4; i++) {
+    int pre =
+      (x1*qw_hidden[i][0])/256
+     +(x2*qw_hidden[i][1])/256
+     + qb_hidden[i];
+    __ESBMC_assume(
+      pre>=-1280 && pre<=1280);
+    h[i] = pre>0 ? pre : 0; /*ReLU*/
+  }
+  int score = qb_out;
+  for (i=0;i<4;i++)
+    score += (h[i]*qw_out[i])/256;
+  return score;
 }
+    \end{lstlisting}
+
+    \column{0.42\textwidth}
+    \begin{lstlisting}[style=cstyle, basicstyle=\scriptsize\ttfamily, title=main (assertivas)]
 int main(void) {
-    int zero = 0, um = 256;
-    __ESBMC_assert(mlp_forward(zero, zero) <= 0, "P1: XOR(0,0)=false");
-    __ESBMC_assert(mlp_forward(um,   um  ) <= 0, "P2: XOR(1,1)=false");
-    __ESBMC_assert(mlp_forward(zero, um  )  > 0, "P3: XOR(0,1)=true");
-    __ESBMC_assert(mlp_forward(um,   zero)  > 0, "P4: XOR(1,0)=true");
+  __ESBMC_assert(
+    mlp_forward(0,0)<=0,
+    "P1: XOR(0,0)=false");
+  __ESBMC_assert(
+    mlp_forward(256,256)<=0,
+    "P2: XOR(1,1)=false");
+  __ESBMC_assert(
+    mlp_forward(0,256)>0,
+    "P3: XOR(0,1)=true");
+  __ESBMC_assert(
+    mlp_forward(256,0)>0,
+    "P4: XOR(1,0)=true");
 }
-  \end{lstlisting}
+    \end{lstlisting}
+  \end{columns}
 \end{frame}
 
 % ──────────────────────────────────────────────────────────────────────────────
@@ -518,12 +516,9 @@ int main(void) {
 % ──────────────────────────────────────────────────────────────────────────────
 \begin{frame}[fragile]{Método QNNVerifier --- Injeção de Intervalo Abstrato}
   \begin{block}{Técnica central (ACASXU\_Reluplex\_fxp)}
-    Substituir a ativação não-linear por variável simbólica com limites analíticos:
-    \[
-      h_j = \texttt{nondet\_int()};
-      \quad
-      \texttt{\_\_ESBMC\_assume}\bigl(h_j \in [\ell_j,\; u_j]\bigr)
-    \]
+    \small Substituir ativação por variável simbólica com limites analíticos:
+    $h_j = \texttt{nondet\_int()}$;\quad
+    $\texttt{\_\_ESBMC\_assume}(h_j \in [\ell_j, u_j])$
   \end{block}
 
   \begin{columns}
@@ -531,7 +526,7 @@ int main(void) {
     \textbf{Otimizações descobertas}:
     \begin{enumerate}
       \item \textbf{int32\_t} em vez de int64\_t
-      \item \textbf{Código morto eliminado}: em modo abstrato, inputs ficam desacoplados
+      \item \textbf{Código morto eliminado}: inputs desacoplados
       \item \textbf{fxp32\_mult puro}: produto $\ll 2^{31}$
       \item \textbf{Boolector} em vez de Z3
     \end{enumerate}
@@ -540,7 +535,7 @@ int main(void) {
     \end{exampleblock}
 
     \column{0.48\textwidth}
-    \begin{lstlisting}[style=cstyle, title=Harness QNN abstrato]
+    \begin{lstlisting}[style=cstyle, basicstyle=\scriptsize\ttfamily, title=Harness QNN abstrato]
 int32_t h[D_FF];
 h[0] = nondet_int();
 __ESBMC_assume(
@@ -692,10 +687,10 @@ __ESBMC_assert(h[i] == 0,
   "neuronio i sempre morto?");
     \end{lstlisting}
 
-    \vspace{0.3em}
+    \vspace{0.15em}
     \begin{exampleblock}{Modelo real (seed=42)}
-      \small
-      \begin{tabular}{crl}
+      \scriptsize
+      \begin{tabular}{@{}crl@{}}
         \toprule
         $h_i$ & $b$ & ESBMC \\
         \midrule
@@ -710,14 +705,15 @@ __ESBMC_assert(h[i] == 0,
 
     \column{0.5\textwidth}
     \begin{alertblock}{Demonstração: neurônio morto artificial}
-      Modifica $b[1]: 0 \to -1000$\\[0.3em]
-      \textbf{Prova}: $\max(\text{pre}_1) = 750 + (-1000) = -250 \leq 0$\\
-      $\Rightarrow h_1 = \mathrm{ReLU}(\text{pre}_1) = 0$ para toda entrada
-    \end{alertblock}
-    \vspace{0.3em}
-    \begin{exampleblock}{Resultado com $b[1]=-1000$}
       \small
-      \begin{tabular}{crl}
+      Modifica $b[1]: 0 \to -1000$\\[0.1em]
+      \textbf{Prova}: $\max(\text{pre}_1)=750-1000=-250\leq 0$\\
+      $\Rightarrow h_1=0$ para toda entrada
+    \end{alertblock}
+    \vspace{0.1em}
+    \begin{exampleblock}{Resultado com $b[1]=-1000$}
+      \scriptsize
+      \begin{tabular}{@{}crl@{}}
         \toprule
         $h_i$ & $b$ & ESBMC \\
         \midrule
