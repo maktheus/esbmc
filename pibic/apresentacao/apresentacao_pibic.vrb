@@ -1,33 +1,54 @@
-\frametitle{Próximo Passo --- Verificação de Neurônios Mortos}
+\frametitle{Verificação de Neurônios Mortos --- Resultados}
 \begin{columns}
-    \column{0.5\textwidth}
-    \textbf{Definição}: neurônio \emph{morto} é aquele cuja ReLU sempre retorna 0
-    independente da entrada --- contribuição nula para a saída.
-
-    \vspace{0.5em}
-    \textbf{Abordagem com ESBMC}:
-    \begin{itemize}
-      \item Entradas \textbf{simbólicas} (nondet) com domínio $[0,256]^2$
-      \item Para cada neurônio $i$: assert que $h_i = 0$ sempre
-      \item \textcolor{failred}{\textbf{FAILED}} $\Rightarrow$ neurônio está vivo
-      \item \textcolor{okgreen}{\textbf{SUCCESS}} $\Rightarrow$ neurônio é morto
-    \end{itemize}
-
     \column{0.48\textwidth}
-    \begin{lstlisting}[style=cstyle, title=verify\_dead\_neurons.c (próximo)]
+    \textbf{Método}: para cada $h_i$, entradas \textbf{simbólicas} em $[0,256]^2$:
+    \begin{lstlisting}[style=cstyle]
 int x1 = nondet_int();
 int x2 = nondet_int();
-__ESBMC_assume(x1 >= 0 && x1 <= 256);
-__ESBMC_assume(x2 >= 0 && x2 <= 256);
-
-/* Calcular h[i]... */
-
-/* FAILED = neuronio vivo (existe input)
-   SUCCESS = neuronio sempre morto   */
-__ESBMC_assert(h[0] == 0,
-  "neuronio 0 sempre morto?");
-__ESBMC_assert(h[1] == 0,
-  "neuronio 1 sempre morto?");
-/* ... */
+__ESBMC_assume(x1>=0 && x1<=256);
+__ESBMC_assume(x2>=0 && x2<=256);
+/* FAILED  = neuronio VIVO
+   SUCCESS = neuronio MORTO */
+__ESBMC_assert(h[i] == 0,
+  "neuronio i sempre morto?");
     \end{lstlisting}
+
+    \vspace{0.15em}
+    \begin{exampleblock}{Modelo real (seed=42)}
+      \scriptsize
+      \begin{tabular}{@{}crl@{}}
+        \toprule
+        $h_i$ & $b$ & ESBMC \\
+        \midrule
+        0 & $+181$ & \textcolor{okgreen}{\textbf{VIVO}} \\
+        1 & $0$    & \textcolor{okgreen}{\textbf{VIVO}} \\
+        2 & $+555$ & \textcolor{okgreen}{\textbf{VIVO}} \\
+        3 & $+153$ & \textcolor{okgreen}{\textbf{VIVO}} \\
+        \bottomrule
+      \end{tabular}
+      \quad Nenhum morto.
+    \end{exampleblock}
+
+    \column{0.5\textwidth}
+    \begin{alertblock}{Demonstração: neurônio morto artificial}
+      \small
+      Modifica $b[1]: 0 \to -1000$\\[0.1em]
+      \textbf{Prova}: $\max(\text{pre}_1)=750-1000=-250\leq 0$\\
+      $\Rightarrow h_1=0$ para toda entrada
+    \end{alertblock}
+    \vspace{0.1em}
+    \begin{exampleblock}{Resultado com $b[1]=-1000$}
+      \scriptsize
+      \begin{tabular}{@{}crl@{}}
+        \toprule
+        $h_i$ & $b$ & ESBMC \\
+        \midrule
+        0 & $+181$ & \textcolor{okgreen}{\textbf{VIVO}} \\
+        1 & $-1000$ & \textcolor{failred}{\textbf{MORTO}} \\
+        2 & $+555$ & \textcolor{okgreen}{\textbf{VIVO}} \\
+        3 & $+153$ & \textcolor{okgreen}{\textbf{VIVO}} \\
+        \bottomrule
+      \end{tabular}
+      \quad \textcolor{failred}{VERIFICATION SUCCESSFUL}
+    \end{exampleblock}
   \end{columns}
