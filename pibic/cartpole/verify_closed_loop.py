@@ -48,10 +48,21 @@ def q(v):
     return int(round(v * SCALE))
 
 
+def c_div(a, b):
+    """Divisão inteira truncando em direção a zero — igual ao '/' do C."""
+    return int(a / b)
+
+
 # ─── Propagação de intervalo ──────────────────────────────────────────────────
 
 def compute_pre_bounds(qw, qb, in_lo, in_hi):
-    """Aritimética de intervalo para bounds de pré-ativação."""
+    """Aritmética de intervalo para bounds de pré-ativação.
+
+    Usa c_div() que trunca em direção a zero, exatamente como o operador '/'
+    do harness C gerado. Usar Python '//' (floor) produziria bounds menores
+    para termos negativos, tornando os __ESBMC_assume muito restritivos e
+    a prova não-soa.
+    """
     lo_pre, hi_pre = [], []
     for i in range(len(qb)):
         lo = qb[i]
@@ -59,11 +70,11 @@ def compute_pre_bounds(qw, qb, in_lo, in_hi):
         for k in range(len(in_lo)):
             w = qw[i][k]
             if w >= 0:
-                lo += (in_lo[k] * w) // SCALE
-                hi += (in_hi[k] * w) // SCALE
+                lo += c_div(in_lo[k] * w, SCALE)
+                hi += c_div(in_hi[k] * w, SCALE)
             else:
-                lo += (in_hi[k] * w) // SCALE
-                hi += (in_lo[k] * w) // SCALE
+                lo += c_div(in_hi[k] * w, SCALE)
+                hi += c_div(in_lo[k] * w, SCALE)
         lo_pre.append(lo)
         hi_pre.append(hi)
     return lo_pre, hi_pre
