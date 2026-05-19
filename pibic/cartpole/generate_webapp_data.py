@@ -124,6 +124,53 @@ def run_uncontrolled_episode(env: CartPoleEnv, max_steps: int,
     }
 
 
+def run_counterexample_episode(model: QNetwork, env: CartPoleEnv,
+                               initial_state: tuple, max_steps: int,
+                               seed: int, note: str,
+                               prop: str) -> dict:
+    """Simula a partir do estado contraexemplo encontrado pelo ESBMC."""
+    env.state = initial_state
+    env.steps = 0
+    state = initial_state
+    trajectory = []
+    total_reward = 0.0
+
+    for _ in range(max_steps):
+        state_tensor = torch.tensor(state, dtype=torch.float32).unsqueeze(0)
+        with torch.no_grad():
+            q_values = model(state_tensor).squeeze(0)
+        q0 = float(q_values[0].item())
+        q1 = float(q_values[1].item())
+        action = int(q_values.argmax().item())
+
+        x, x_dot, theta, theta_dot = state
+        trajectory.append({
+            "x":         round(float(x), 6),
+            "x_dot":     round(float(x_dot), 6),
+            "theta":     round(float(theta), 6),
+            "theta_dot": round(float(theta_dot), 6),
+            "action":    action,
+            "q0":        round(q0, 6),
+            "q1":        round(q1, 6),
+        })
+
+        next_state, reward, done = env.step(action)
+        total_reward += reward
+        state = next_state
+        if done:
+            break
+
+    return {
+        "seed":            seed,
+        "score":           int(total_reward),
+        "type":            "counterexample",
+        "critical_frame":  0,
+        "esbmc_property":  prop,
+        "esbmc_note":      note,
+        "trajectory":      trajectory,
+    }
+
+
 def extract_biases(model: QNetwork) -> list:
     """Extrai os biases da camada 1 para exibição na página de verificação."""
     biases_raw = model.net[0].bias.detach().numpy()
@@ -208,6 +255,43 @@ def main():
     random_scores = [ep["score"] for ep in episodes if ep["type"] == "random"]
     avg_rand = sum(random_scores) / len(random_scores) if random_scores else 0
     print(f"  Score médio (aleatório): {avg_rand:.1f}")
+
+    # ── Episódios contraexemplo ESBMC ────────────────────────────────────────
+    print("\nGerando episódios a partir dos contraexemplos ESBMC...")
+    counterexamples = [
+        {
+            "state": (-1.2461, 3.5156, -0.1914, -0.4219),
+            "seed":  100,
+            "prop":  "Property A-left",
+            "note":  (
+                "ESBMC provou: com θ=−0.19 rad (pêndulo inclinando à esquerda) "
+                "e θ̇=−0.42 rad/s (acelerando à esquerda), o controlador escolheu "
+                "ação=1 (empurrar à direita) — direção ERRADA. "
+                "O controlador deveria empurrar à esquerda para restaurar o equilíbrio."
+            ),
+        },
+        {
+            "state": (-1.7188, 4.0000, -0.1367, -4.5898),
+            "seed":  101,
+            "prop":  "Property B — Segurança 1 passo",
+            "note":  (
+                "ESBMC provou: a partir deste estado (θ̇=−4.59 rad/s — velocidade "
+                "angular extrema), qualquer ação do controlador resulta em |θ| > 12° "
+                "após um passo de dinâmica linearizada. "
+                "O sistema controlado não garante segurança em 1 passo."
+            ),
+        },
+    ]
+
+    for ce in counterexamples:
+        env = CartPoleEnv(seed=ce["seed"])
+        result = run_counterexample_episode(
+            model, env, ce["state"], MAX_STEPS,
+            ce["seed"], ce["note"], ce["prop"],
+        )
+        n_frames = len(result["trajectory"])
+        print(f"  [esbmc/{ce['prop']}] {n_frames} passos, score={result['score']}")
+        episodes.append(result)
 
     # ── Carrega resultados de malha fechada ──────────────────────────────────
     print("\nCarregando resultados de verificação em malha fechada...")
