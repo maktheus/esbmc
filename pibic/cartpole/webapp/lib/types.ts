@@ -11,7 +11,19 @@ export interface TrajectoryFrame {
 export interface Episode {
   seed:       number;
   score:      number;
+  type:       'controlled' | 'random';
   trajectory: TrajectoryFrame[];
+}
+
+export interface ClosedLoopProperty {
+  result:         string;
+  counterexample: string;
+}
+
+export interface ClosedLoopVerification {
+  property_a_right: ClosedLoopProperty;
+  property_a_left:  ClosedLoopProperty;
+  property_b_safety: ClosedLoopProperty;
 }
 
 export interface NeuronInfo {
@@ -38,4 +50,5 @@ export interface SimulationData {
       output_status:     string;
     };
   };
+  closed_loop_verification?: ClosedLoopVerification;
 }
