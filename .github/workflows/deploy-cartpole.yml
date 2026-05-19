@@ -1,0 +1,55 @@
+name: Deploy Cart-Pole Visualization
+
+on:
+  push:
+    branches: [claude/analyze-pibic-code-KfVX4]
+    paths:
+      - 'pibic/cartpole/**'
+      - '.github/workflows/deploy-cartpole.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python deps
+        run: pip install torch numpy onnx --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Generate simulation data
+        working-directory: pibic/cartpole
+        run: python generate_webapp_data.py
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: pibic/cartpole/webapp/package-lock.json
+
+      - name: Install Node deps
+        working-directory: pibic/cartpole/webapp
+        run: npm ci
+
+      - name: Build Next.js
+        working-directory: pibic/cartpole/webapp
+        run: npm run build
+        env:
+          NEXT_PUBLIC_BASE_PATH: /esbmc
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: pibic/cartpole/webapp/out
+          destination_dir: cartpole
