@@ -2,7 +2,7 @@ name: Deploy Cart-Pole Visualization
 
 on:
   push:
-    branches: [claude/analyze-pibic-code-KfVX4]
+    branches: [master, main]
     paths:
       - 'pibic/cartpole/**'
       - '.github/workflows/deploy-cartpole.yml'
@@ -43,4 +43,3 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: pibic/cartpole/webapp/out
-          destination_dir: cartpole
