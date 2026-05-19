@@ -2,7 +2,7 @@ name: Deploy Cart-Pole Visualization
 
 on:
   push:
-    branches: [claude/analyze-pibic-code-KfVX4]
+    branches: [master, main]
     paths:
       - 'pibic/cartpole/**'
       - '.github/workflows/deploy-cartpole.yml'
@@ -18,17 +18,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install Python deps
-        run: pip install torch numpy onnx --index-url https://download.pytorch.org/whl/cpu
-
-      - name: Generate simulation data
-        working-directory: pibic/cartpole
-        run: python generate_webapp_data.py
+      # simulation_data.json is committed — no need to regenerate in CI
+      # To refresh it locally: python pibic/cartpole/generate_webapp_data.py
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -52,4 +43,3 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: pibic/cartpole/webapp/out
-          destination_dir: cartpole
