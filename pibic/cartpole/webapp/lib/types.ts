@@ -9,10 +9,13 @@ export interface TrajectoryFrame {
 }
 
 export interface Episode {
-  seed:       number;
-  score:      number;
-  type:       'controlled' | 'random';
-  trajectory: TrajectoryFrame[];
+  seed:            number;
+  score:           number;
+  type:            'controlled' | 'random' | 'counterexample';
+  trajectory:      TrajectoryFrame[];
+  critical_frame?: number;
+  esbmc_note?:     string;
+  esbmc_property?: string;
 }
 
 export interface ClosedLoopProperty {
