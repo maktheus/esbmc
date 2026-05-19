@@ -19,9 +19,10 @@ export default function SimulationPage() {
 
   // Load simulation data
   useEffect(() => {
+    const base = process.env.NEXT_PUBLIC_BASE_PATH || '';
     const url = process.env.NEXT_PUBLIC_API_URL
       ? `${process.env.NEXT_PUBLIC_API_URL}/api/simulate`
-      : '/simulation_data.json';
+      : `${base}/simulation_data.json`;
 
     fetch(url)
       .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
