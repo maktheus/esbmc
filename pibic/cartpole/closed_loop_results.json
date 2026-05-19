@@ -1,0 +1,14 @@
+{
+  "property_a_right": {
+    "result": "TIMEOUT",
+    "counterexample": ""
+  },
+  "property_a_left": {
+    "result": "FAILED",
+    "counterexample": "x=-1.2461  xd=3.5156  th=-0.1914  thd=-0.4219  action=1"
+  },
+  "property_b_safety": {
+    "result": "FAILED",
+    "counterexample": "x=-1.7188  xd=4.0000  th=-0.1367  thd=-4.5898"
+  }
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { SimulationData, NeuronInfo } from '@/lib/types';
+import { SimulationData, NeuronInfo, ClosedLoopProperty } from '@/lib/types';
 
 function Badge({ ok }: { ok: boolean }) {
   return (
@@ -20,6 +20,61 @@ function SatBadge({ sat }: { sat: boolean }) {
     }`}>
       {sat ? '⚠ SATURADO' : '✓ NORMAL'}
     </span>
+  );
+}
+
+function ClosedLoopCard({ title, prop, description }: {
+  title: string;
+  prop: ClosedLoopProperty;
+  description: string;
+}) {
+  const isFailed    = prop.result === 'FAILED';
+  const isSuccess   = prop.result === 'SUCCESSFUL';
+  const isTimeout   = prop.result === 'TIMEOUT';
+  const isUnknown   = !isFailed && !isSuccess && !isTimeout;
+
+  return (
+    <div className={`rounded-xl border p-5 space-y-3 ${
+      isFailed  ? 'bg-red-900/20 border-red-700'
+    : isSuccess ? 'bg-green-900/20 border-green-700'
+    : isTimeout ? 'bg-yellow-900/20 border-yellow-700'
+    :             'bg-gray-800 border-gray-700'
+    }`}>
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="text-white font-semibold text-sm">{title}</h3>
+        <span className={`flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${
+          isFailed  ? 'bg-red-800 text-red-200'
+        : isSuccess ? 'bg-green-800 text-green-200'
+        : isTimeout ? 'bg-yellow-800 text-yellow-200'
+        :             'bg-gray-700 text-gray-300'
+        }`}>
+          {isFailed ? '✗ FALHA ENCONTRADA' : isSuccess ? '✓ VERIFICADO' : isTimeout ? '⏱ TIMEOUT' : prop.result}
+        </span>
+      </div>
+
+      <p className="text-gray-400 text-xs">{description}</p>
+
+      {isFailed && prop.counterexample && (
+        <div className="bg-red-950/60 border border-red-800 rounded-lg p-3">
+          <p className="text-red-300 text-xs font-semibold mb-1">
+            FALHA ENCONTRADA — estado que causa colapso:
+          </p>
+          <p className="text-red-200 text-xs font-mono break-all">{prop.counterexample}</p>
+        </div>
+      )}
+
+      {isSuccess && (
+        <p className="text-green-400 text-xs">
+          Propriedade satisfeita para todo estado no domínio verificado.
+        </p>
+      )}
+
+      {isTimeout && (
+        <p className="text-yellow-400 text-xs">
+          ESBMC excedeu o limite de tempo. A propriedade pode ser verdadeira ou falsa — não conclusivo.
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -52,6 +107,7 @@ export default function VerificationPage() {
   const { dead_neurons, saturation } = data.verification;
   const saturatedSet = new Set(saturation.saturated_neurons);
   const deadSet      = new Set(dead_neurons.dead);
+  const cl           = data.closed_loop_verification;
 
   return (
     <div className="space-y-6">
@@ -164,6 +220,59 @@ export default function VerificationPage() {
           </div>
         </div>
       </div>
+
+      {/* ── Closed-loop verification section ── */}
+      {cl && (
+        <div className="space-y-4">
+          <div className="border-t border-gray-700 pt-4">
+            <h2 className="text-xl font-bold text-white mb-1">Verificação em Malha Fechada</h2>
+            <p className="text-gray-400 text-sm">
+              O ESBMC verifica propriedades do sistema completo: controlador DQN + dinâmica do Cart-Pole.
+              A passagem do DQN é completamente expandida (sem loops) com todos os pesos hardcoded
+              em Q8.8 (scale=256). Bounds de pré-ativação são derivados por aritmética de intervalo.
+            </p>
+          </div>
+
+          <ClosedLoopCard
+            title="Property A — Direção Errada (θ > 0.10 rad → push right)"
+            prop={cl.property_a_right}
+            description={
+              'Quando o pêndulo está inclinado para a direita (θ > 0.10 rad) e ainda acelerando nessa ' +
+              'direção (θ̇ ≥ 0), o controlador DEVE aplicar força para a direita (ação=1) para restaurar ' +
+              'o equilíbrio. Se aplicar força para a esquerda, é uma falha de controle.'
+            }
+          />
+
+          <ClosedLoopCard
+            title="Property A — Direção Errada (θ < −0.10 rad → push left)"
+            prop={cl.property_a_left}
+            description={
+              'Versão simétrica: quando θ < −0.10 rad e θ̇ ≤ 0, o controlador DEVE ' +
+              'aplicar força para a esquerda (ação=0). ESBMC FAILED significa que ' +
+              'encontrou um estado onde o controlador empurra na direção errada.'
+            }
+          />
+
+          <ClosedLoopCard
+            title="Property B — Segurança em 1 Passo (dinâmica linearizada)"
+            prop={cl.property_b_safety}
+            description={
+              'Para todo estado inicial s₀ ∈ S_safe, o controlador DQN gera uma ação e ' +
+              'a dinâmica linearizada (sin≈θ, cos≈1) avança um passo. A propriedade garante ' +
+              'que θ₁ ∈ [−12°, 12°] após o passo. ESBMC FAILED revela estados onde o ' +
+              'sistema controlado não garante segurança em 1 passo.'
+            }
+          />
+
+          <div className="bg-gray-800 rounded-xl p-4 border border-gray-700 text-xs text-gray-400 space-y-1">
+            <p className="text-gray-300 font-semibold text-sm mb-2">Notas metodológicas</p>
+            <p>• Harnesses C gerados automaticamente com todos os pesos expandidos (sem loops C) para evitar problemas de desdobramento no ESBMC.</p>
+            <p>• <span className="font-mono text-blue-300">__ESBMC_assume</span> restringe pré-ativações ao intervalo derivado analiticamente (aritmética de intervalo), guiando o solver de forma eficiente.</p>
+            <p>• Dinâmica de Property B usa linearização válida para |θ| ≤ 12°: sin(θ)≈θ, cos(θ)≈1.</p>
+            <p>• Solver: Boolector. Domínio Q8.8 (scale=256). Limiar de perigo: |θ| &gt; 25/256 ≈ 5.6°.</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

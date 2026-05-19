@@ -1,10 +1,10 @@
 """
 generate_webapp_data.py — Gera simulation_data.json para o webapp Cart-Pole.
 
-Roda 5 episódios (seeds 0-4) com o controlador DQN treinado e salva:
-  - trajectory: lista de {x, x_dot, theta, theta_dot, action, q0, q1}
-  - model_info: arquitetura e score de treinamento
-  - verification: resultados de neurônios mortos e saturação (hardcoded)
+Roda:
+  - 10 episódios controlados (seeds 0-9) com o controlador DQN treinado
+  - 5 episódios sem controle (política aleatória, seeds 42-46)
+Inclui também os resultados de verificação em malha fechada do ESBMC.
 
 Uso:
     python generate_webapp_data.py
@@ -14,6 +14,7 @@ import os
 import sys
 import json
 import math
+import random
 
 import torch
 import numpy as np
@@ -25,42 +26,29 @@ from dqn_agent import QNetwork
 from cartpole_env import CartPoleEnv
 
 # ── Configuração ────────────────────────────────────────────────────────────
-ONNX_PATH  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dqn_cartpole.pth")
-OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "webapp", "public")
+PTH_PATH    = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dqn_cartpole.pth")
+OUTPUT_DIR  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "webapp", "public")
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "simulation_data.json")
+CL_RESULTS  = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            "closed_loop_results.json")
 
-NUM_EPISODES = 5
-MAX_STEPS    = 500
-
-# ── Resultados de verificação (hardcoded — todos neurônios vivos, 0 saturados) ──
-VERIFICATION_RESULTS = {
-    "dead_neurons": {
-        "total": 24,
-        "dead": [],
-        "neurons": [
-            {"id": i, "bias_q88": 0, "status": "VIVO"}
-            for i in range(24)
-        ]
-    },
-    "saturation": {
-        "saturated_neurons": [],
-        "output_status": "NORMAL — controlador responsivo (escolhe ações diferentes)"
-    }
-}
+NUM_CONTROLLED   = 10   # seeds 0-9
+NUM_UNCONTROLLED = 5    # seeds 42-46
+MAX_STEPS        = 500
 
 
 def load_model(path: str) -> QNetwork:
     """Carrega o QNetwork treinado do arquivo .pth."""
     model = QNetwork()
     state_dict = torch.load(path, map_location="cpu", weights_only=True)
-    # O arquivo .pth pode ter sido salvo como policy network
     model.load_state_dict(state_dict)
     model.eval()
     return model
 
 
-def run_episode(model: QNetwork, env: CartPoleEnv, max_steps: int) -> dict:
-    """Roda um episódio completo e retorna a trajetória."""
+def run_controlled_episode(model: QNetwork, env: CartPoleEnv,
+                            max_steps: int, seed: int) -> dict:
+    """Roda um episódio com o controlador DQN."""
     state = env.reset()
     trajectory = []
     total_reward = 0.0
@@ -92,14 +80,52 @@ def run_episode(model: QNetwork, env: CartPoleEnv, max_steps: int) -> dict:
             break
 
     return {
+        "seed":       seed,
+        "score":      int(total_reward),
+        "type":       "controlled",
         "trajectory": trajectory,
-        "score": int(total_reward),
+    }
+
+
+def run_uncontrolled_episode(env: CartPoleEnv, max_steps: int,
+                              seed: int) -> dict:
+    """Roda um episódio com política aleatória (sem controlador)."""
+    rng = random.Random(seed)
+    state = env.reset()
+    trajectory = []
+    total_reward = 0.0
+
+    for _ in range(max_steps):
+        action = rng.randint(0, 1)
+
+        x, x_dot, theta, theta_dot = state
+        trajectory.append({
+            "x":         round(float(x), 6),
+            "x_dot":     round(float(x_dot), 6),
+            "theta":     round(float(theta), 6),
+            "theta_dot": round(float(theta_dot), 6),
+            "action":    action,
+            "q0":        0.0,
+            "q1":        0.0,
+        })
+
+        next_state, reward, done = env.step(action)
+        total_reward += reward
+        state = next_state
+
+        if done:
+            break
+
+    return {
+        "seed":       seed,
+        "score":      int(total_reward),
+        "type":       "random",
+        "trajectory": trajectory,
     }
 
 
 def extract_biases(model: QNetwork) -> list:
     """Extrai os biases da camada 1 para exibição na página de verificação."""
-    # model.net[0] = Linear(4, 24) — camada 1
     biases_raw = model.net[0].bias.detach().numpy()
     SCALE = 256
     neurons = []
@@ -113,18 +139,31 @@ def extract_biases(model: QNetwork) -> list:
     return neurons
 
 
+def load_closed_loop_results() -> dict:
+    """Carrega os resultados de verificação em malha fechada."""
+    if os.path.exists(CL_RESULTS):
+        with open(CL_RESULTS, "r", encoding="utf-8") as f:
+            return json.load(f)
+    # Fallback: resultados padrão se o arquivo não existe
+    return {
+        "property_a_right": {"result": "NÃO EXECUTADO", "counterexample": ""},
+        "property_a_left":  {"result": "NÃO EXECUTADO", "counterexample": ""},
+        "property_b_safety": {"result": "NÃO EXECUTADO", "counterexample": ""},
+    }
+
+
 def main():
-    print("=" * 58)
+    print("=" * 60)
     print("Gerador de dados para webapp Cart-Pole DQN")
-    print("=" * 58)
+    print("=" * 60)
 
     # Carrega o modelo
-    if not os.path.exists(ONNX_PATH):
-        print(f"ERRO: arquivo de modelo não encontrado: {ONNX_PATH}")
+    if not os.path.exists(PTH_PATH):
+        print(f"ERRO: arquivo de modelo não encontrado: {PTH_PATH}")
         sys.exit(1)
 
-    print(f"Carregando modelo: {ONNX_PATH}")
-    model = load_model(ONNX_PATH)
+    print(f"Carregando modelo: {PTH_PATH}")
+    model = load_model(PTH_PATH)
     print("Modelo carregado: 4 → 24 → 24 → 2")
 
     # Extrai biases reais da camada 1
@@ -141,25 +180,43 @@ def main():
         }
     }
 
-    # Roda episódios
+    # ── Episódios controlados (seeds 0-9) ───────────────────────────────────
     episodes = []
-    print(f"\nRodando {NUM_EPISODES} episódios (seeds 0-{NUM_EPISODES-1})...")
-    for seed in range(NUM_EPISODES):
+    print(f"\nRodando {NUM_CONTROLLED} episódios controlados (seeds 0-{NUM_CONTROLLED-1})...")
+    for seed in range(NUM_CONTROLLED):
         env = CartPoleEnv(seed=seed)
-        result = run_episode(model, env, MAX_STEPS)
+        result = run_controlled_episode(model, env, MAX_STEPS, seed)
         score = result["score"]
         n_frames = len(result["trajectory"])
-        print(f"  Episódio {seed}: {n_frames} passos, score={score}")
-        episodes.append({
-            "seed":       seed,
-            "score":      score,
-            "trajectory": result["trajectory"],
-        })
+        print(f"  [controlado] Episódio {seed:2d}: {n_frames:3d} passos, score={score}")
+        episodes.append(result)
 
-    avg_score = sum(ep["score"] for ep in episodes) / len(episodes)
-    print(f"\nScore médio: {avg_score:.1f}")
+    controlled_scores = [ep["score"] for ep in episodes if ep["type"] == "controlled"]
+    avg_ctrl = sum(controlled_scores) / len(controlled_scores) if controlled_scores else 0
+    print(f"  Score médio (controlado): {avg_ctrl:.1f}")
 
-    # Monta o JSON final
+    # ── Episódios sem controle (seeds 42-46) ────────────────────────────────
+    print(f"\nRodando {NUM_UNCONTROLLED} episódios aleatórios (seeds 42-46)...")
+    for seed in range(42, 42 + NUM_UNCONTROLLED):
+        env = CartPoleEnv(seed=seed)
+        result = run_uncontrolled_episode(env, MAX_STEPS, seed)
+        score = result["score"]
+        n_frames = len(result["trajectory"])
+        print(f"  [aleatório]  Episódio {seed:2d}: {n_frames:3d} passos, score={score}")
+        episodes.append(result)
+
+    random_scores = [ep["score"] for ep in episodes if ep["type"] == "random"]
+    avg_rand = sum(random_scores) / len(random_scores) if random_scores else 0
+    print(f"  Score médio (aleatório): {avg_rand:.1f}")
+
+    # ── Carrega resultados de malha fechada ──────────────────────────────────
+    print("\nCarregando resultados de verificação em malha fechada...")
+    cl_results = load_closed_loop_results()
+    print(f"  Property A (direita): {cl_results['property_a_right']['result']}")
+    print(f"  Property A (esquerda): {cl_results['property_a_left']['result']}")
+    print(f"  Property B (segurança): {cl_results['property_b_safety']['result']}")
+
+    # ── Monta o JSON final ───────────────────────────────────────────────────
     data = {
         "model_info": {
             "architecture":       "4→24→24→2",
@@ -168,6 +225,7 @@ def main():
         },
         "episodes":     episodes,
         "verification": verification,
+        "closed_loop_verification": cl_results,
     }
 
     # Salva o arquivo
@@ -177,7 +235,9 @@ def main():
 
     size_kb = os.path.getsize(OUTPUT_FILE) / 1024
     print(f"\nSalvo: {OUTPUT_FILE}  ({size_kb:.1f} KB)")
-    print("=" * 58)
+    print(f"Total: {len(episodes)} episódios "
+          f"({len(controlled_scores)} controlados + {len(random_scores)} aleatórios)")
+    print("=" * 60)
 
 
 if __name__ == "__main__":
