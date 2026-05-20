@@ -32,9 +32,9 @@ OUTPUT_FILE = os.path.join(OUTPUT_DIR, "simulation_data.json")
 CL_RESULTS  = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                             "closed_loop_results.json")
 
-NUM_CONTROLLED   = 10   # seeds 0-9
-NUM_UNCONTROLLED = 5    # seeds 42-46
-MAX_STEPS        = 500
+NUM_CONTROLLED   = 10    # seeds 0-9
+NUM_UNCONTROLLED = 5     # seeds 42-46
+MAX_STEPS        = 3000  # 3000 × 0.02s = 60s por episódio
 
 
 def load_model(path: str) -> QNetwork:
@@ -89,13 +89,16 @@ def run_controlled_episode(model: QNetwork, env: CartPoleEnv,
 
 def run_uncontrolled_episode(env: CartPoleEnv, max_steps: int,
                               seed: int) -> dict:
-    """Roda um episódio com política aleatória (sem controlador)."""
+    """Roda política aleatória por max_steps frames, resetando quando cai."""
     rng = random.Random(seed)
     state = env.reset()
     trajectory = []
     total_reward = 0.0
 
-    for _ in range(max_steps):
+    sub_lengths = []
+    sub_len = 0
+
+    while len(trajectory) < max_steps:
         action = rng.randint(0, 1)
 
         x, x_dot, theta, theta_dot = state
@@ -111,58 +114,76 @@ def run_uncontrolled_episode(env: CartPoleEnv, max_steps: int,
 
         next_state, reward, done = env.step(action)
         total_reward += reward
+        sub_len += 1
         state = next_state
 
         if done:
-            break
+            sub_lengths.append(sub_len)
+            sub_len = 0
+            state = env.reset()  # reinicia e continua até max_steps
+
+    avg_sub = int(round(sum(sub_lengths) / len(sub_lengths))) if sub_lengths else sub_len
 
     return {
         "seed":       seed,
-        "score":      int(total_reward),
+        "score":      avg_sub,   # duração média de cada sub-episódio antes de cair
         "type":       "random",
         "trajectory": trajectory,
     }
+
+
+def _dqn_frame(model: QNetwork, state: tuple) -> tuple:
+    """Retorna (action, q0, q1) para um estado."""
+    t = torch.tensor(state, dtype=torch.float32).unsqueeze(0)
+    with torch.no_grad():
+        q = model(t).squeeze(0)
+    return int(q.argmax().item()), float(q[0].item()), float(q[1].item())
 
 
 def run_counterexample_episode(model: QNetwork, env: CartPoleEnv,
                                initial_state: tuple, max_steps: int,
                                seed: int, note: str,
                                prop: str) -> dict:
-    """Simula a partir do estado contraexemplo encontrado pelo ESBMC."""
+    """Inicia no estado ESBMC (frame crítico), depois continua com DQN por max_steps."""
+    trajectory = []
+
+    # ── Frame 0: estado exato do contraexemplo ───────────────────────────────
     env.state = initial_state
     env.steps = 0
     state = initial_state
-    trajectory = []
-    total_reward = 0.0
+    action, q0, q1 = _dqn_frame(model, state)
+    x, x_dot, theta, theta_dot = state
+    trajectory.append({
+        "x": round(float(x), 6), "x_dot": round(float(x_dot), 6),
+        "theta": round(float(theta), 6), "theta_dot": round(float(theta_dot), 6),
+        "action": action, "q0": round(q0, 6), "q1": round(q1, 6),
+    })
+    # aplica a ação errada e descarta o estado pós-falha
+    env.step(action)
 
-    for _ in range(max_steps):
-        state_tensor = torch.tensor(state, dtype=torch.float32).unsqueeze(0)
-        with torch.no_grad():
-            q_values = model(state_tensor).squeeze(0)
-        q0 = float(q_values[0].item())
-        q1 = float(q_values[1].item())
-        action = int(q_values.argmax().item())
+    # ── Continua com DQN a partir de estado normal ───────────────────────────
+    state = env.__class__(seed=seed).reset()
+    env.state = state
+    env.steps = 0
 
+    while len(trajectory) < max_steps:
+        action, q0, q1 = _dqn_frame(model, state)
         x, x_dot, theta, theta_dot = state
         trajectory.append({
-            "x":         round(float(x), 6),
-            "x_dot":     round(float(x_dot), 6),
-            "theta":     round(float(theta), 6),
-            "theta_dot": round(float(theta_dot), 6),
-            "action":    action,
-            "q0":        round(q0, 6),
-            "q1":        round(q1, 6),
+            "x": round(float(x), 6), "x_dot": round(float(x_dot), 6),
+            "theta": round(float(theta), 6), "theta_dot": round(float(theta_dot), 6),
+            "action": action, "q0": round(q0, 6), "q1": round(q1, 6),
         })
-
-        next_state, reward, done = env.step(action)
-        total_reward += reward
+        next_state, _, done = env.step(action)
         state = next_state
         if done:
-            break
+            state = env.__class__(seed=seed + len(trajectory)).reset()
+            env.state = state
+            env.steps = 0
 
     return {
         "seed":            seed,
-        "score":           int(total_reward),
+        "score":           len(trajectory),
         "type":            "counterexample",
         "critical_frame":  0,
         "esbmc_property":  prop,
