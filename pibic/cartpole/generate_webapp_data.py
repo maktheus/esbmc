@@ -140,28 +140,36 @@ def _dqn_frame(model: QNetwork, state: tuple) -> tuple:
     return int(q.argmax().item()), float(q[0].item()), float(q[1].item())
 
 
+COLLAPSE_FRAMES = 80  # frames mostrando o colapso real antes de resetar
+
+
 def run_counterexample_episode(model: QNetwork, env: CartPoleEnv,
                                initial_state: tuple, max_steps: int,
                                seed: int, note: str,
                                prop: str) -> dict:
-    """Inicia no estado ESBMC (frame crítico), depois continua com DQN por max_steps."""
+    """Inicia no estado ESBMC, mostra o colapso real (80 frames), depois DQN."""
     trajectory = []
 
-    # ── Frame 0: estado exato do contraexemplo ───────────────────────────────
+    # ── Fase 1: colapso real — física roda sem parar em done ─────────────────
     env.state = initial_state
     env.steps = 0
     state = initial_state
-    action, q0, q1 = _dqn_frame(model, state)
-    x, x_dot, theta, theta_dot = state
-    trajectory.append({
-        "x": round(float(x), 6), "x_dot": round(float(x_dot), 6),
-        "theta": round(float(theta), 6), "theta_dot": round(float(theta_dot), 6),
-        "action": action, "q0": round(q0, 6), "q1": round(q1, 6),
-    })
-    # aplica a ação errada e descarta o estado pós-falha
-    env.step(action)
 
-    # ── Continua com DQN a partir de estado normal ───────────────────────────
+    for _ in range(COLLAPSE_FRAMES):
+        action, q0, q1 = _dqn_frame(model, state)
+        x, x_dot, theta, theta_dot = state
+        already_failed = abs(theta) > 0.2094 or abs(x) > 2.4
+        trajectory.append({
+            "x": round(float(x), 6), "x_dot": round(float(x_dot), 6),
+            "theta": round(float(theta), 6), "theta_dot": round(float(theta_dot), 6),
+            "action": action, "q0": round(q0, 6), "q1": round(q1, 6),
+            "failed": already_failed,
+        })
+        # continua simulando mesmo após done — mostra a divergência física
+        next_state, _, _ = env.step(action)
+        state = next_state
+
+    # ── Fase 2: DQN normal para contexto (preenche até max_steps) ────────────
     state = env.__class__(seed=seed).reset()
     env.state = state
     env.steps = 0
@@ -173,6 +181,7 @@ def run_counterexample_episode(model: QNetwork, env: CartPoleEnv,
             "x": round(float(x), 6), "x_dot": round(float(x_dot), 6),
             "theta": round(float(theta), 6), "theta_dot": round(float(theta_dot), 6),
             "action": action, "q0": round(q0, 6), "q1": round(q1, 6),
+            "failed": False,
         })
         next_state, _, done = env.step(action)
         state = next_state

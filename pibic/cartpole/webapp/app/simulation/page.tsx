@@ -32,26 +32,52 @@ function TypeBadge({ type }: { type: Episode['type'] }) {
   );
 }
 
-function EsbmcAlert({ episode, frame }: { episode: Episode; frame: number }) {
+function EsbmcAlert({ episode, frame, curFailed }: {
+  episode: Episode; frame: number; curFailed: boolean;
+}) {
   if (episode.type !== 'counterexample') return null;
-  const isCritical = frame === (episode.critical_frame ?? 0);
+  const isCritical  = frame === (episode.critical_frame ?? 0);
+  const isCollapse  = curFailed;
+  const isRecovered = frame >= 80 && !curFailed;
+
   return (
     <div className={`rounded-xl border p-4 space-y-2 transition-colors ${
-      isCritical
-        ? 'bg-orange-900/40 border-orange-500 shadow-lg shadow-orange-900/30'
-        : 'bg-orange-900/10 border-orange-800'
+      isCollapse  ? 'bg-red-900/50 border-red-500 shadow-lg shadow-red-900/40'
+    : isCritical  ? 'bg-orange-900/40 border-orange-500 shadow-lg shadow-orange-900/30'
+    : isRecovered ? 'bg-gray-800 border-gray-600'
+    :               'bg-orange-900/10 border-orange-800'
     }`}>
-      <div className="flex items-center gap-2">
-        <span className="text-orange-400 font-bold text-sm">
-          {isCritical ? '⚠ FALHA ATIVA — Frame crítico' : 'Contraexemplo ESBMC'}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className={`font-bold text-sm ${
+          isCollapse ? 'text-red-300' : 'text-orange-400'
+        }`}>
+          {isCollapse  ? '💥 SISTEMA FORA DOS LIMITES'
+         : isCritical  ? '⚠ FRAME 0 — Ação errada do controlador'
+         : isRecovered ? '✓ Após reset — DQN normal'
+         :               'Contraexemplo ESBMC'}
         </span>
         <span className="text-orange-600 text-xs font-mono">{episode.esbmc_property}</span>
       </div>
-      <p className="text-orange-200 text-xs leading-relaxed">{episode.esbmc_note}</p>
-      {isCritical && (
-        <p className="text-orange-300 text-xs font-semibold">
-          Este é o estado exato que o ESBMC encontrou. Observe a ação escolhida pelo controlador.
+
+      {isCritical && !isCollapse && (
+        <p className="text-orange-200 text-xs font-semibold">
+          Este é o estado exato provado pelo ESBMC. O controlador escolheu a ação errada aqui.
+          Pressione Play para ver o colapso acontecendo.
         </p>
+      )}
+      {isCollapse && (
+        <p className="text-red-200 text-xs font-semibold">
+          O pêndulo ultrapassou ±12° — sistema em colapso. A física diverge a partir daqui.
+          Os próximos {80 - frame} frames mostram a divergência completa.
+        </p>
+      )}
+      {isRecovered && (
+        <p className="text-gray-400 text-xs">
+          Episódio resetado. O DQN opera normalmente a partir daqui — contexto de comparação.
+        </p>
+      )}
+      {!isCritical && !isCollapse && !isRecovered && (
+        <p className="text-orange-200 text-xs leading-relaxed">{episode.esbmc_note}</p>
       )}
     </div>
   );
@@ -149,8 +175,11 @@ export default function SimulationPage() {
     </div>
   );
 
-  const isCE = episode?.type === 'counterexample';
-  const progressColor = isCE ? 'bg-orange-500' : episode?.type === 'controlled' ? 'bg-green-500' : 'bg-red-500';
+  const isCE        = episode?.type === 'counterexample';
+  const curFailed   = !!(curFrame as TrajectoryFrame & { failed?: boolean }).failed;
+  const progressColor = isCE
+    ? (curFailed ? 'bg-red-500' : frame < 80 ? 'bg-orange-500' : 'bg-green-500')
+    : episode?.type === 'controlled' ? 'bg-green-500' : 'bg-red-500';
 
   return (
     <div className="space-y-5">
@@ -238,7 +267,7 @@ export default function SimulationPage() {
       {episode ? (
         <>
           {/* ESBMC alert panel */}
-          <EsbmcAlert episode={episode} frame={frame} />
+          <EsbmcAlert episode={episode} frame={frame} curFailed={curFailed} />
 
           <div className={`rounded-xl p-4 border ${
             isCE ? 'bg-orange-900/10 border-orange-800' : 'bg-gray-800 border-gray-700'
@@ -265,13 +294,25 @@ export default function SimulationPage() {
                   style={{ width: `${traj.length > 1 ? (frame / (traj.length - 1)) * 100 : 0}%` }}
                 />
               </div>
-              {/* Critical frame marker */}
+              {/* Marcadores do contraexemplo */}
               {isCE && (
                 <div className="relative h-3 mt-0.5">
+                  {/* Frame 0 — ação errada */}
                   <div
                     className="absolute top-0 w-0.5 h-3 bg-orange-400"
-                    style={{ left: `${traj.length > 1 ? ((episode.critical_frame ?? 0) / (traj.length - 1)) * 100 : 0}%` }}
-                    title="Frame crítico (contraexemplo)"
+                    style={{ left: '0%' }}
+                    title="Frame 0 — ação errada (contraexemplo ESBMC)"
+                  />
+                  {/* Frame 80 — fim do colapso */}
+                  <div
+                    className="absolute top-0 w-0.5 h-3 bg-red-400"
+                    style={{ left: `${traj.length > 1 ? (80 / (traj.length - 1)) * 100 : 0}%` }}
+                    title="Frame 80 — fim da fase de colapso"
+                  />
+                  {/* Zona vermelha de colapso */}
+                  <div
+                    className="absolute top-0 h-3 bg-red-900/40"
+                    style={{ left: '0%', width: `${traj.length > 1 ? (80 / (traj.length - 1)) * 100 : 0}%` }}
                   />
                 </div>
               )}
