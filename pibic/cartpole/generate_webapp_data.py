@@ -46,6 +46,19 @@ def _detect_n_actions(path: str) -> int:
     return int(sd[last_key].shape[0])
 
 
+# Modelo legado (2 ações): 0=esquerda(-10N), 1=direita(+10N)
+# No env novo (5 ações):   0=-10N, 1=-5N, 2=0N, 3=+5N, 4=+10N
+# Remap: 0→0 (left-10N ok), 1→4 (right+10N)
+_LEGACY_2_TO_ENV5 = {0: 0, 1: 4}
+
+
+def _to_env_action(raw_action: int, n_model_actions: int) -> int:
+    """Converte saída do modelo para índice de ação do env atual (5 níveis)."""
+    if n_model_actions == 2:
+        return _LEGACY_2_TO_ENV5[raw_action]
+    return raw_action
+
+
 def load_model(path: str) -> QNetwork:
     """Carrega o QNetwork, detectando automaticamente o número de ações do .pth."""
     n_actions = _detect_n_actions(path)
@@ -62,12 +75,14 @@ def run_controlled_episode(model: QNetwork, env: CartPoleEnv,
     state = env.reset()
     trajectory = []
     total_reward = 0.0
+    n_model = model.net[-1].out_features
 
     for _ in range(max_steps):
         state_tensor = torch.tensor(state, dtype=torch.float32).unsqueeze(0)
         with torch.no_grad():
             q_values = model(state_tensor).squeeze(0)
-        action = int(q_values.argmax().item())
+        raw_action = int(q_values.argmax().item())
+        action = _to_env_action(raw_action, n_model)
 
         x, x_dot, theta, theta_dot = state
         frame: dict = {
@@ -158,6 +173,7 @@ def run_counterexample_episode(model: QNetwork, env: CartPoleEnv,
                                prop: str) -> dict:
     """Inicia no estado ESBMC, mostra o colapso real (80 frames), depois DQN."""
     trajectory = []
+    n_model = model.net[-1].out_features
 
     # ── Fase 1: colapso real — física roda sem parar em done ─────────────────
     env.state = initial_state
@@ -165,7 +181,8 @@ def run_counterexample_episode(model: QNetwork, env: CartPoleEnv,
     state = initial_state
 
     for _ in range(COLLAPSE_FRAMES):
-        action, q_vals = _dqn_frame(model, state)
+        raw_action, q_vals = _dqn_frame(model, state)
+        action = _to_env_action(raw_action, n_model)
         x, x_dot, theta, theta_dot = state
         already_failed = abs(theta) > 0.2094 or abs(x) > 2.4
         frame: dict = {
@@ -186,7 +203,8 @@ def run_counterexample_episode(model: QNetwork, env: CartPoleEnv,
     env.steps = 0
 
     while len(trajectory) < max_steps:
-        action, q_vals = _dqn_frame(model, state)
+        raw_action, q_vals = _dqn_frame(model, state)
+        action = _to_env_action(raw_action, n_model)
         x, x_dot, theta, theta_dot = state
         frame = {
             "x": round(float(x), 6), "x_dot": round(float(x_dot), 6),
