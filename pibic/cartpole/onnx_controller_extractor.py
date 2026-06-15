@@ -1,7 +1,7 @@
 """
 onnx_controller_extractor.py — Extrai pesos do controlador DQN Cart-Pole (ONNX).
 
-Arquitetura esperada: 4 → 24 → 24 → 2
+Arquitetura suportada: 4 → 24 → 24 → N  (N=2 modelo antigo; N=5 modelo novo)
 Grafo ONNX: Input → Gemm → Relu → Gemm → Relu → Gemm → Output
              (camada 1)           (camada 2)           (saída)
 
@@ -11,8 +11,8 @@ Retorna:
       "b1":    [...]    shape [24]       viés camada 1
       "w2":    [[...]]  shape [24, 24]   pesos camada 2
       "b2":    [...]    shape [24]       viés camada 2
-      "w_out": [[...]]  shape [2, 24]    pesos saída
-      "b_out": [...]    shape [2]        viés saída
+      "w_out": [[...]]  shape [N, 24]    pesos saída (N = número de ações)
+      "b_out": [...]    shape [N]        viés saída
     }
 """
 

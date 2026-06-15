@@ -126,19 +126,24 @@ def generate_controller_harness(
 
     lines.append("")
 
-    # Camada de saída: 2 neurônios × 24 entradas
-    q0_terms = " + ".join(f"(h2_{k}*({qw_out[0][k]}))/256" for k in range(24))
-    q1_terms = " + ".join(f"(h2_{k}*({qw_out[1][k]}))/256" for k in range(24))
-    lines.append(f"    int q0 = {q0_terms} + ({qb_out[0]});")
-    lines.append(f"    int q1 = {q1_terms} + ({qb_out[1]});")
-    lines.append("    int action = (q1 > q0) ? 1 : 0;")
+    # Camada de saída: n_out neurônios × 24 entradas
+    n_out = len(qb_out)
+    for a in range(n_out):
+        q_terms = " + ".join(f"(h2_{k}*({qw_out[a][k]}))/256" for k in range(24))
+        lines.append(f"    int q{a} = {q_terms} + ({qb_out[a]});")
+
+    # Argmax: ação = índice com maior Q-value
+    lines.append("    int action = 0;")
+    lines.append("    int _qmax = q0;")
+    for a in range(1, n_out):
+        lines.append(f"    if (q{a} > _qmax) {{ action = {a}; _qmax = q{a}; }}")
 
     return "\n".join(lines)
 
 
 # ─── Property A ───────────────────────────────────────────────────────────────
 
-def harness_prop_a_right(controller_body):
+def harness_prop_a_right(controller_body, n_out=2):
     """
     θ > DANGER_TH AND θ_dot ≥ 0 → controlador deve empurrar à direita (ação=1).
     ESBMC FAILED = encontrou estado onde empurra à esquerda (FALHA!).
@@ -175,14 +180,14 @@ int main(void) {{
     /* Passagem completa do DQN (pesos quantizados Q8.8) */
 {controller_body}
 
-    /* Propriedade: controlador deve empurrar à direita (action==1) */
-    __ESBMC_assert(action == 1, "PropA-right: controlador empurra na direcao errada!");
+    /* Propriedade: controlador deve aplicar forca positiva */
+    __ESBMC_assert({"action >= 3" if n_out > 2 else "action == 1"}, "PropA-right: controlador nao aplica forca positiva!");
     return 0;
 }}
 """
 
 
-def harness_prop_a_left(controller_body):
+def harness_prop_a_left(controller_body, n_out=2):
     """
     θ < -DANGER_TH AND θ_dot ≤ 0 → controlador deve empurrar à esquerda (ação=0).
     ESBMC FAILED = encontrou estado onde empurra à direita (FALHA!).
@@ -217,8 +222,8 @@ int main(void) {{
     /* Passagem completa do DQN */
 {controller_body}
 
-    /* Propriedade: controlador deve empurrar à esquerda (action==0) */
-    __ESBMC_assert(action == 0, "PropA-left: controlador empurra na direcao errada!");
+    /* Propriedade: controlador deve aplicar forca negativa */
+    __ESBMC_assert({"action <= 1" if n_out > 2 else "action == 0"}, "PropA-left: controlador nao aplica forca negativa!");
     return 0;
 }}
 """
@@ -226,7 +231,7 @@ int main(void) {{
 
 # ─── Property B ───────────────────────────────────────────────────────────────
 
-def harness_prop_b(controller_body):
+def harness_prop_b(controller_body, n_out=2):
     """
     Segurança em passo único com dinâmica linearizada (sin≈θ, cos≈1).
 
@@ -287,8 +292,8 @@ int main(void) {{
     /* Passagem completa do DQN */
 {controller_body}
 
-    /* Dinâmica linearizada Q8.8 */
-    int F_Q     = (action == 1) ? 2560 : -2560;
+    /* Dinâmica linearizada Q8.8 — mapeamento action → F_Q */
+    int F_Q     = {"(action == 0) ? -2560 : (action == 1) ? -1280 : (action == 2) ? 0 : (action == 3) ? 1280 : 2560" if n_out > 2 else "(action == 1) ? 2560 : -2560"};
     int th_acc  = (4040 * th - 375 * F_Q) / 256;
     int th_new  = th  + (5 * thd)   / 256;
     int thd_new = thd + (5 * th_acc) / 256;
@@ -355,7 +360,8 @@ def main():
     qb2   =  [q(v) for v in weights["b2"]]
     qw_out= [[q(v) for v in row] for row in weights["w_out"]]
     qb_out=  [q(v) for v in weights["b_out"]]
-    print("Pesos carregados e quantizados.")
+    n_out = len(qb_out)
+    print(f"Pesos carregados e quantizados. Saída: {n_out} ações.")
 
     # ── Calcula bounds analíticos ─────────────────────────────────────────────
     in_lo = [-X_BND, -XD_BND, -TH_BND, -THD_BND]
@@ -379,7 +385,7 @@ def main():
     print(f"\n{'─'*65}")
     print(f"Property A — θ > {DANGER_TH/256:.2f} rad AND θ_dot ≥ 0 → push right (action=1)")
     print(f"{'─'*65}")
-    src_ar = harness_prop_a_right(ctrl_body)
+    src_ar = harness_prop_a_right(ctrl_body, n_out=n_out)
     f_ar = "/tmp/cl_prop_a_right.c"
     with open(f_ar, "w") as f:
         f.write(src_ar)
@@ -405,7 +411,7 @@ def main():
     print(f"\n{'─'*65}")
     print(f"Property A — θ < -{DANGER_TH/256:.2f} rad AND θ_dot ≤ 0 → push left (action=0)")
     print(f"{'─'*65}")
-    src_al = harness_prop_a_left(ctrl_body)
+    src_al = harness_prop_a_left(ctrl_body, n_out=n_out)
     f_al = "/tmp/cl_prop_a_left.c"
     with open(f_al, "w") as f:
         f.write(src_al)
@@ -431,7 +437,7 @@ def main():
     print(f"\n{'─'*65}")
     print("Property B — Segurança em passo único (dinâmica linearizada)")
     print(f"{'─'*65}")
-    src_b = harness_prop_b(ctrl_body)
+    src_b = harness_prop_b(ctrl_body, n_out=n_out)
     f_b = "/tmp/cl_prop_b_safety.c"
     with open(f_b, "w") as f:
         f.write(src_b)

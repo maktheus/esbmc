@@ -39,9 +39,17 @@ NUM_UNCONTROLLED = 5     # seeds 42-46
 MAX_STEPS        = 3000  # 3000 × 0.02s = 60s por episódio
 
 
+def _detect_n_actions(path: str) -> int:
+    """Detecta número de ações lendo a forma do último tensor de peso."""
+    sd = torch.load(path, map_location="cpu", weights_only=True)
+    last_key = [k for k in sd if "weight" in k][-1]
+    return int(sd[last_key].shape[0])
+
+
 def load_model(path: str) -> QNetwork:
-    """Carrega o QNetwork treinado do arquivo .pth."""
-    model = QNetwork()
+    """Carrega o QNetwork, detectando automaticamente o número de ações do .pth."""
+    n_actions = _detect_n_actions(path)
+    model = QNetwork(n_actions=n_actions)
     state_dict = torch.load(path, map_location="cpu", weights_only=True)
     model.load_state_dict(state_dict)
     model.eval()
@@ -59,20 +67,19 @@ def run_controlled_episode(model: QNetwork, env: CartPoleEnv,
         state_tensor = torch.tensor(state, dtype=torch.float32).unsqueeze(0)
         with torch.no_grad():
             q_values = model(state_tensor).squeeze(0)
-        q0 = float(q_values[0].item())
-        q1 = float(q_values[1].item())
         action = int(q_values.argmax().item())
 
         x, x_dot, theta, theta_dot = state
-        trajectory.append({
+        frame: dict = {
             "x":         round(float(x), 6),
             "x_dot":     round(float(x_dot), 6),
             "theta":     round(float(theta), 6),
             "theta_dot": round(float(theta_dot), 6),
             "action":    action,
-            "q0":        round(q0, 6),
-            "q1":        round(q1, 6),
-        })
+        }
+        for i, qv in enumerate(q_values.tolist()):
+            frame[f"q{i}"] = round(float(qv), 6)
+        trajectory.append(frame)
 
         next_state, reward, done = env.step(action)
         total_reward += reward
@@ -90,7 +97,7 @@ def run_controlled_episode(model: QNetwork, env: CartPoleEnv,
 
 
 def run_uncontrolled_episode(env: CartPoleEnv, max_steps: int,
-                              seed: int) -> dict:
+                              seed: int, n_actions: int = 2) -> dict:
     """Roda política aleatória por max_steps frames, resetando quando cai."""
     rng = random.Random(seed)
     state = env.reset()
@@ -99,9 +106,10 @@ def run_uncontrolled_episode(env: CartPoleEnv, max_steps: int,
 
     sub_lengths = []
     sub_len = 0
+    q_zeros = {f"q{i}": 0.0 for i in range(n_actions)}
 
     while len(trajectory) < max_steps:
-        action = rng.randint(0, 1)
+        action = rng.randint(0, n_actions - 1)
 
         x, x_dot, theta, theta_dot = state
         trajectory.append({
@@ -110,8 +118,7 @@ def run_uncontrolled_episode(env: CartPoleEnv, max_steps: int,
             "theta":     round(float(theta), 6),
             "theta_dot": round(float(theta_dot), 6),
             "action":    action,
-            "q0":        0.0,
-            "q1":        0.0,
+            **q_zeros,
         })
 
         next_state, reward, done = env.step(action)
@@ -135,11 +142,11 @@ def run_uncontrolled_episode(env: CartPoleEnv, max_steps: int,
 
 
 def _dqn_frame(model: QNetwork, state: tuple) -> tuple:
-    """Retorna (action, q0, q1) para um estado."""
+    """Retorna (action, q_values_list) para um estado."""
     t = torch.tensor(state, dtype=torch.float32).unsqueeze(0)
     with torch.no_grad():
         q = model(t).squeeze(0)
-    return int(q.argmax().item()), float(q[0].item()), float(q[1].item())
+    return int(q.argmax().item()), [round(float(v), 6) for v in q.tolist()]
 
 
 COLLAPSE_FRAMES = 80  # frames mostrando o colapso real antes de resetar
@@ -158,15 +165,17 @@ def run_counterexample_episode(model: QNetwork, env: CartPoleEnv,
     state = initial_state
 
     for _ in range(COLLAPSE_FRAMES):
-        action, q0, q1 = _dqn_frame(model, state)
+        action, q_vals = _dqn_frame(model, state)
         x, x_dot, theta, theta_dot = state
         already_failed = abs(theta) > 0.2094 or abs(x) > 2.4
-        trajectory.append({
+        frame: dict = {
             "x": round(float(x), 6), "x_dot": round(float(x_dot), 6),
             "theta": round(float(theta), 6), "theta_dot": round(float(theta_dot), 6),
-            "action": action, "q0": round(q0, 6), "q1": round(q1, 6),
-            "failed": already_failed,
-        })
+            "action": action, "failed": already_failed,
+        }
+        for i, qv in enumerate(q_vals):
+            frame[f"q{i}"] = qv
+        trajectory.append(frame)
         # continua simulando mesmo após done — mostra a divergência física
         next_state, _, _ = env.step(action)
         state = next_state
@@ -177,14 +186,16 @@ def run_counterexample_episode(model: QNetwork, env: CartPoleEnv,
     env.steps = 0
 
     while len(trajectory) < max_steps:
-        action, q0, q1 = _dqn_frame(model, state)
+        action, q_vals = _dqn_frame(model, state)
         x, x_dot, theta, theta_dot = state
-        trajectory.append({
+        frame = {
             "x": round(float(x), 6), "x_dot": round(float(x_dot), 6),
             "theta": round(float(theta), 6), "theta_dot": round(float(theta_dot), 6),
-            "action": action, "q0": round(q0, 6), "q1": round(q1, 6),
-            "failed": False,
-        })
+            "action": action, "failed": False,
+        }
+        for i, qv in enumerate(q_vals):
+            frame[f"q{i}"] = qv
+        trajectory.append(frame)
         next_state, _, done = env.step(action)
         state = next_state
         if done:
@@ -251,7 +262,8 @@ def main():
 
     print(f"Carregando modelo: {PTH_PATH}")
     model = load_model(PTH_PATH)
-    print("Modelo carregado: 4 → 24 → 24 → 2")
+    n_actions = model.net[-1].out_features
+    print(f"Modelo carregado: 4 → 24 → 24 → {n_actions}")
 
     # Extrai biases reais da camada 1
     neurons = extract_biases(model)
@@ -286,7 +298,7 @@ def main():
     print(f"\nRodando {NUM_UNCONTROLLED} episódios aleatórios (seeds 42-46)...")
     for seed in range(42, 42 + NUM_UNCONTROLLED):
         env = CartPoleEnv(seed=seed)
-        result = run_uncontrolled_episode(env, MAX_STEPS, seed)
+        result = run_uncontrolled_episode(env, MAX_STEPS, seed, n_actions=n_actions)
         score = result["score"]
         n_frames = len(result["trajectory"])
         print(f"  [aleatório]  Episódio {seed:2d}: {n_frames:3d} passos, score={score}")
@@ -350,7 +362,7 @@ def main():
     # ── Monta o JSON final ───────────────────────────────────────────────────
     data = {
         "model_info": {
-            "architecture":       "4→24→24→5",
+            "architecture":       f"4→24→24→{n_actions}",
             "training_episodes":  404,
             "final_avg_score":    471,
         },
