@@ -2,7 +2,11 @@
 dqn_agent.py — Agente DQN (Deep Q-Network) para Cart-Pole.
 
 Arquitetura do controlador neural:
-  input(4) → Linear(4,24) → ReLU → Linear(24,24) → ReLU → Linear(24,2)
+  input(4) → Linear(4,24) → ReLU → Linear(24,24) → ReLU → Linear(24,N_ACTIONS)
+
+  N_ACTIONS = 5 (forças: -10, -5, 0, +5, +10 N)
+  O DQN emite um Q-value por nível de força. O argmax seleciona a força aplicada.
+  Isso é mais realista que a versão binária (±10 N apenas).
 
 Referência:
   MathWorks DQN Cart-Pole:
@@ -16,18 +20,20 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+from cartpole_env import N_ACTIONS
+
 HIDDEN = 24   # neurônios por camada oculta (verificação mais rápida no ESBMC)
 
 
 class QNetwork(nn.Module):
-    """Rede Q — 4 → 24 → 24 → 2."""
+    """Rede Q — 4 → 24 → 24 → N_ACTIONS."""
 
-    def __init__(self):
+    def __init__(self, n_actions: int = N_ACTIONS):
         super().__init__()
         self.net = nn.Sequential(
             nn.Linear(4, HIDDEN), nn.ReLU(),
             nn.Linear(HIDDEN, HIDDEN), nn.ReLU(),
-            nn.Linear(HIDDEN, 2),
+            nn.Linear(HIDDEN, n_actions),
         )
 
     def forward(self, x):
@@ -76,7 +82,7 @@ class DQNAgent:
 
     def select_action(self, state):
         if random.random() < self.epsilon:
-            return random.randint(0, 1)
+            return random.randint(0, N_ACTIONS - 1)
         with torch.no_grad():
             s = torch.tensor(state, dtype=torch.float32).unsqueeze(0)
             return int(self.policy(s).argmax(dim=1).item())

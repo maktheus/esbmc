@@ -29,8 +29,10 @@ from cartpole_env import CartPoleEnv
 PTH_PATH    = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dqn_cartpole.pth")
 OUTPUT_DIR  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "webapp", "public")
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "simulation_data.json")
-CL_RESULTS  = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                            "closed_loop_results.json")
+CL_RESULTS   = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             "closed_loop_results.json")
+HIST_FILE    = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             "training_history.json")
 
 NUM_CONTROLLED   = 10    # seeds 0-9
 NUM_UNCONTROLLED = 5     # seeds 42-46
@@ -216,6 +218,14 @@ def extract_biases(model: QNetwork) -> list:
     return neurons
 
 
+def load_training_history() -> list:
+    """Carrega histórico de treinamento (salvo por train_dqn.py)."""
+    if os.path.exists(HIST_FILE):
+        with open(HIST_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return []
+
+
 def load_closed_loop_results() -> dict:
     """Carrega os resultados de verificação em malha fechada."""
     if os.path.exists(CL_RESULTS):
@@ -330,15 +340,23 @@ def main():
     print(f"  Property A (esquerda): {cl_results['property_a_left']['result']}")
     print(f"  Property B (segurança): {cl_results['property_b_safety']['result']}")
 
+    # ── Carrega histórico de treinamento ────────────────────────────────────
+    training_history = load_training_history()
+    if training_history:
+        print(f"  Histórico: {len(training_history)} episódios carregados")
+    else:
+        print("  Histórico: não encontrado (execute train_dqn.py para gerar)")
+
     # ── Monta o JSON final ───────────────────────────────────────────────────
     data = {
         "model_info": {
-            "architecture":       "4→24→24→2",
+            "architecture":       "4→24→24→5",
             "training_episodes":  404,
             "final_avg_score":    471,
         },
-        "episodes":     episodes,
-        "verification": verification,
+        "training_history": training_history,
+        "episodes":          episodes,
+        "verification":      verification,
         "closed_loop_verification": cl_results,
     }
 

@@ -11,8 +11,15 @@ Estado: s = [x, x_dot, theta, theta_dot]
   theta     ângulo do pêndulo (rad) ∈ [-12°, 12°]
   theta_dot velocidade angular (rad/s)
 
-Ação (discreta): 0 = empurrar à esquerda  (-10 N)
-                 1 = empurrar à direita    (+10 N)
+Ação (discreta, 5 níveis):
+  0 = -10 N  (empurrar totalmente à esquerda)
+  1 =  -5 N  (empurrar levemente à esquerda)
+  2 =   0 N  (sem força)
+  3 =  +5 N  (empurrar levemente à direita)
+  4 = +10 N  (empurrar totalmente à direita)
+
+  Antes era binário (±10 N). Agora o controlador tem modulação de força,
+  o que é mais realista: um motor real não opera apenas em liga/desliga.
 """
 
 import math
@@ -25,8 +32,11 @@ M_POLE    = 0.1          # kg
 M_TOTAL   = M_CART + M_POLE
 L         = 0.5          # m  (metade do comprimento do pêndulo)
 ML        = M_POLE * L
-FORCE_MAG = 10.0         # N
 DT        = 0.02         # s  (integração de Euler)
+
+# ── Espaço de ação discretizado (5 níveis de força) ───────────────────────
+FORCE_LEVELS = [-10.0, -5.0, 0.0, 5.0, 10.0]  # N
+N_ACTIONS    = len(FORCE_LEVELS)                # 5
 
 # ── Limites de falha ───────────────────────────────────────────────────────
 X_LIMIT     = 2.4                    # m
@@ -55,7 +65,7 @@ class CartPoleEnv:
     def step(self, action):
         """Avança um passo de tempo. Retorna (next_state, reward, done)."""
         x, xd, th, thd = self.state
-        F = FORCE_MAG if action == 1 else -FORCE_MAG
+        F = FORCE_LEVELS[int(action)]
 
         cos_th = math.cos(th)
         sin_th = math.sin(th)
