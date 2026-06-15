@@ -36,12 +36,20 @@ export interface NeuronInfo {
   status:   string;
 }
 
+export interface TrainingPoint {
+  episode: number;
+  score:   number;
+  avg100:  number;
+  epsilon: number;
+}
+
 export interface SimulationData {
   model_info: {
     architecture:       string;
     training_episodes:  number;
     final_avg_score:    number;
   };
+  training_history?: TrainingPoint[];
   episodes: Episode[];
   verification: {
     dead_neurons: {
