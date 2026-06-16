@@ -6,6 +6,9 @@ export interface TrajectoryFrame {
   action:    number;
   q0:        number;
   q1:        number;
+  q2?:       number;
+  q3?:       number;
+  q4?:       number;
   failed?:   boolean;  // true nos frames pós-colapso do contraexemplo
 }
 

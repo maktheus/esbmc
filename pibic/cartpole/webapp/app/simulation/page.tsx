@@ -8,6 +8,14 @@ import { SimulationData, Episode, TrajectoryFrame } from '@/lib/types';
 const SPEEDS   = [0.5, 1, 2, 5, 10];
 const BASE_FPS = 50;
 
+const FORCE_LABELS: Record<number, string> = {
+  0: 'Esquerda total (−10 N)',
+  1: 'Esquerda leve (−5 N)',
+  2: 'Sem força (0 N)',
+  3: 'Direita leve (+5 N)',
+  4: 'Direita total (+10 N)',
+};
+
 type Filter = 'all' | 'controlled' | 'random' | 'counterexample';
 
 function TypeBadge({ type }: { type: Episode['type'] }) {
@@ -122,7 +130,7 @@ export default function SimulationPage() {
 
   const episode: Episode | null = filteredEps[epIdx] ?? null;
   const traj:    TrajectoryFrame[] = episode?.trajectory ?? [];
-  const curFrame: TrajectoryFrame  = traj[frame] ?? { x: 0, x_dot: 0, theta: 0, theta_dot: 0, action: 0, q0: 0, q1: 0 };
+  const curFrame: TrajectoryFrame  = traj[frame] ?? { x: 0, x_dot: 0, theta: 0, theta_dot: 0, action: 0, q0: 0, q1: 0, q2: 0, q3: 0, q4: 0 };
 
   const stop = useCallback(() => {
     if (rafRef.current !== null) { clearTimeout(rafRef.current); rafRef.current = null; }
@@ -405,8 +413,14 @@ export default function SimulationPage() {
             {isCE && frame === (episode.critical_frame ?? 0) && (
               <div className="mt-3 p-3 bg-orange-900/20 border border-orange-700 rounded-lg">
                 <p className="text-orange-300 text-xs font-semibold">
-                  Ação escolhida: {curFrame.action === 1 ? 'Direita (+10N)' : 'Esquerda (−10N)'}
-                  {' '}&bull; Q[0]={curFrame.q0.toFixed(3)} &bull; Q[1]={curFrame.q1.toFixed(3)}
+                  Ação {curFrame.action} → {FORCE_LABELS[curFrame.action] ?? `F[${curFrame.action}]`}
+                </p>
+                <p className="text-orange-400 text-xs font-mono mt-1">
+                  {([curFrame.q0, curFrame.q1, curFrame.q2, curFrame.q3, curFrame.q4]
+                    .filter((v): v is number => v !== undefined)
+                    .map((v, i) => `Q[${i}]=${v.toFixed(3)}`)
+                    .join('  ·  ')
+                  )}
                 </p>
               </div>
             )}

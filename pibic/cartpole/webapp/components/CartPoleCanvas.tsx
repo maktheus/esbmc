@@ -44,9 +44,15 @@ export default function CartPoleCanvas({ frame, width }: CartPoleCanvasProps) {
   // Clamp cart visually within SVG
   const cartXClamped = Math.max(CART_W / 2 + 2, Math.min(SVG_W - CART_W / 2 - 2, cartX));
 
-  // Arrow direction
-  const arrowColor = action === 1 ? '#22c55e' : '#ef4444';
-  const arrowDx = action === 1 ? 20 : -20;
+  // Arrow direction — detect 5-action data by presence of q2 field
+  // 5-action scheme: 0,1=left; 2=no force; 3,4=right
+  // Legacy 2-action scheme: 0=left, 1=right (q2 absent)
+  const is5Action = frame.q2 !== undefined;
+  const forceSign = is5Action
+    ? (action >= 3 ? 1 : action === 2 ? 0 : -1)
+    : (action === 1 ? 1 : -1);
+  const arrowColor = forceSign > 0 ? '#22c55e' : forceSign < 0 ? '#ef4444' : '#6b7280';
+  const arrowDx = forceSign * 20;
 
   const svgStyle = width ? { width: '100%', maxWidth: width } : { width: '100%' };
 
@@ -121,16 +127,18 @@ export default function CartPoleCanvas({ frame, width }: CartPoleCanvasProps) {
       <circle cx={cartXClamped - CART_W / 4} cy={cartY + CART_H / 2} r={3} fill="#93c5fd" />
       <circle cx={cartXClamped + CART_W / 4} cy={cartY + CART_H / 2} r={3} fill="#93c5fd" />
 
-      {/* Action arrow */}
-      <line
-        x1={cartXClamped}
-        y1={cartY + 8}
-        x2={cartXClamped + arrowDx}
-        y2={cartY + 8}
-        stroke={arrowColor}
-        strokeWidth={3}
-        markerEnd={`url(#arrowhead-${action === 1 ? 'right' : 'left'})`}
-      />
+      {/* Action arrow (hidden when no force) */}
+      {forceSign !== 0 && (
+        <line
+          x1={cartXClamped}
+          y1={cartY + 8}
+          x2={cartXClamped + arrowDx}
+          y2={cartY + 8}
+          stroke={arrowColor}
+          strokeWidth={3}
+          markerEnd={`url(#arrowhead-${forceSign > 0 ? 'right' : 'left'})`}
+        />
+      )}
 
       {/* Arrowhead markers */}
       <defs>
@@ -159,7 +167,7 @@ export default function CartPoleCanvas({ frame, width }: CartPoleCanvasProps) {
         fontFamily="monospace"
         textAnchor="end"
       >
-        {action === 1 ? 'PUSH RIGHT' : 'PUSH LEFT'}
+        {forceSign > 0 ? 'PUSH RIGHT' : forceSign < 0 ? 'PUSH LEFT' : 'NO FORCE'}
       </text>
     </svg>
   );
