@@ -373,25 +373,82 @@ export default function SimulationPage() {
             </div>
           </div>
 
-          {/* State plots */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-              <p className="text-gray-400 text-xs uppercase tracking-wider mb-2">Posição do carro</p>
-              <StatePlot
-                data={traj} currentIdx={frame}
-                field="x" label="x (posição)" unit="m"
-                limit={2.4} color="#60A5FA"
-              />
-            </div>
-            <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-              <p className="text-gray-400 text-xs uppercase tracking-wider mb-2">Ângulo do pêndulo</p>
-              <StatePlot
-                data={traj} currentIdx={frame}
-                field="theta" label="θ (ângulo)" unit="rad"
-                limit={0.2094} color="#34D399"
-              />
+          {/* State plots — 4 entradas do DQN em tempo real */}
+          <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">
+              Entradas do DQN — estado em tempo real
+            </p>
+            <p className="text-gray-500 text-xs mb-3">
+              Estas 4 variáveis são a entrada do controlador a cada passo de 20 ms.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <p className="text-blue-400 text-xs font-mono mb-1">x — posição do carro (m)</p>
+                <StatePlot data={traj} currentIdx={frame}
+                  field="x" label="x" unit="m" limit={2.4} color="#60A5FA" />
+              </div>
+              <div>
+                <p className="text-blue-300 text-xs font-mono mb-1">ẋ — velocidade do carro (m/s)</p>
+                <StatePlot data={traj} currentIdx={frame}
+                  field="x_dot" label="ẋ" unit="m/s" limit={5.0} color="#93C5FD" />
+              </div>
+              <div>
+                <p className="text-green-400 text-xs font-mono mb-1">θ — ângulo do pêndulo (°)</p>
+                <StatePlot data={traj} currentIdx={frame}
+                  field="theta" label="θ" unit="rad" limit={0.2094} color="#34D399" />
+              </div>
+              <div>
+                <p className="text-green-300 text-xs font-mono mb-1">θ̇ — velocidade angular (rad/s)</p>
+                <StatePlot data={traj} currentIdx={frame}
+                  field="theta_dot" label="θ̇" unit="rad/s" limit={5.0} color="#86EFAC" />
+              </div>
             </div>
           </div>
+
+          {/* Q-values em tempo real */}
+          {episode?.type !== 'random' && (
+            <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+              <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Saídas do DQN — Q-values</p>
+              <p className="text-gray-500 text-xs mb-3">
+                Valor estimado de retorno para cada ação. A barra mais alta é a ação escolhida.
+              </p>
+              <div className="space-y-2">
+                {[0, 1, 2, 3, 4].map(i => {
+                  const qKey = `q${i}` as keyof typeof curFrame;
+                  const qVal = curFrame[qKey] as number | undefined;
+                  if (qVal === undefined) return null;
+                  const isSelected = curFrame.action === i;
+                  const allQVals = [0,1,2,3,4]
+                    .map(j => curFrame[`q${j}` as keyof typeof curFrame] as number | undefined)
+                    .filter((v): v is number => v !== undefined);
+                  const qMin = Math.min(...allQVals);
+                  const qMax = Math.max(...allQVals);
+                  const range = qMax - qMin || 1;
+                  const pct = Math.max(5, ((qVal - qMin) / range) * 100);
+                  return (
+                    <div key={i} className="flex items-center gap-2">
+                      <span className="text-gray-400 text-xs font-mono w-20 shrink-0">
+                        {FORCE_LABELS[i]?.replace('Esquerda total', '−10N')
+                          .replace('Esquerda leve', '−5N')
+                          .replace('Sem força', '0N')
+                          .replace('Direita leve', '+5N')
+                          .replace('Direita total', '+10N') ?? `a${i}`}
+                      </span>
+                      <div className="flex-1 h-5 bg-gray-700 rounded overflow-hidden">
+                        <div
+                          className={`h-full rounded transition-all duration-75 ${isSelected ? 'bg-green-500' : 'bg-blue-600/60'}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <span className={`text-xs font-mono w-16 text-right ${isSelected ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                        {qVal.toFixed(2)}{isSelected ? ' ✓' : ''}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Current state */}
           <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">

@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from cartpole_env import CartPoleEnv, N_ACTIONS, FORCE_LEVELS
 from dqn_agent import DQNAgent
 
-EPISODES    = 600
+EPISODES    = 2000
 MAX_STEPS   = 500
 SEED        = 42
 SOLVE_SCORE = 470   # média 100 ep para considerar resolvido
@@ -24,7 +24,7 @@ SOLVE_SCORE = 470   # média 100 ep para considerar resolvido
 torch.manual_seed(SEED)
 
 env   = CartPoleEnv(seed=SEED)
-agent = DQNAgent()
+agent = DQNAgent(lr=5e-4, gamma=0.99, batch=128, target_update=100)
 
 print("=" * 55)
 print(f"Treinamento DQN — Cart-Pole  (4 → 24 → 24 → {N_ACTIONS})")

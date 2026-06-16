@@ -7,6 +7,7 @@ const links = [
   { href: '/',             label: 'Dashboard'    },
   { href: '/training',     label: 'Treinamento'  },
   { href: '/simulation',   label: 'Simulação'    },
+  { href: '/control',      label: 'Controle'     },
   { href: '/verification', label: 'Verificação'  },
   { href: '/metodologia',  label: 'Metodologia'  },
 ];
