@@ -378,11 +378,13 @@ def main():
         print("  Histórico: não encontrado (execute train_dqn.py para gerar)")
 
     # ── Monta o JSON final ───────────────────────────────────────────────────
+    final_ep  = len(training_history)
+    final_avg = round(training_history[-1]["avg100"]) if training_history else 0
     data = {
         "model_info": {
             "architecture":       f"4→24→24→{n_actions}",
-            "training_episodes":  404,
-            "final_avg_score":    471,
+            "training_episodes":  final_ep,
+            "final_avg_score":    final_avg,
         },
         "training_history": training_history,
         "episodes":          episodes,
