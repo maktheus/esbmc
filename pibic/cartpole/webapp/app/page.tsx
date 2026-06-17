@@ -46,22 +46,11 @@ function InfoCard({ title, value, sub, color = 'blue', href }: CardProps) {
 }
 
 export default function DashboardPage() {
-  const [modelInfo, setModelInfo] = useState<ModelInfo>({
-    architecture: '4→24→24→5',
+  const [modelInfo] = useState<ModelInfo>({
+    architecture: '4→24→24→tanh',
     training_episodes: 0,
     final_avg_score: 0,
   });
-
-  useEffect(() => {
-    fetch('/simulation_data.json')
-      .then(r => r.json())
-      .then(d => {
-        if (d?.model_info) setModelInfo(d.model_info);
-      })
-      .catch(() => {});
-  }, []);
-
-  const nActions = modelInfo.architecture.split('→').at(-1) ?? '5';
 
   return (
     <div className="space-y-8">
@@ -81,9 +70,9 @@ export default function DashboardPage() {
       {/* Cards principais */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <InfoCard
-          title="Treinamento"
-          value={modelInfo.training_episodes > 0 ? `${modelInfo.training_episodes} episodios` : 'Carregando...'}
-          sub={modelInfo.final_avg_score > 0 ? `Score medio final: ${modelInfo.final_avg_score} passos` : ''}
+          title="Controlador"
+          value="DDPG Continuo"
+          sub="F ∈ [-10, +10] N — tempo real"
           color="blue"
         />
         <InfoCard
@@ -121,12 +110,12 @@ export default function DashboardPage() {
               <span className="font-mono">&#952; &#8712; [-12&deg;, 12&deg;]</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Acoes DQN</span>
-              <span className="font-mono">{nActions} niveis de forca</span>
+              <span className="text-gray-400">Controlador</span>
+              <span className="font-mono">DDPG (continuo)</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Forcas</span>
-              <span className="font-mono">-10,-5,0,+5,+10 N</span>
+              <span className="text-gray-400">Forca</span>
+              <span className="font-mono">F ∈ [-10, +10] N</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Intervalo de tempo</span>
@@ -176,7 +165,7 @@ export default function DashboardPage() {
         <Link href="/simulation" className="block">
           <div className="bg-blue-900/30 hover:bg-blue-900/50 border border-blue-700 rounded-xl p-4 transition-colors text-center">
             <p className="text-blue-300 font-semibold mb-1">Simulacao</p>
-            <p className="text-gray-400 text-xs">Animacao com graficos em tempo real</p>
+            <p className="text-gray-400 text-xs">Interativa — arraste o carrinho em tempo real</p>
           </div>
         </Link>
         <Link href="/control" className="block">

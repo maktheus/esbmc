@@ -11,15 +11,7 @@ Estado: s = [x, x_dot, theta, theta_dot]
   theta     ângulo do pêndulo (rad) ∈ [-12°, 12°]
   theta_dot velocidade angular (rad/s)
 
-Ação (discreta, 5 níveis):
-  0 = -10 N  (empurrar totalmente à esquerda)
-  1 =  -5 N  (empurrar levemente à esquerda)
-  2 =   0 N  (sem força)
-  3 =  +5 N  (empurrar levemente à direita)
-  4 = +10 N  (empurrar totalmente à direita)
-
-  Antes era binário (±10 N). Agora o controlador tem modulação de força,
-  o que é mais realista: um motor real não opera apenas em liga/desliga.
+Ação contínua: F ∈ [-10, +10] N (força horizontal no carro)
 """
 
 import math
@@ -34,7 +26,9 @@ L         = 0.5          # m  (metade do comprimento do pêndulo)
 ML        = M_POLE * L
 DT        = 0.02         # s  (integração de Euler)
 
-# ── Espaço de ação discretizado (5 níveis de força) ───────────────────────
+FORCE_MAX = 10.0         # N  (limite de força do atuador)
+
+# ── Espaço de ação discretizado (legado, usado apenas pelo DQN antigo) ────
 FORCE_LEVELS = [-10.0, -5.0, 0.0, 5.0, 10.0]  # N
 N_ACTIONS    = len(FORCE_LEVELS)                # 5
 
@@ -51,6 +45,29 @@ STATE_BOUNDS = {
 }
 
 
+def _physics_step(state, F):
+    """Equações de movimento + integração de Euler. Retorna novo estado."""
+    x, xd, th, thd = state
+    cos_th = math.cos(th)
+    sin_th = math.sin(th)
+
+    temp   = (F + ML * thd ** 2 * sin_th) / M_TOTAL
+    th_acc = (GRAVITY * sin_th - cos_th * temp) / \
+             (L * (4.0 / 3.0 - M_POLE * cos_th ** 2 / M_TOTAL))
+    x_acc  = temp - ML * th_acc * cos_th / M_TOTAL
+
+    x   += DT * xd
+    xd  += DT * x_acc
+    th  += DT * thd
+    thd += DT * th_acc
+    return (x, xd, th, thd)
+
+
+def _is_done(state):
+    x, _, th, _ = state
+    return abs(x) > X_LIMIT or abs(th) > THETA_LIMIT
+
+
 class CartPoleEnv:
     """Ambiente Cart-Pole determinístico com integração de Euler."""
 
@@ -63,28 +80,15 @@ class CartPoleEnv:
         return self.state
 
     def step(self, action):
-        """Avança um passo de tempo. Retorna (next_state, reward, done)."""
-        x, xd, th, thd = self.state
+        """Passo com ação discreta (índice em FORCE_LEVELS)."""
         F = FORCE_LEVELS[int(action)]
+        return self.step_continuous(F)
 
-        cos_th = math.cos(th)
-        sin_th = math.sin(th)
-
-        # Equações de movimento (Barto et al., 1983)
-        temp   = (F + ML * thd ** 2 * sin_th) / M_TOTAL
-        th_acc = (GRAVITY * sin_th - cos_th * temp) / \
-                 (L * (4.0 / 3.0 - M_POLE * cos_th ** 2 / M_TOTAL))
-        x_acc  = temp - ML * th_acc * cos_th / M_TOTAL
-
-        # Integração de Euler
-        x   += DT * xd
-        xd  += DT * x_acc
-        th  += DT * thd
-        thd += DT * th_acc
-
-        self.state = (x, xd, th, thd)
+    def step_continuous(self, force: float):
+        """Passo com força contínua em [-FORCE_MAX, +FORCE_MAX] N."""
+        F = max(-FORCE_MAX, min(FORCE_MAX, float(force)))
+        self.state = _physics_step(self.state, F)
         self.steps += 1
-
-        done   = abs(x) > X_LIMIT or abs(th) > THETA_LIMIT
+        done   = _is_done(self.state)
         reward = 0.0 if done else 1.0
         return self.state, reward, done

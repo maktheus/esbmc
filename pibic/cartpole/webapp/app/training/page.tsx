@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { SimulationData, TrainingPoint } from '@/lib/types';
+import { TrainingPoint } from '@/lib/types';
 
 function TrainingChart({ history }: { history: TrainingPoint[] }) {
   const refScore  = useRef<HTMLCanvasElement>(null);
@@ -89,7 +89,7 @@ function TrainingChart({ history }: { history: TrainingPoint[] }) {
     if (!history.length) return;
     const scores  = history.map(p => p.score);
     const avgs    = history.map(p => p.avg100);
-    const epsilons = history.map(p => p.epsilon);
+    const epsilons = history.map(p => p.epsilon ?? 0);
 
     if (refScore.current)
       drawChart(refScore.current, scores,   '#60A5FA', 'Score por episódio',   0, 500, 470);
@@ -167,7 +167,7 @@ function MilestoneTable({ history }: { history: TrainingPoint[] }) {
                 <td className={`px-4 py-2 text-right font-mono ${solved ? 'text-green-400 font-bold' : 'text-gray-300'}`}>
                   {pt.avg100.toFixed(1)}
                 </td>
-                <td className="px-4 py-2 text-right font-mono text-yellow-400">{pt.epsilon.toFixed(3)}</td>
+                <td className="px-4 py-2 text-right font-mono text-yellow-400">{(pt.epsilon ?? 0).toFixed(3)}</td>
                 <td className="px-4 py-2 text-gray-400 text-xs">{phase}</td>
               </tr>
             );
@@ -179,14 +179,14 @@ function MilestoneTable({ history }: { history: TrainingPoint[] }) {
 }
 
 export default function TrainingPage() {
-  const [data,  setData]  = useState<SimulationData | null>(null);
+  const [history, setHistory] = useState<TrainingPoint[]>([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const base = process.env.NEXT_PUBLIC_BASE_PATH || '';
-    fetch(`${base}/simulation_data.json`)
+    fetch(`${base}/training_history.json`)
       .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-      .then(setData)
+      .then((h: TrainingPoint[]) => setHistory(h))
       .catch(e => setError(String(e)));
   }, []);
 
@@ -197,58 +197,58 @@ export default function TrainingPage() {
     </div>
   );
 
-  if (!data) return (
+  if (history.length === 0) return (
     <div className="text-center py-20 text-gray-400">
       <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-400 mx-auto mb-4" />
       Carregando...
     </div>
   );
 
-  const history = data.training_history ?? [];
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-white">Curva de Aprendizado</h1>
         <span className="text-gray-400 text-sm">
-          {data.model_info.architecture} &bull; {data.model_info.training_episodes} episódios &bull; score final: {data.model_info.final_avg_score}
+          DDPG continuo &bull; {history.length} episodios &bull; avg100 final: {history[history.length - 1].avg100}
         </span>
       </div>
 
       {/* Resumo */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-blue-900/20 border border-blue-700 rounded-xl p-3 text-center">
-          <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Episódios</p>
+          <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Episodios</p>
           <p className="text-2xl font-bold text-blue-400">{history.length}</p>
         </div>
         <div className="bg-green-900/20 border border-green-700 rounded-xl p-3 text-center">
-          <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Score Final</p>
-          <p className="text-2xl font-bold text-green-400">{data.model_info.final_avg_score}</p>
+          <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Melhor avg100</p>
+          <p className="text-2xl font-bold text-green-400">
+            {Math.max(...history.map(h => h.avg100)).toFixed(0)}
+          </p>
         </div>
         <div className="bg-yellow-900/20 border border-yellow-700 rounded-xl p-3 text-center">
-          <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Epsilon Final</p>
+          <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Score Final</p>
           <p className="text-2xl font-bold text-yellow-400">
-            {history.length ? history[history.length - 1].epsilon.toFixed(3) : '—'}
+            {history[history.length - 1].avg100.toFixed(0)}
           </p>
         </div>
         <div className="bg-purple-900/20 border border-purple-700 rounded-xl p-3 text-center">
           <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Arquitetura</p>
-          <p className="text-lg font-bold text-purple-400 font-mono">{data.model_info.architecture}</p>
+          <p className="text-lg font-bold text-purple-400 font-mono">4→24→24→tanh</p>
         </div>
       </div>
 
-      {/* Explicação */}
+      {/* Explicacao */}
       <div className="bg-gray-800 rounded-xl p-4 border border-gray-700 text-sm text-gray-300 space-y-2">
-        <h2 className="text-white font-semibold mb-2">Como o DQN aprende</h2>
+        <h2 className="text-white font-semibold mb-2">Como o DDPG aprende</h2>
         <p>
-          O agente começa totalmente aleatório (ε=1.0). A cada episódio, ε decai e o DQN começa a
-          usar o que aprendeu. O <span className="text-blue-300 font-mono">score</span> é o número
-          de passos que o pêndulo ficou em pé. A <span className="text-green-300 font-mono">média 100</span> suaviza
-          a variância e é o critério de parada (≥ 470).
+          O agente explora com ruido Ornstein-Uhlenbeck. O <span className="text-green-300 font-mono">Actor</span> aprende
+          a politica (estado → forca continua) e o <span className="text-blue-300 font-mono">Critic</span> avalia
+          as decisoes. A <span className="text-green-300 font-mono">media 100</span> suaviza
+          a variancia e e o criterio de parada (≥ 470).
         </p>
         <p className="text-gray-400 text-xs">
-          Controlador: {data.model_info.architecture} (5 níveis de força: −10, −5, 0, +5, +10 N) &bull;
-          γ = 0.99 &bull; lr = 1e-3 &bull; ReplayBuffer = 10 000 &bull; batch = 64 &bull; target update = 200 passos
+          Actor: 4→24→24→tanh×10 &bull; Critic: 5→24→24→1 &bull;
+          γ = 0.99 &bull; lr = 1e-3 &bull; τ = 0.005 &bull; ReplayBuffer = 100k &bull; batch = 256
         </p>
       </div>
 

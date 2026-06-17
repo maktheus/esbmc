@@ -43,7 +43,7 @@ export interface TrainingPoint {
   episode: number;
   score:   number;
   avg100:  number;
-  epsilon: number;
+  epsilon?: number;
 }
 
 export interface SimulationData {
