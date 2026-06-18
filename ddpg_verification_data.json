@@ -1,0 +1,293 @@
+{
+  "model_info": {
+    "architecture": "4 -> 24(ReLU) -> 24(ReLU) -> 1(Tanh) x 10",
+    "controller_type": "DDPG Continuo",
+    "quantization": "Q8.8 (scale=256)",
+    "training_episodes": 500,
+    "final_avg_score": 475.0
+  },
+  "verification": {
+    "dead_neurons_l1": {
+      "total": 24,
+      "dead": [],
+      "neurons": [
+        {
+          "id": 0,
+          "bias_q88": -289,
+          "status": "VIVO"
+        },
+        {
+          "id": 1,
+          "bias_q88": 366,
+          "status": "VIVO"
+        },
+        {
+          "id": 2,
+          "bias_q88": -315,
+          "status": "VIVO"
+        },
+        {
+          "id": 3,
+          "bias_q88": -355,
+          "status": "VIVO"
+        },
+        {
+          "id": 4,
+          "bias_q88": -207,
+          "status": "VIVO"
+        },
+        {
+          "id": 5,
+          "bias_q88": -57,
+          "status": "VIVO"
+        },
+        {
+          "id": 6,
+          "bias_q88": 257,
+          "status": "VIVO"
+        },
+        {
+          "id": 7,
+          "bias_q88": -139,
+          "status": "VIVO"
+        },
+        {
+          "id": 8,
+          "bias_q88": -291,
+          "status": "VIVO"
+        },
+        {
+          "id": 9,
+          "bias_q88": -238,
+          "status": "VIVO"
+        },
+        {
+          "id": 10,
+          "bias_q88": -105,
+          "status": "VIVO"
+        },
+        {
+          "id": 11,
+          "bias_q88": -169,
+          "status": "VIVO"
+        },
+        {
+          "id": 12,
+          "bias_q88": -139,
+          "status": "VIVO"
+        },
+        {
+          "id": 13,
+          "bias_q88": 67,
+          "status": "VIVO"
+        },
+        {
+          "id": 14,
+          "bias_q88": -44,
+          "status": "VIVO"
+        },
+        {
+          "id": 15,
+          "bias_q88": -35,
+          "status": "VIVO"
+        },
+        {
+          "id": 16,
+          "bias_q88": 3,
+          "status": "VIVO"
+        },
+        {
+          "id": 17,
+          "bias_q88": 213,
+          "status": "VIVO"
+        },
+        {
+          "id": 18,
+          "bias_q88": -281,
+          "status": "VIVO"
+        },
+        {
+          "id": 19,
+          "bias_q88": -317,
+          "status": "VIVO"
+        },
+        {
+          "id": 20,
+          "bias_q88": -770,
+          "status": "VIVO"
+        },
+        {
+          "id": 21,
+          "bias_q88": -296,
+          "status": "VIVO"
+        },
+        {
+          "id": 22,
+          "bias_q88": -74,
+          "status": "VIVO"
+        },
+        {
+          "id": 23,
+          "bias_q88": -31,
+          "status": "VIVO"
+        }
+      ]
+    },
+    "dead_neurons_l2": {
+      "total": 24,
+      "dead": [],
+      "neurons": [
+        {
+          "id": 0,
+          "bias_q88": 34,
+          "status": "VIVO"
+        },
+        {
+          "id": 1,
+          "bias_q88": -59,
+          "status": "VIVO"
+        },
+        {
+          "id": 2,
+          "bias_q88": -370,
+          "status": "VIVO"
+        },
+        {
+          "id": 3,
+          "bias_q88": -106,
+          "status": "VIVO"
+        },
+        {
+          "id": 4,
+          "bias_q88": -2,
+          "status": "VIVO"
+        },
+        {
+          "id": 5,
+          "bias_q88": -218,
+          "status": "VIVO"
+        },
+        {
+          "id": 6,
+          "bias_q88": -402,
+          "status": "VIVO"
+        },
+        {
+          "id": 7,
+          "bias_q88": -76,
+          "status": "VIVO"
+        },
+        {
+          "id": 8,
+          "bias_q88": -9,
+          "status": "VIVO"
+        },
+        {
+          "id": 9,
+          "bias_q88": 79,
+          "status": "VIVO"
+        },
+        {
+          "id": 10,
+          "bias_q88": -110,
+          "status": "VIVO"
+        },
+        {
+          "id": 11,
+          "bias_q88": -53,
+          "status": "VIVO"
+        },
+        {
+          "id": 12,
+          "bias_q88": 280,
+          "status": "VIVO"
+        },
+        {
+          "id": 13,
+          "bias_q88": 64,
+          "status": "VIVO"
+        },
+        {
+          "id": 14,
+          "bias_q88": -36,
+          "status": "VIVO"
+        },
+        {
+          "id": 15,
+          "bias_q88": -112,
+          "status": "VIVO"
+        },
+        {
+          "id": 16,
+          "bias_q88": 135,
+          "status": "VIVO"
+        },
+        {
+          "id": 17,
+          "bias_q88": -427,
+          "status": "VIVO"
+        },
+        {
+          "id": 18,
+          "bias_q88": -53,
+          "status": "VIVO"
+        },
+        {
+          "id": 19,
+          "bias_q88": -224,
+          "status": "VIVO"
+        },
+        {
+          "id": 20,
+          "bias_q88": -212,
+          "status": "VIVO"
+        },
+        {
+          "id": 21,
+          "bias_q88": -160,
+          "status": "VIVO"
+        },
+        {
+          "id": 22,
+          "bias_q88": 121,
+          "status": "VIVO"
+        },
+        {
+          "id": 23,
+          "bias_q88": -83,
+          "status": "VIVO"
+        }
+      ]
+    },
+    "saturation": {
+      "saturated_neurons": [],
+      "output_status": "RESPONSIVE"
+    }
+  },
+  "closed_loop_verification": {
+    "property_a_right": {
+      "result": "TIMEOUT",
+      "counterexample": ""
+    },
+    "property_a_left": {
+      "result": "TIMEOUT",
+      "counterexample": ""
+    },
+    "property_b_safety": {
+      "result": "FAILED",
+      "counterexample": "x=-0.7539  xd=-3.9219  th=-0.1836  thd=-1.5234"
+    },
+    "property_c_bounds": {
+      "result": "SUCCESSFUL",
+      "counterexample": ""
+    }
+  },
+  "counterexamples": [
+    {
+      "property": "property_b_safety",
+      "description": "Estado seguro que sai da regiao segura em 1 passo",
+      "state_str": "x=-0.7539  xd=-3.9219  th=-0.1836  thd=-1.5234",
+      "expected_behavior": "theta permanece em [-12, 12] graus apos 1 passo"
+    }
+  ]
+}
