@@ -1,0 +1,13 @@
+{
+  "scale": 256,
+  "n_samples": 10000,
+  "max_abs_error_N": 7.75891978573628,
+  "mean_abs_error_N": 0.07780077585728473,
+  "p95_abs_error_N": 0.2262005212120994,
+  "p99_abs_error_N": 1.0927201961732624,
+  "force_range_N": [
+    -10.0,
+    10.0
+  ],
+  "max_relative_error_pct": 77.5891978573628
+}

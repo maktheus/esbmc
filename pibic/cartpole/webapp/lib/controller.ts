@@ -1,17 +1,18 @@
 /**
- * Neural network inference — executa o actor DDPG no browser.
+ * Float32 DDPG inference — referência não-verificada para comparação.
  * Arquitetura: state(4) → Linear(24) → ReLU → Linear(24) → ReLU → Linear(1) → Tanh × 10
  */
 
 import { FORCE_MAX } from './physics';
+import { IController } from './types';
 
 export interface DDPGWeights {
-  'net.0.weight': number[][];  // 24×4
-  'net.0.bias':   number[];    // 24
-  'net.2.weight': number[][];  // 24×24
-  'net.2.bias':   number[];    // 24
-  'net.4.weight': number[][];  // 1×24
-  'net.4.bias':   number[];    // 1
+  'net.0.weight': number[][];
+  'net.0.bias':   number[];
+  'net.2.weight': number[][];
+  'net.2.bias':   number[];
+  'net.4.weight': number[][];
+  'net.4.bias':   number[];
 }
 
 function relu(x: number): number { return x > 0 ? x : 0; }
@@ -47,4 +48,16 @@ export function getForce(state: [number, number, number, number], w: DDPGWeights
   const h2 = linearForward(w['net.2.weight'], w['net.2.bias'], h1,    'relu');
   const out = linearForward(w['net.4.weight'], w['net.4.bias'], h2,    'tanh');
   return out[0] * FORCE_MAX;
+}
+
+export class FloatDDPGController implements IController {
+  readonly name = 'DDPG Float32 (referência)';
+  readonly isVerified = false;
+  private w: DDPGWeights;
+
+  constructor(w: DDPGWeights) { this.w = w; }
+
+  getForce(state: [number, number, number, number]): number {
+    return getForce(state, this.w);
+  }
 }

@@ -1,0 +1,18 @@
+{
+  "property_a_right": {
+    "result": "TIMEOUT",
+    "counterexample": ""
+  },
+  "property_a_left": {
+    "result": "TIMEOUT",
+    "counterexample": ""
+  },
+  "property_b_safety": {
+    "result": "FAILED",
+    "counterexample": "x=-0.7539  xd=-3.9219  th=-0.1836  thd=-1.5234"
+  },
+  "property_c_bounds": {
+    "result": "SUCCESSFUL",
+    "counterexample": ""
+  }
+}

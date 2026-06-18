@@ -6,10 +6,11 @@ import { usePathname } from 'next/navigation';
 const links = [
   { href: '/',             label: 'Dashboard'    },
   { href: '/training',     label: 'Treinamento'  },
-  { href: '/simulation',   label: 'Simulação'    },
+  { href: '/simulation',   label: 'Simulacao'    },
   { href: '/control',      label: 'Controle'     },
-  { href: '/verification', label: 'Verificação'  },
+  { href: '/verification', label: 'Verificacao'  },
   { href: '/metodologia',  label: 'Metodologia'  },
+  { href: '/legacy',       label: 'Legado'       },
 ];
 
 export default function Nav() {
@@ -19,7 +20,7 @@ export default function Nav() {
     <nav className="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
       <div className="container mx-auto px-4 max-w-6xl flex items-center gap-1 h-12">
         <span className="text-blue-400 font-bold mr-4 text-sm tracking-wide">
-          Cart-Pole DQN
+          Cart-Pole DDPG
         </span>
         {links.map(({ href, label }) => {
           const active = pathname === href || (href !== '/' && pathname.startsWith(href));

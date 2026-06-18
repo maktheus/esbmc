@@ -3,8 +3,8 @@ import './globals.css';
 import Nav from '@/components/Nav';
 
 export const metadata: Metadata = {
-  title: 'DQN Cart-Pole — Verificação Formal',
-  description: 'Visualização e verificação formal de controlador DQN para o sistema Cart-Pole',
+  title: 'DDPG Cart-Pole — Verificacao Formal',
+  description: 'Verificacao formal de controlador DDPG continuo Q8.8 para Cart-Pole com ESBMC',
 };
 
 export default function RootLayout({
@@ -20,7 +20,7 @@ export default function RootLayout({
           {children}
         </main>
         <footer className="border-t border-gray-800 mt-12 py-4 text-center text-gray-500 text-xs">
-          DQN Cart-Pole — Verificação Formal com ESBMC &nbsp;|&nbsp; PIBIC
+          DDPG Cart-Pole — Verificacao Formal com ESBMC &nbsp;|&nbsp; PIBIC
         </footer>
       </body>
     </html>

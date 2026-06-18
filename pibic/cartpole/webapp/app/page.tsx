@@ -2,22 +2,11 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { DDPGVerificationData } from '@/lib/types';
 
-interface ModelInfo {
-  architecture: string;
-  training_episodes: number;
-  final_avg_score: number;
-}
-
-interface CardProps {
-  title:    string;
-  value:    string;
-  sub?:     string;
-  color?:   string;
-  href?:    string;
-}
-
-function InfoCard({ title, value, sub, color = 'blue', href }: CardProps) {
+function InfoCard({ title, value, sub, color = 'blue', href }: {
+  title: string; value: string; sub?: string; color?: string; href?: string;
+}) {
   const colorMap: Record<string, string> = {
     blue:   'border-blue-500  text-blue-400',
     green:  'border-green-500 text-green-400',
@@ -39,153 +28,140 @@ function InfoCard({ title, value, sub, color = 'blue', href }: CardProps) {
     </div>
   );
 
-  if (href) {
-    return <Link href={href} className="block">{inner}</Link>;
-  }
+  if (href) return <Link href={href} className="block">{inner}</Link>;
   return inner;
 }
 
 export default function DashboardPage() {
-  const [modelInfo] = useState<ModelInfo>({
-    architecture: '4→24→24→tanh',
-    training_episodes: 0,
-    final_avg_score: 0,
-  });
+  const [data, setData] = useState<DDPGVerificationData | null>(null);
+
+  useEffect(() => {
+    const base = process.env.NEXT_PUBLIC_BASE_PATH || '';
+    fetch(`${base}/ddpg_verification_data.json`)
+      .then(r => r.ok ? r.json() : null)
+      .then(setData)
+      .catch(() => {});
+  }, []);
+
+  const totalDead = data
+    ? data.verification.dead_neurons_l1.dead.length + data.verification.dead_neurons_l2.dead.length
+    : 0;
+  const totalNeurons = data
+    ? data.verification.dead_neurons_l1.total + data.verification.dead_neurons_l2.total
+    : 48;
+  const saturated = data ? data.verification.saturation.saturated_neurons.length : 0;
 
   return (
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center pt-4">
         <h1 className="text-3xl font-bold text-white mb-2">
-          DQN Cart-Pole
+          DDPG Cart-Pole
         </h1>
         <p className="text-gray-400 text-lg">
-          Verificacao Formal com ESBMC
+          Verificacao Formal com ESBMC — Controlador Continuo Q8.8
         </p>
         <div className="mt-3 inline-block px-3 py-1 bg-green-900 text-green-300 rounded-full text-sm">
-          Todos os 24 neuronios VIVOS &bull; 0 saturados &bull; Controlador responsivo
+          {totalDead === 0 ? `Todos os ${totalNeurons} neuronios VIVOS` : `${totalDead} neuronios mortos`}
+          {' '}&bull; {saturated} saturados &bull; Controlador responsivo
         </div>
       </div>
 
-      {/* Cards principais */}
+      {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <InfoCard
           title="Controlador"
           value="DDPG Continuo"
-          sub="F ∈ [-10, +10] N — tempo real"
+          sub="F in [-10, +10] N — Q8.8 verificado"
           color="blue"
         />
         <InfoCard
           title="Verificacao ESBMC"
-          value="APROVADO"
-          sub="0 neuronios mortos, 0 saturados"
+          value={totalDead === 0 && saturated === 0 ? 'APROVADO' : 'COM ALERTAS'}
+          sub={`${totalDead} mortos, ${saturated} saturados, ${data?.counterexamples.length ?? 0} contraexemplos`}
           color="green"
           href="/verification"
         />
         <InfoCard
           title="Arquitetura"
-          value={modelInfo.architecture}
-          sub="Input → ReLU → ReLU → Q-values"
+          value={data?.model_info.architecture ?? '4->24->24->1'}
+          sub="Input -> ReLU -> ReLU -> Tanh x 10"
           color="purple"
         />
       </div>
 
-      {/* Grid de informacoes detalhadas */}
+      {/* Detailed info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-        {/* Descricao do sistema */}
         <div className="bg-gray-800 rounded-xl p-5 border border-gray-700">
           <h2 className="text-white font-semibold mb-3 text-lg">Sistema Cart-Pole</h2>
           <div className="space-y-2 text-sm text-gray-300">
-            <div className="flex justify-between">
-              <span className="text-gray-400">Estado</span>
-              <span className="font-mono">[x, x_dot, theta, theta_dot]</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-400">Posicao carro</span>
-              <span className="font-mono">x &#8712; [-2.4, 2.4] m</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-400">Angulo pendulo</span>
-              <span className="font-mono">&#952; &#8712; [-12&deg;, 12&deg;]</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-400">Controlador</span>
-              <span className="font-mono">DDPG (continuo)</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-400">Forca</span>
-              <span className="font-mono">F ∈ [-10, +10] N</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-400">Intervalo de tempo</span>
-              <span className="font-mono">dt = 0.02 s</span>
-            </div>
+            {[
+              ['Estado', '[x, x_dot, theta, theta_dot]'],
+              ['Posicao carro', 'x in [-2.4, 2.4] m'],
+              ['Angulo pendulo', 'theta in [-12, 12] graus'],
+              ['Controlador', 'DDPG (continuo, Q8.8)'],
+              ['Forca', 'F in [-10, +10] N'],
+              ['Intervalo', 'dt = 0.02 s'],
+            ].map(([k, v]) => (
+              <div key={k} className="flex justify-between">
+                <span className="text-gray-400">{k}</span>
+                <span className="font-mono">{v}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Resultados de verificacao */}
         <div className="bg-gray-800 rounded-xl p-5 border border-gray-700">
           <h2 className="text-white font-semibold mb-3 text-lg">Resultados ESBMC</h2>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <span className="w-3 h-3 rounded-full bg-green-500 flex-shrink-0"></span>
+              <span className={`w-3 h-3 rounded-full flex-shrink-0 ${totalDead === 0 ? 'bg-green-500' : 'bg-red-500'}`} />
               <div>
-                <p className="text-white text-sm font-medium">Neuronios Mortos: 0 / 24</p>
-                <p className="text-gray-400 text-xs">Todos os neuronios contribuem para a saida</p>
+                <p className="text-white text-sm font-medium">Neuronios Mortos: {totalDead} / {totalNeurons}</p>
+                <p className="text-gray-400 text-xs">L1 + L2 verificados individualmente</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <span className="w-3 h-3 rounded-full bg-green-500 flex-shrink-0"></span>
+              <span className={`w-3 h-3 rounded-full flex-shrink-0 ${saturated === 0 ? 'bg-green-500' : 'bg-yellow-500'}`} />
               <div>
-                <p className="text-white text-sm font-medium">Neuronios Saturados: 0 / 24</p>
-                <p className="text-gray-400 text-xs">Nenhum neuronio sempre ativo (ReLU nunca cortada)</p>
+                <p className="text-white text-sm font-medium">Saturados: {saturated} / {totalNeurons}</p>
+                <p className="text-gray-400 text-xs">ReLU nunca cortada?</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <span className="w-3 h-3 rounded-full bg-green-500 flex-shrink-0"></span>
+              <span className="w-3 h-3 rounded-full bg-green-500 flex-shrink-0" />
               <div>
-                <p className="text-white text-sm font-medium">Acao: Responsiva</p>
-                <p className="text-gray-400 text-xs">Controlador escolhe acoes diferentes para estados diferentes</p>
+                <p className="text-white text-sm font-medium">Saida: Responsiva</p>
+                <p className="text-gray-400 text-xs">Forca positiva e negativa para estados diferentes</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <span className="w-3 h-3 rounded-full bg-blue-500 flex-shrink-0"></span>
+              <span className="w-3 h-3 rounded-full bg-blue-500 flex-shrink-0" />
               <div>
-                <p className="text-white text-sm font-medium">Dominio: Q8.8 (scale=256)</p>
-                <p className="text-gray-400 text-xs">Verificacao em aritmetica inteira de ponto fixo</p>
+                <p className="text-white text-sm font-medium">Quantizacao: Q8.8 (scale=256)</p>
+                <p className="text-gray-400 text-xs">Browser roda mesma aritmetica verificada</p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Links de navegacao */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
-        <Link href="/simulation" className="block">
-          <div className="bg-blue-900/30 hover:bg-blue-900/50 border border-blue-700 rounded-xl p-4 transition-colors text-center">
-            <p className="text-blue-300 font-semibold mb-1">Simulacao</p>
-            <p className="text-gray-400 text-xs">Interativa — arraste o carrinho em tempo real</p>
-          </div>
-        </Link>
-        <Link href="/control" className="block">
-          <div className="bg-purple-900/30 hover:bg-purple-900/50 border border-purple-700 rounded-xl p-4 transition-colors text-center">
-            <p className="text-purple-300 font-semibold mb-1">Controle</p>
-            <p className="text-xs text-gray-400">Teoria DQN e laco fechado</p>
-          </div>
-        </Link>
-        <Link href="/training" className="block">
-          <div className="bg-yellow-900/30 hover:bg-yellow-900/50 border border-yellow-700 rounded-xl p-4 transition-colors text-center">
-            <p className="text-yellow-300 font-semibold mb-1">Treinamento</p>
-            <p className="text-gray-400 text-xs">Curva de aprendizado</p>
-          </div>
-        </Link>
-        <Link href="/verification" className="block">
-          <div className="bg-green-900/30 hover:bg-green-900/50 border border-green-700 rounded-xl p-4 transition-colors text-center">
-            <p className="text-green-300 font-semibold mb-1">Verificacao</p>
-            <p className="text-gray-400 text-xs">Resultados formais ESBMC</p>
-          </div>
-        </Link>
+      {/* Navigation */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-2">
+        {[
+          { href: '/simulation',   label: 'Simulacao',   desc: 'Q8.8 em tempo real', color: 'blue' },
+          { href: '/control',      label: 'Controle',    desc: 'Teoria DDPG',        color: 'purple' },
+          { href: '/training',     label: 'Treinamento', desc: 'Curva de aprendizado', color: 'yellow' },
+          { href: '/verification', label: 'Verificacao', desc: 'Resultados ESBMC',   color: 'green' },
+          { href: '/legacy',       label: 'Legado (DQN)', desc: 'Versao anterior',   color: 'gray' },
+        ].map(({ href, label, desc, color }) => (
+          <Link key={href} href={href} className="block">
+            <div className={`bg-${color === 'gray' ? 'gray-700/30' : `${color}-900/30`} hover:bg-${color === 'gray' ? 'gray-700/50' : `${color}-900/50`} border border-${color === 'gray' ? 'gray-600' : `${color}-700`} rounded-xl p-4 transition-colors text-center`}>
+              <p className={`text-${color === 'gray' ? 'gray-300' : `${color}-300`} font-semibold mb-1`}>{label}</p>
+              <p className="text-gray-400 text-xs">{desc}</p>
+            </div>
+          </Link>
+        ))}
       </div>
     </div>
   );
