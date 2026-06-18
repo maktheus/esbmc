@@ -6,7 +6,7 @@ import { TrajectoryFrame } from '@/lib/types';
 interface Props {
   data:       TrajectoryFrame[];
   currentIdx: number;
-  field:      'x' | 'theta';
+  field:      'x' | 'x_dot' | 'theta' | 'theta_dot';
   label:      string;
   unit:       string;
   limit:      number;          // safety limit (|value| > limit = failed)
@@ -35,7 +35,12 @@ export default function StatePlot({ data, currentIdx, field, label, unit, limit,
     ctx.fillRect(0, 0, W, H);
 
     // Determine value range
-    const values   = data.map(f => field === 'x' ? f.x : f.theta);
+    const values   = data.map(f =>
+      field === 'x' ? f.x :
+      field === 'x_dot' ? f.x_dot :
+      field === 'theta_dot' ? f.theta_dot :
+      f.theta
+    );
     const maxAbs   = Math.max(Math.abs(limit) * 1.1, ...values.map(Math.abs));
     const toY      = (v: number) => PAD.top + plotH * (1 - (v + maxAbs) / (2 * maxAbs));
     const toX      = (i: number) => PAD.left + (i / (data.length - 1)) * plotW;
@@ -60,7 +65,11 @@ export default function StatePlot({ data, currentIdx, field, label, unit, limit,
     ctx.fillStyle  = '#EF4444';
     ctx.font       = '9px monospace';
     ctx.textAlign  = 'right';
-    const lim = field === 'theta' ? (limit * 180 / Math.PI).toFixed(0) + '°' : limit.toFixed(1);
+    const lim = (field === 'theta' || field === 'theta_dot')
+      ? field === 'theta'
+        ? (limit * 180 / Math.PI).toFixed(0) + '°'
+        : limit.toFixed(1) + ' r/s'
+      : limit.toFixed(1);
     ctx.fillText(`+${lim}`, PAD.left - 2, toY(limit) + 3);
     ctx.fillText(`-${lim}`, PAD.left - 2, toY(-limit) + 3);
 
@@ -103,6 +112,8 @@ export default function StatePlot({ data, currentIdx, field, label, unit, limit,
     const curVal   = currentIdx < data.length ? values[currentIdx] : values[values.length - 1];
     const dispVal  = field === 'theta'
       ? (curVal * 180 / Math.PI).toFixed(1) + '°'
+      : field === 'theta_dot'
+      ? curVal.toFixed(3) + ' rad/s'
       : curVal.toFixed(3) + ' ' + unit;
     ctx.fillText(dispVal, PAD.left + 3, PAD.top + 10);
 

@@ -63,14 +63,14 @@ class ReplayBuffer:
 
 
 class DQNAgent:
-    def __init__(self, lr=1e-3, gamma=0.99, batch=64, target_update=200):
+    def __init__(self, lr=5e-4, gamma=0.99, batch=128, target_update=100):
         self.policy = QNetwork()
         self.target = QNetwork()
         self.target.load_state_dict(self.policy.state_dict())
         self.target.eval()
 
         self.optimizer    = optim.Adam(self.policy.parameters(), lr=lr)
-        self.buffer       = ReplayBuffer()
+        self.buffer       = ReplayBuffer(capacity=50_000)
         self.gamma        = gamma
         self.batch        = batch
         self.target_update = target_update
@@ -78,7 +78,7 @@ class DQNAgent:
 
         self.epsilon  = 1.0
         self.eps_min  = 0.01
-        self.eps_decay = 0.995
+        self.eps_decay = 0.998
 
     def select_action(self, state):
         if random.random() < self.epsilon:

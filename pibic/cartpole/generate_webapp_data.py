@@ -34,9 +34,9 @@ CL_RESULTS   = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 HIST_FILE    = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              "training_history.json")
 
-NUM_CONTROLLED   = 10    # seeds 0-9
+NUM_CONTROLLED   = 5     # seeds 0-4
 NUM_UNCONTROLLED = 5     # seeds 42-46
-MAX_STEPS        = 3000  # 3000 × 0.02s = 60s por episódio
+MAX_STEPS        = 1000  # 1000 × 0.02s = 20s por episódio
 
 
 def _detect_n_actions(path: str) -> int:
@@ -378,11 +378,13 @@ def main():
         print("  Histórico: não encontrado (execute train_dqn.py para gerar)")
 
     # ── Monta o JSON final ───────────────────────────────────────────────────
+    final_ep  = len(training_history)
+    final_avg = round(training_history[-1]["avg100"]) if training_history else 0
     data = {
         "model_info": {
             "architecture":       f"4→24→24→{n_actions}",
-            "training_episodes":  404,
-            "final_avg_score":    471,
+            "training_episodes":  final_ep,
+            "final_avg_score":    final_avg,
         },
         "training_history": training_history,
         "episodes":          episodes,
