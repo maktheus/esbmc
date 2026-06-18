@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Arquitetura — DDPG + ESBMC Verification Pipeline</title>
+<style>
+  body { background: #0f172a; color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 40px; }
+  h1 { text-align: center; color: #93c5fd; font-size: 24px; margin-bottom: 8px; }
+  h2 { text-align: center; color: #64748b; font-size: 14px; font-weight: normal; margin-bottom: 40px; }
+  .diagram { max-width: 1100px; margin: 0 auto; }
+  svg text { font-family: 'Segoe UI', system-ui, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Pipeline de Verificacao Formal — DDPG Cart-Pole</h1>
+<h2>Modelo (Rede Neural) vs Controlador (Malha Fechada) — onde o ESBMC atua</h2>
+
+<div class="diagram">
+<svg viewBox="0 0 1100 820" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#22c55e"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#ef4444"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#3b82f6"/>
+    </marker>
+    <marker id="arrow-yellow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#eab308"/>
+    </marker>
+  </defs>
+
+  <!-- ============================================================ -->
+  <!-- PHASE 1: TRAINING (top) -->
+  <!-- ============================================================ -->
+  <rect x="20" y="10" width="1060" height="90" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <text x="50" y="35" fill="#94a3b8" font-size="11" font-weight="bold" letter-spacing="2">FASE 1 — TREINAMENTO</text>
+
+  <rect x="50" y="48" width="160" height="40" rx="8" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="130" y="72" fill="#93c5fd" font-size="12" text-anchor="middle" font-weight="bold">train_ddpg.py</text>
+
+  <line x1="210" y1="68" x2="270" y2="68" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="275" y="48" width="200" height="40" rx="8" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="375" y="65" fill="#86efac" font-size="11" text-anchor="middle" font-weight="bold">Modelo DDPG (float32)</text>
+  <text x="375" y="79" fill="#4ade80" font-size="9" text-anchor="middle">ddpg_actor_best.pth</text>
+
+  <line x1="475" y1="68" x2="535" y2="68" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Fork: two outputs -->
+  <rect x="540" y="48" width="220" height="40" rx="8" fill="#422006" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="650" y="65" fill="#fcd34d" font-size="11" text-anchor="middle" font-weight="bold">Quantizacao Q8.8</text>
+  <text x="650" y="79" fill="#fbbf24" font-size="9" text-anchor="middle">w_q = round(w * 256)</text>
+
+  <line x1="760" y1="68" x2="820" y2="68" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="825" y="48" width="220" height="40" rx="8" fill="#312e81" stroke="#818cf8" stroke-width="1.5"/>
+  <text x="935" y="65" fill="#c4b5fd" font-size="11" text-anchor="middle" font-weight="bold">Modelo Quantizado (int16)</text>
+  <text x="935" y="79" fill="#a78bfa" font-size="9" text-anchor="middle">pesos em aritmetica inteira</text>
+
+  <!-- ============================================================ -->
+  <!-- PHASE 2: ESBMC VERIFICATION (middle - two domains) -->
+  <!-- ============================================================ -->
+
+  <!-- ESBMC big container -->
+  <rect x="20" y="120" width="1060" height="350" rx="12" fill="#0f172a" stroke="#ef4444" stroke-width="2" stroke-dasharray="6,3"/>
+  <text x="50" y="145" fill="#fca5a5" font-size="11" font-weight="bold" letter-spacing="2">FASE 2 — VERIFICACAO ESBMC (offline, sobre modelo quantizado Q8.8)</text>
+
+  <!-- Arrow from quantized model down -->
+  <line x1="935" y1="88" x2="935" y2="120" stroke="#ef4444" stroke-width="1.5" marker-end="url(#arrow-red)"/>
+
+  <!-- LEFT DOMAIN: MODELO (Rede Neural) -->
+  <rect x="40" y="160" width="480" height="290" rx="10" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+  <text x="60" y="185" fill="#93c5fd" font-size="13" font-weight="bold">DOMINIO 1: MODELO (Rede Neural)</text>
+  <text x="60" y="200" fill="#64748b" font-size="10">Propriedades da rede isolada, sem dinamica da planta</text>
+
+  <!-- Dead neurons -->
+  <rect x="60" y="215" width="210" height="70" rx="8" fill="#172554" stroke="#3b82f6" stroke-width="1"/>
+  <text x="70" y="235" fill="#93c5fd" font-size="11" font-weight="bold">Neuronios Mortos</text>
+  <text x="70" y="250" fill="#64748b" font-size="9">Para todo s in S_bounds:</text>
+  <text x="70" y="262" fill="#64748b" font-size="9">ReLU(pre_i) == 0 sempre?</text>
+  <text x="70" y="278" fill="#4ade80" font-size="9" font-weight="bold">verify_ddpg_dead_neurons.py</text>
+
+  <!-- Saturation -->
+  <rect x="290" y="215" width="210" height="70" rx="8" fill="#172554" stroke="#3b82f6" stroke-width="1"/>
+  <text x="300" y="235" fill="#93c5fd" font-size="11" font-weight="bold">Saturacao</text>
+  <text x="300" y="250" fill="#64748b" font-size="9">Neuronios sempre ativos?</text>
+  <text x="300" y="262" fill="#64748b" font-size="9">Saida sempre mesmo sinal?</text>
+  <text x="300" y="278" fill="#4ade80" font-size="9" font-weight="bold">verify_ddpg_saturation.py</text>
+
+  <!-- Output bounds -->
+  <rect x="60" y="300" width="210" height="70" rx="8" fill="#172554" stroke="#3b82f6" stroke-width="1"/>
+  <text x="70" y="320" fill="#93c5fd" font-size="11" font-weight="bold">Prop C: Bounds de Saida</text>
+  <text x="70" y="335" fill="#64748b" font-size="9">|tanh(z) * 10| &lt;= 10 N ?</text>
+  <text x="70" y="347" fill="#64748b" font-size="9">Sanidade da quantizacao</text>
+  <text x="70" y="363" fill="#4ade80" font-size="9" font-weight="bold">verify_ddpg_closed_loop.py</text>
+
+  <!-- Network architecture visual -->
+  <rect x="290" y="300" width="210" height="70" rx="8" fill="#0f172a" stroke="#475569" stroke-width="1"/>
+  <text x="395" y="320" fill="#94a3b8" font-size="10" text-anchor="middle" font-weight="bold">Arquitetura Actor</text>
+  <text x="395" y="338" fill="#60a5fa" font-size="11" text-anchor="middle" font-family="monospace">4 → 24 → 24 → 1</text>
+  <text x="395" y="354" fill="#94a3b8" font-size="9" text-anchor="middle">ReLU  ReLU  Tanh×10</text>
+  <text x="395" y="366" fill="#64748b" font-size="8" text-anchor="middle">Q8.8: scale=256, Boolector</text>
+
+  <!-- Harness explainer -->
+  <rect x="60" y="385" width="440" height="50" rx="6" fill="#0f172a" stroke="#475569" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="280" y="405" fill="#94a3b8" font-size="10" text-anchor="middle">Harness C: nondet_int() → __ESBMC_assume(bounds) → forward pass → __ESBMC_assert</text>
+  <text x="280" y="420" fill="#64748b" font-size="9" text-anchor="middle">Pesos expandidos inline (sem loops). Tanh via monotonicidade ou aprox. linear.</text>
+
+
+  <!-- RIGHT DOMAIN: CONTROLADOR (Malha Fechada) -->
+  <rect x="540" y="160" width="520" height="290" rx="10" fill="#1e293b" stroke="#ef4444" stroke-width="2"/>
+  <text x="560" y="185" fill="#fca5a5" font-size="13" font-weight="bold">DOMINIO 2: CONTROLADOR (Malha Fechada)</text>
+  <text x="560" y="200" fill="#64748b" font-size="10">Rede + Dinamica da planta (linearizada) em loop</text>
+
+  <!-- Closed loop diagram -->
+  <rect x="570" y="215" width="120" height="45" rx="6" fill="#172554" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="630" y="235" fill="#93c5fd" font-size="10" text-anchor="middle" font-weight="bold">Estado s</text>
+  <text x="630" y="248" fill="#64748b" font-size="8" text-anchor="middle">[x, x_dot, th, th_dot]</text>
+
+  <line x1="690" y1="237" x2="730" y2="237" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+
+  <rect x="735" y="215" width="130" height="45" rx="6" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="800" y="235" fill="#86efac" font-size="10" text-anchor="middle" font-weight="bold">Actor DDPG</text>
+  <text x="800" y="248" fill="#4ade80" font-size="8" text-anchor="middle">F = tanh(z) × 10</text>
+
+  <line x1="865" y1="237" x2="905" y2="237" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+
+  <rect x="910" y="215" width="130" height="45" rx="6" fill="#422006" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="975" y="235" fill="#fcd34d" font-size="10" text-anchor="middle" font-weight="bold">Planta</text>
+  <text x="975" y="248" fill="#fbbf24" font-size="8" text-anchor="middle">Cart-Pole (lin.)</text>
+
+  <!-- Feedback arrow -->
+  <line x1="975" y1="260" x2="975" y2="280" stroke="#f59e0b" stroke-width="1.5"/>
+  <line x1="975" y1="280" x2="630" y2="280" stroke="#f59e0b" stroke-width="1.5"/>
+  <line x1="630" y1="280" x2="630" y2="260" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#arrow-yellow)"/>
+  <text x="800" y="275" fill="#fbbf24" font-size="8" text-anchor="middle">s_new = dynamics(s, F)</text>
+
+  <!-- Property A -->
+  <rect x="560" y="300" width="240" height="60" rx="8" fill="#450a0a" stroke="#ef4444" stroke-width="1"/>
+  <text x="570" y="318" fill="#fca5a5" font-size="11" font-weight="bold">Prop A: Direcao Errada</text>
+  <text x="570" y="333" fill="#fca5a5" font-size="9">theta &gt; 5.7° e theta_dot &gt;= 0</text>
+  <text x="570" y="345" fill="#fca5a5" font-size="9">  → assert(z &gt; 0) [F positiva]</text>
+  <text x="570" y="357" fill="#64748b" font-size="8">Usa monotonicidade de tanh (sem aprox.)</text>
+
+  <!-- Property B -->
+  <rect x="820" y="300" width="230" height="60" rx="8" fill="#450a0a" stroke="#ef4444" stroke-width="1"/>
+  <text x="830" y="318" fill="#fca5a5" font-size="11" font-weight="bold">Prop B: Seguranca 1-step</text>
+  <text x="830" y="333" fill="#fca5a5" font-size="9">s0 in S_safe → step(s0, F)</text>
+  <text x="830" y="345" fill="#fca5a5" font-size="9">  → assert(|theta_new| &lt; 12°)</text>
+  <text x="830" y="357" fill="#64748b" font-size="8">Usa aprox. linear de tanh + din. lin.</text>
+
+  <!-- Counterexample output -->
+  <rect x="620" y="380" width="380" height="55" rx="8" fill="#1c1917" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <text x="810" y="400" fill="#ef4444" font-size="11" text-anchor="middle" font-weight="bold">CONTRAEXEMPLOS</text>
+  <text x="810" y="415" fill="#fca5a5" font-size="9" text-anchor="middle">ESBMC FAILED → estado (x, xd, th, thd) que viola a propriedade</text>
+  <text x="810" y="428" fill="#64748b" font-size="8" text-anchor="middle">Salvos em ddpg_closed_loop_results.json → injetaveis na simulacao</text>
+
+  <!-- ============================================================ -->
+  <!-- PHASE 3: AGGREGATION -->
+  <!-- ============================================================ -->
+  <rect x="20" y="490" width="1060" height="70" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <text x="50" y="515" fill="#94a3b8" font-size="11" font-weight="bold" letter-spacing="2">FASE 3 — AGREGACAO</text>
+
+  <!-- Arrows down from both domains -->
+  <line x1="280" y1="450" x2="280" y2="490" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="810" y1="435" x2="810" y2="490" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="300" y="505" width="500" height="40" rx="8" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="550" y="523" fill="#86efac" font-size="11" text-anchor="middle" font-weight="bold">generate_ddpg_webapp_data.py</text>
+  <text x="550" y="537" fill="#4ade80" font-size="9" text-anchor="middle">neuronios + saturacao + closed-loop + contraexemplos → ddpg_verification_data.json</text>
+
+  <!-- ============================================================ -->
+  <!-- PHASE 4: WEB APPLICATION -->
+  <!-- ============================================================ -->
+  <rect x="20" y="580" width="1060" height="230" rx="12" fill="#1e293b" stroke="#22c55e" stroke-width="2"/>
+  <text x="50" y="605" fill="#86efac" font-size="11" font-weight="bold" letter-spacing="2">FASE 4 — APLICACAO WEB (browser, tempo real)</text>
+
+  <!-- Arrow down -->
+  <line x1="550" y1="545" x2="550" y2="580" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+
+  <!-- Simulation -->
+  <rect x="40" y="620" width="250" height="170" rx="10" fill="#172554" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="165" y="643" fill="#93c5fd" font-size="12" text-anchor="middle" font-weight="bold">/simulation</text>
+  <text x="165" y="658" fill="#60a5fa" font-size="9" text-anchor="middle">Simulacao Tempo Real</text>
+  <rect x="55" y="668" width="220" height="22" rx="4" fill="#0f172a" stroke="#475569" stroke-width="0.5"/>
+  <text x="165" y="683" fill="#94a3b8" font-size="9" text-anchor="middle">Physics + DDPG inference (float32)</text>
+  <rect x="55" y="695" width="220" height="22" rx="4" fill="#0f172a" stroke="#475569" stroke-width="0.5"/>
+  <text x="165" y="710" fill="#94a3b8" font-size="9" text-anchor="middle">Drag, keyboard, touch interacao</text>
+  <rect x="55" y="722" width="220" height="22" rx="4" fill="#450a0a" stroke="#ef4444" stroke-width="1"/>
+  <text x="165" y="737" fill="#fca5a5" font-size="9" text-anchor="middle" font-weight="bold">Injetar Contraexemplos ESBMC</text>
+  <rect x="55" y="749" width="220" height="22" rx="4" fill="#0f172a" stroke="#475569" stroke-width="0.5"/>
+  <text x="165" y="764" fill="#94a3b8" font-size="9" text-anchor="middle">MiniPlots x, xd, th, thd, F</text>
+
+  <!-- Verification -->
+  <rect x="310" y="620" width="250" height="170" rx="10" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="435" y="643" fill="#86efac" font-size="12" text-anchor="middle" font-weight="bold">/verification</text>
+  <text x="435" y="658" fill="#4ade80" font-size="9" text-anchor="middle">Resultados ESBMC (DDPG)</text>
+  <rect x="325" y="668" width="220" height="22" rx="4" fill="#0f172a" stroke="#475569" stroke-width="0.5"/>
+  <text x="435" y="683" fill="#94a3b8" font-size="9" text-anchor="middle">Tabela neuronios (24) + badges</text>
+  <rect x="325" y="695" width="220" height="22" rx="4" fill="#0f172a" stroke="#475569" stroke-width="0.5"/>
+  <text x="435" y="710" fill="#94a3b8" font-size="9" text-anchor="middle">Saturacao (hidden + output)</text>
+  <rect x="325" y="722" width="220" height="22" rx="4" fill="#0f172a" stroke="#475569" stroke-width="0.5"/>
+  <text x="435" y="737" fill="#94a3b8" font-size="9" text-anchor="middle">Closed-loop: Props A, B, C</text>
+  <rect x="325" y="749" width="220" height="22" rx="4" fill="#450a0a" stroke="#ef4444" stroke-width="1"/>
+  <text x="435" y="764" fill="#fca5a5" font-size="9" text-anchor="middle" font-weight="bold">Contraexemplos + link simulacao</text>
+
+  <!-- Other pages -->
+  <rect x="580" y="620" width="230" height="170" rx="10" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+  <text x="695" y="643" fill="#94a3b8" font-size="12" text-anchor="middle" font-weight="bold">Outras paginas</text>
+  <rect x="595" y="658" width="200" height="20" rx="4" fill="#0f172a" stroke="#475569" stroke-width="0.5"/>
+  <text x="695" y="672" fill="#fcd34d" font-size="9" text-anchor="middle">/training — curva aprendizado</text>
+  <rect x="595" y="683" width="200" height="20" rx="4" fill="#0f172a" stroke="#475569" stroke-width="0.5"/>
+  <text x="695" y="697" fill="#c4b5fd" font-size="9" text-anchor="middle">/control — teoria DDPG</text>
+  <rect x="595" y="708" width="200" height="20" rx="4" fill="#0f172a" stroke="#475569" stroke-width="0.5"/>
+  <text x="695" y="722" fill="#94a3b8" font-size="9" text-anchor="middle">/metodologia — pipeline</text>
+  <rect x="595" y="733" width="200" height="20" rx="4" fill="#0f172a" stroke="#475569" stroke-width="0.5"/>
+  <text x="695" y="747" fill="#94a3b8" font-size="9" text-anchor="middle">/ — dashboard DDPG</text>
+
+  <!-- Legacy box -->
+  <rect x="830" y="620" width="230" height="170" rx="10" fill="#1c1917" stroke="#78716c" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <text x="945" y="643" fill="#a8a29e" font-size="12" text-anchor="middle" font-weight="bold">/legacy</text>
+  <text x="945" y="658" fill="#78716c" font-size="9" text-anchor="middle">Simulacao Antiga (DQN)</text>
+  <rect x="845" y="668" width="200" height="20" rx="4" fill="#0f172a" stroke="#475569" stroke-width="0.5"/>
+  <text x="945" y="682" fill="#78716c" font-size="9" text-anchor="middle">DQN 5 acoes discretas</text>
+  <rect x="845" y="693" width="200" height="20" rx="4" fill="#0f172a" stroke="#475569" stroke-width="0.5"/>
+  <text x="945" y="707" fill="#78716c" font-size="9" text-anchor="middle">Verificacao DQN (neuronios)</text>
+  <rect x="845" y="718" width="200" height="20" rx="4" fill="#0f172a" stroke="#475569" stroke-width="0.5"/>
+  <text x="945" y="732" fill="#78716c" font-size="9" text-anchor="middle">Closed-loop DQN (Props A, B)</text>
+  <rect x="845" y="743" width="200" height="20" rx="4" fill="#0f172a" stroke="#475569" stroke-width="0.5"/>
+  <text x="945" y="757" fill="#78716c" font-size="9" text-anchor="middle">simulation_data.json (legado)</text>
+  <text x="945" y="783" fill="#78716c" font-size="8" text-anchor="middle" font-style="italic">Acessivel via botao "Simulacao Antiga"</text>
+
+</svg>
+</div>
+
+<div style="max-width: 1100px; margin: 40px auto 0; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+  <div style="background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px;">
+    <h3 style="color: #93c5fd; margin: 0 0 12px 0; font-size: 14px;">Dominio 1: MODELO (Rede Neural)</h3>
+    <p style="color: #94a3b8; font-size: 12px; line-height: 1.6; margin: 0;">
+      Verifica propriedades da <b style="color:#60a5fa">rede isolada</b>, sem considerar a planta.<br>
+      <b style="color:#fcd34d">Neuronios mortos:</b> ReLU(pre) == 0 para todo input? → indica neuronio inutil<br>
+      <b style="color:#fcd34d">Saturacao:</b> ReLU(pre) > 0 para todo input? → neuronio nunca desativa<br>
+      <b style="color:#fcd34d">Bounds de saida:</b> |F| <= 10N sempre? → sanidade do Q8.8<br><br>
+      <b>Tanh:</b> Para Props de rede, tanh nao entra (so ReLU nas hidden layers).
+      Para Prop C, usa-se monotonicidade: |tanh(z)| <= 1 → |F| <= 10.
+    </p>
+  </div>
+  <div style="background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px;">
+    <h3 style="color: #fca5a5; margin: 0 0 12px 0; font-size: 14px;">Dominio 2: CONTROLADOR (Malha Fechada)</h3>
+    <p style="color: #94a3b8; font-size: 12px; line-height: 1.6; margin: 0;">
+      Verifica o <b style="color:#ef4444">sistema completo</b>: rede + dinamica da planta em loop.<br>
+      <b style="color:#fcd34d">Prop A (direcao):</b> theta > 5.7° ∧ theta_dot >= 0 → F > 0?<br>
+      &nbsp;&nbsp;Usa monotonicidade: z > 0 ⟺ tanh(z) > 0 ⟺ F > 0<br>
+      <b style="color:#fcd34d">Prop B (seguranca):</b> s0 ∈ S_safe → |theta_new| < 12° apos 1 step?<br>
+      &nbsp;&nbsp;Precisa do valor de F → <b style="color:#f59e0b">aprox. linear de tanh</b> em Q8.8<br>
+      &nbsp;&nbsp;Dinamica linearizada: sin(θ) ≈ θ, cos(θ) ≈ 1<br><br>
+      <b style="color:#ef4444">Contraexemplos:</b> estado onde a propriedade falha → injetavel na simulacao.
+    </p>
+  </div>
+</div>
+
+</body>
+</html>
