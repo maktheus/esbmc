@@ -36,7 +36,8 @@ let _weights: DDPGWeights | null = null;
 
 export async function loadWeights(): Promise<DDPGWeights> {
   if (_weights) return _weights;
-  const resp = await fetch('/ddpg_weights.json');
+  const base = process.env.NEXT_PUBLIC_BASE_PATH || '';
+  const resp = await fetch(`${base}/ddpg_weights.json`);
   _weights = await resp.json() as DDPGWeights;
   return _weights;
 }
