@@ -77,9 +77,9 @@ export default function DashboardPage() {
         />
         <InfoCard
           title="Verificacao ESBMC"
-          value={totalDead === 0 && saturated === 0 ? 'APROVADO' : 'COM ALERTAS'}
+          value={(data?.counterexamples.length ?? 0) > 0 ? 'COM ALERTAS' : totalDead === 0 && saturated === 0 ? 'APROVADO' : 'COM ALERTAS'}
           sub={`${totalDead} mortos, ${saturated} saturados, ${data?.counterexamples.length ?? 0} contraexemplos`}
-          color="green"
+          color={(data?.counterexamples.length ?? 0) > 0 ? 'yellow' : 'green'}
           href="/verification"
         />
         <InfoCard
