@@ -1,7 +1,7 @@
 {
   "property_a_right": {
     "result": "FAILED",
-    "counterexample": "z=-2929 (F negativa quando theta > 5.7deg)",
+    "counterexample": "x=-0.0117  xd=-4.9219  th=0.1094  thd=0.0000",
     "time_seconds": 1888
   },
   "property_a_left": {

@@ -6,8 +6,8 @@ import { DDPGWeights, loadWeights, getForce } from '@/lib/controller';
 import { loadQuantizedWeights, QuantizedWeights, stateToQ88, getForceQ88, forceFromQ88 } from '@/lib/quantized-controller';
 import { DDPGVerificationData } from '@/lib/types';
 
-const W = 600, H = 280;
-const TRACK_Y = 200, TRACK_HW = 200;
+const W = 700, H = 340;
+const TRACK_Y = 240, TRACK_HW = 280;
 const CART_W = 60, CART_H = 30;
 const POLE_LEN = 120;
 const SCALE_PX = TRACK_HW / X_LIMIT;
@@ -26,63 +26,132 @@ function drawScene(
 ) {
   ctx.clearRect(0, 0, W, H);
 
-  ctx.strokeStyle = '#374151';
+  // Background
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, W, H);
+
+  // Ground
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(0, TRACK_Y, W, H - TRACK_Y);
+  ctx.strokeStyle = '#475569';
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(W / 2 - TRACK_HW, TRACK_Y);
-  ctx.lineTo(W / 2 + TRACK_HW, TRACK_Y);
+  ctx.moveTo(0, TRACK_Y);
+  ctx.lineTo(W, TRACK_Y);
   ctx.stroke();
 
-  ctx.strokeStyle = '#EF444466';
-  ctx.setLineDash([4, 4]);
+  // Track rail (between walls)
+  ctx.strokeStyle = '#64748b';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(W / 2 - X_LIMIT * SCALE_PX, TRACK_Y);
+  ctx.lineTo(W / 2 + X_LIMIT * SCALE_PX, TRACK_Y);
+  ctx.stroke();
+
+  // Walls at x limits
+  const wallH = 100;
   [-X_LIMIT, X_LIMIT].forEach(lim => {
     const lx = W / 2 + lim * SCALE_PX;
+    ctx.fillStyle = '#7f1d1d88';
+    ctx.fillRect(lim < 0 ? lx - 6 : lx, TRACK_Y - wallH, 6, wallH + 20);
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(lx, TRACK_Y - 80);
-    ctx.lineTo(lx, TRACK_Y + 10);
+    ctx.moveTo(lx, TRACK_Y - wallH);
+    ctx.lineTo(lx, TRACK_Y + 20);
+    ctx.stroke();
+    // Wall label
+    ctx.fillStyle = '#ef444488';
+    ctx.font = '9px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${lim > 0 ? '+' : ''}${lim.toFixed(1)}m`, lx, TRACK_Y - wallH - 4);
+  });
+
+  // Angle limit arcs (show ±12° danger zone)
+  const cx = W / 2 + Math.max(-X_LIMIT, Math.min(X_LIMIT, state.x)) * SCALE_PX;
+
+  ctx.strokeStyle = '#ef444433';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3, 3]);
+  [-THETA_LIMIT, THETA_LIMIT].forEach(angle => {
+    const endX = cx + Math.sin(angle) * POLE_LEN;
+    const endY = TRACK_Y - CART_H - Math.cos(angle) * POLE_LEN;
+    ctx.beginPath();
+    ctx.moveTo(cx, TRACK_Y - CART_H);
+    ctx.lineTo(endX, endY);
     ctx.stroke();
   });
   ctx.setLineDash([]);
 
-  const cx = W / 2 + state.x * SCALE_PX;
+  // Danger zone label at top
+  ctx.fillStyle = '#ef444444';
+  ctx.font = '9px monospace';
+  ctx.textAlign = 'center';
+  const arcLabelX = cx + Math.sin(THETA_LIMIT) * (POLE_LEN + 12);
+  const arcLabelY = TRACK_Y - CART_H - Math.cos(THETA_LIMIT) * (POLE_LEN + 12);
+  if (arcLabelX > 20 && arcLabelX < W - 20) {
+    ctx.fillText('12°', arcLabelX, arcLabelY);
+  }
 
-  ctx.fillStyle = failed ? '#7F1D1D' : dragging ? '#1E40AF' : ceActive ? '#7C2D12' : '#1F2937';
-  ctx.strokeStyle = failed ? '#EF4444' : dragging ? '#3B82F6' : ceActive ? '#F97316' : '#6B7280';
+  // Cart body (clamp visual position to track)
+  const cartVisualX = Math.max(W / 2 - X_LIMIT * SCALE_PX + CART_W / 2,
+                      Math.min(W / 2 + X_LIMIT * SCALE_PX - CART_W / 2, cx));
+
+  ctx.fillStyle = failed ? '#7F1D1D' : dragging ? '#1E40AF' : ceActive ? '#7C2D12' : '#1e293b';
+  ctx.strokeStyle = failed ? '#EF4444' : dragging ? '#3B82F6' : ceActive ? '#F97316' : '#94a3b8';
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.roundRect(cx - CART_W / 2, TRACK_Y - CART_H, CART_W, CART_H, 4);
+  ctx.roundRect(cartVisualX - CART_W / 2, TRACK_Y - CART_H, CART_W, CART_H, 6);
   ctx.fill();
   ctx.stroke();
 
-  ctx.fillStyle = '#4B5563';
+  // Wheels
+  ctx.fillStyle = '#64748b';
   ctx.beginPath();
-  ctx.arc(cx - 15, TRACK_Y, 5, 0, Math.PI * 2);
-  ctx.arc(cx + 15, TRACK_Y, 5, 0, Math.PI * 2);
+  ctx.arc(cartVisualX - 15, TRACK_Y + 2, 6, 0, Math.PI * 2);
+  ctx.arc(cartVisualX + 15, TRACK_Y + 2, 6, 0, Math.PI * 2);
   ctx.fill();
+  ctx.strokeStyle = '#475569';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(cartVisualX - 15, TRACK_Y + 2, 6, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cartVisualX + 15, TRACK_Y + 2, 6, 0, Math.PI * 2);
+  ctx.stroke();
 
-  const poleEndX = cx + Math.sin(state.theta) * POLE_LEN;
+  // Pole
+  const poleBaseX = cartVisualX;
+  const poleEndX = poleBaseX + Math.sin(state.theta) * POLE_LEN;
   const poleEndY = TRACK_Y - CART_H - Math.cos(state.theta) * POLE_LEN;
-  ctx.strokeStyle = failed ? '#EF4444' : '#F59E0B';
-  ctx.lineWidth = 5;
+
+  const absDeg = Math.abs(state.theta) * 180 / Math.PI;
+  const poleColor = failed ? '#EF4444' : absDeg > 8 ? '#f97316' : absDeg > 5 ? '#eab308' : '#22c55e';
+
+  ctx.strokeStyle = poleColor;
+  ctx.lineWidth = 6;
   ctx.lineCap = 'round';
   ctx.beginPath();
-  ctx.moveTo(cx, TRACK_Y - CART_H);
+  ctx.moveTo(poleBaseX, TRACK_Y - CART_H);
   ctx.lineTo(poleEndX, poleEndY);
   ctx.stroke();
 
-  ctx.fillStyle = failed ? '#EF4444' : '#FBBF24';
+  // Pole tip
+  ctx.fillStyle = poleColor;
   ctx.beginPath();
-  ctx.arc(poleEndX, poleEndY, 6, 0, Math.PI * 2);
+  ctx.arc(poleEndX, poleEndY, 7, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = '#9CA3AF';
+  // Pivot point
+  ctx.fillStyle = '#cbd5e1';
   ctx.beginPath();
-  ctx.arc(cx, TRACK_Y - CART_H, 4, 0, Math.PI * 2);
+  ctx.arc(poleBaseX, TRACK_Y - CART_H, 4, 0, Math.PI * 2);
   ctx.fill();
 
-  if (Math.abs(force) > 0.5) {
-    const arrowX = cx + (force > 0 ? CART_W / 2 + 5 : -CART_W / 2 - 5);
-    const arrowLen = Math.abs(force) / FORCE_MAX * 40;
+  // Force arrow
+  if (Math.abs(force) > 0.3) {
+    const arrowX = cartVisualX + (force > 0 ? CART_W / 2 + 8 : -CART_W / 2 - 8);
+    const arrowLen = Math.abs(force) / FORCE_MAX * 50;
     const dir = force > 0 ? 1 : -1;
     ctx.strokeStyle = force > 0 ? '#22c55e' : '#ef4444';
     ctx.lineWidth = 3;
@@ -92,25 +161,60 @@ function drawScene(
     ctx.stroke();
     ctx.fillStyle = ctx.strokeStyle;
     ctx.beginPath();
-    ctx.moveTo(arrowX + dir * arrowLen, TRACK_Y - CART_H / 2 - 5);
-    ctx.lineTo(arrowX + dir * (arrowLen + 8), TRACK_Y - CART_H / 2);
-    ctx.lineTo(arrowX + dir * arrowLen, TRACK_Y - CART_H / 2 + 5);
+    ctx.moveTo(arrowX + dir * arrowLen, TRACK_Y - CART_H / 2 - 6);
+    ctx.lineTo(arrowX + dir * (arrowLen + 10), TRACK_Y - CART_H / 2);
+    ctx.lineTo(arrowX + dir * arrowLen, TRACK_Y - CART_H / 2 + 6);
     ctx.fill();
+
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.font = 'bold 10px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${force.toFixed(1)}N`, arrowX + dir * arrowLen / 2, TRACK_Y - CART_H / 2 - 10);
   }
 
-  ctx.fillStyle = '#9CA3AF';
+  // HUD top
+  ctx.fillStyle = '#94a3b8';
   ctx.font = '11px monospace';
-  ctx.textAlign = 'center';
-  ctx.fillText(`F = ${force.toFixed(2)} N`, W / 2, 20);
+  ctx.textAlign = 'left';
+  ctx.fillText(`x=${state.x.toFixed(3)}m  θ=${(state.theta*180/Math.PI).toFixed(2)}°  F=${force.toFixed(2)}N`, 10, 18);
 
+  ctx.textAlign = 'right';
+  const thetaDeg = (state.theta * 180 / Math.PI).toFixed(1);
+  ctx.fillStyle = absDeg > 10 ? '#ef4444' : absDeg > 6 ? '#f97316' : '#22c55e';
+  ctx.fillText(`${thetaDeg}°`, W - 10, 18);
+
+  // Status banner
   if (ceActive) {
-    ctx.fillStyle = '#F9731680';
+    ctx.fillStyle = '#f9731688';
+    ctx.fillRect(0, 28, W, 22);
+    ctx.fillStyle = '#fff';
     ctx.font = 'bold 12px sans-serif';
-    ctx.fillText('CONTRAEXEMPLO ESBMC', W / 2, 40);
+    ctx.textAlign = 'center';
+    ctx.fillText('CONTRAEXEMPLO ESBMC — observando comportamento do controlador', W / 2, 43);
+  } else if (failed) {
+    ctx.fillStyle = '#ef444488';
+    ctx.fillRect(0, 28, W, 22);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('FALHOU — sistema saiu da regiao segura', W / 2, 43);
   } else if (dragging) {
-    ctx.fillStyle = '#3B82F680';
+    ctx.fillStyle = '#3B82F644';
+    ctx.fillRect(0, 28, W, 22);
+    ctx.fillStyle = '#93c5fd';
     ctx.font = '12px sans-serif';
-    ctx.fillText('ARRASTANDO', W / 2, 40);
+    ctx.textAlign = 'center';
+    ctx.fillText('Arrastando — solte para liberar', W / 2, 43);
+  }
+
+  // Ground texture (rails)
+  ctx.strokeStyle = '#334155';
+  ctx.lineWidth = 1;
+  for (let gx = W / 2 - TRACK_HW; gx <= W / 2 + TRACK_HW; gx += 20) {
+    ctx.beginPath();
+    ctx.moveTo(gx, TRACK_Y + 8);
+    ctx.lineTo(gx, TRACK_Y + 16);
+    ctx.stroke();
   }
 }
 
@@ -179,13 +283,15 @@ function MiniPlot({ history, label, limit, color, unit }: {
 
 function parseCounterexampleState(str: string): CartPoleState | null {
   const m = str.match(/x=(-?[\d.]+)\s+xd=(-?[\d.]+)\s+th=(-?[\d.]+)\s+thd=(-?[\d.]+)/);
-  if (!m) return null;
-  return {
-    x: parseFloat(m[1]),
-    x_dot: parseFloat(m[2]),
-    theta: parseFloat(m[3]),
-    theta_dot: parseFloat(m[4]),
-  };
+  if (m) {
+    return {
+      x: parseFloat(m[1]),
+      x_dot: parseFloat(m[2]),
+      theta: parseFloat(m[3]),
+      theta_dot: parseFloat(m[4]),
+    };
+  }
+  return null;
 }
 
 export default function SimulationPage() {
@@ -292,6 +398,12 @@ export default function SimulationPage() {
     let frameCount = 0;
     const interval = setInterval(() => {
       if (!runRef.current) return;
+
+      if (failRef.current) {
+        const ctx = canvasRef.current?.getContext('2d');
+        if (ctx) drawScene(ctx, stateRef.current, forceRef.current, true, false, ceActiveRef.current);
+        return;
+      }
 
       const s = stateRef.current;
       let f = 0;
@@ -498,20 +610,36 @@ export default function SimulationPage() {
             Injete estados encontrados pelo ESBMC para ver a falha em tempo real.
             O controlador Q8.8 reproduz exatamente o comportamento verificado.
           </p>
-          <div className="flex flex-wrap gap-2">
-            {counterexamples.map((ce, i) => (
-              <button
-                key={i}
-                onClick={() => injectCounterexample(ce.state_str)}
-                className="px-3 py-1.5 bg-orange-800 hover:bg-orange-700 text-orange-200 rounded-lg text-xs font-medium transition-colors"
-              >
-                {ce.property}: {ce.description}
-              </button>
-            ))}
+          <div className="space-y-2">
+            {counterexamples.map((ce, i) => {
+              const canInject = parseCounterexampleState(ce.state_str) !== null;
+              return (
+                <div key={i} className="flex items-start gap-3 bg-orange-950/40 rounded-lg p-3 border border-orange-800/50">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-orange-200 text-xs font-semibold">{ce.property}</p>
+                    <p className="text-gray-400 text-xs mt-0.5">{ce.description}</p>
+                    <p className="text-orange-300 text-xs font-mono mt-1 break-all">{ce.state_str}</p>
+                    <p className="text-gray-500 text-xs mt-0.5">Esperado: {ce.expected_behavior}</p>
+                  </div>
+                  {canInject ? (
+                    <button
+                      onClick={() => injectCounterexample(ce.state_str)}
+                      className="flex-shrink-0 px-3 py-1.5 bg-orange-700 hover:bg-orange-600 text-white rounded-lg text-xs font-medium transition-colors"
+                    >
+                      Injetar
+                    </button>
+                  ) : (
+                    <span className="flex-shrink-0 px-3 py-1.5 bg-gray-700 text-gray-400 rounded-lg text-xs">
+                      Sem estado
+                    </span>
+                  )}
+                </div>
+              );
+            })}
           </div>
           {ceActive && (
             <div className="bg-orange-950/60 border border-orange-800 rounded-lg p-2 text-orange-200 text-xs font-mono">
-              Estado injetado — observando comportamento do controlador
+              Estado injetado — observando comportamento do controlador Q8.8
             </div>
           )}
         </div>
