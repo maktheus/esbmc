@@ -273,8 +273,9 @@ export default function VerificationPage() {
       <div className="bg-gray-800 rounded-xl p-4 border border-gray-700 text-xs text-gray-400 space-y-1">
         <p className="text-gray-300 font-semibold text-sm mb-2">Notas</p>
         <p>Controlador DDPG continuo com saida tanh x 10 N.</p>
-        <p>Quantizacao Q8.8 (scale=256). Solver Boolector. Timeout 120s por propriedade.</p>
-        <p>Harnesses C gerados sem loops — todos os pesos expandidos inline.</p>
+        <p>Quantizacao Q8.8 (scale=256). Solver Boolector 3.2.0.</p>
+        <p>Tempos: Prop A right 31min, Prop A left 45min, Prop B ~90s, Prop C ~24s.</p>
+        <p>Harnesses C gerados sem loops — todos os 1249 pesos expandidos inline (~20KB por harness).</p>
         <p>Browser roda a mesma aritmetica Q8.8 — contraexemplos reproduzem exatamente.</p>
       </div>
     </div>
