@@ -32,16 +32,27 @@ export function physicsStep(s: CartPoleState, force: number): CartPoleState {
                  (L * (4 / 3 - M_POLE * cosT ** 2 / M_TOTAL));
   const x_acc  = temp - ML * th_acc * cosT / M_TOTAL;
 
+  let new_x     = s.x         + DT * s.x_dot;
+  let new_x_dot = s.x_dot     + DT * x_acc;
+
+  if (new_x > X_LIMIT) {
+    new_x = X_LIMIT;
+    new_x_dot = Math.min(0, -new_x_dot * 0.3);
+  } else if (new_x < -X_LIMIT) {
+    new_x = -X_LIMIT;
+    new_x_dot = Math.max(0, -new_x_dot * 0.3);
+  }
+
   return {
-    x:         s.x         + DT * s.x_dot,
-    x_dot:     s.x_dot     + DT * x_acc,
+    x:         new_x,
+    x_dot:     new_x_dot,
     theta:     s.theta     + DT * s.theta_dot,
     theta_dot: s.theta_dot + DT * th_acc,
   };
 }
 
 export function isDone(s: CartPoleState): boolean {
-  return Math.abs(s.x) > X_LIMIT || Math.abs(s.theta) > THETA_LIMIT;
+  return Math.abs(s.theta) > THETA_LIMIT;
 }
 
 export function resetState(): CartPoleState {

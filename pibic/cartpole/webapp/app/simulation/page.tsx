@@ -94,8 +94,20 @@ function drawScene(
   }
 
   // Cart body (clamp visual position to track)
+  const atWall = Math.abs(state.x) >= X_LIMIT - 0.01;
   const cartVisualX = Math.max(W / 2 - X_LIMIT * SCALE_PX + CART_W / 2,
                       Math.min(W / 2 + X_LIMIT * SCALE_PX - CART_W / 2, cx));
+
+  // Wall collision flash
+  if (atWall) {
+    const wallX = state.x > 0
+      ? W / 2 + X_LIMIT * SCALE_PX
+      : W / 2 - X_LIMIT * SCALE_PX;
+    ctx.fillStyle = '#ef444444';
+    ctx.beginPath();
+    ctx.arc(wallX, TRACK_Y - CART_H / 2, 20, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
   ctx.fillStyle = failed ? '#7F1D1D' : dragging ? '#1E40AF' : ceActive ? '#7C2D12' : '#1e293b';
   ctx.strokeStyle = failed ? '#EF4444' : dragging ? '#3B82F6' : ceActive ? '#F97316' : '#94a3b8';
@@ -399,12 +411,6 @@ export default function SimulationPage() {
     const interval = setInterval(() => {
       if (!runRef.current) return;
 
-      if (failRef.current) {
-        const ctx = canvasRef.current?.getContext('2d');
-        if (ctx) drawScene(ctx, stateRef.current, forceRef.current, true, false, ceActiveRef.current);
-        return;
-      }
-
       const s = stateRef.current;
       let f = 0;
 
@@ -451,6 +457,7 @@ export default function SimulationPage() {
       if (done && !failRef.current) {
         failRef.current = true;
         setFailed(true);
+        setRunning(true);
       }
 
       const ctx = canvasRef.current?.getContext('2d');
@@ -588,8 +595,8 @@ export default function SimulationPage() {
         <div className="ml-auto flex items-center gap-4 text-xs font-mono text-gray-400">
           <span>t = {elapsed} s</span>
           <span>{steps} passos</span>
-          <span className={failed ? 'text-red-400 font-bold' : 'text-green-400'}>
-            {failed ? 'FALHOU' : 'ESTAVEL'}
+          <span className={failed ? 'text-red-400 font-bold animate-pulse' : 'text-green-400'}>
+            {failed ? 'FORA DA REGIAO SEGURA' : 'ESTAVEL'}
           </span>
         </div>
       </div>
