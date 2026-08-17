@@ -1,0 +1,27 @@
+# artefatos de verificacao gerados
+*.aig
+*.abc.out
+*.bmc.out
+pid_test_*.c
+cases/control_chaos_testing/pid_test_*.c
+
+# python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# latex
+*.aux
+*.log
+*.nav
+*.out
+*.snm
+*.toc
+*.vrb
+*.fls
+*.fdb_latexmk
+
+# metadados de build
+*.egg-info/

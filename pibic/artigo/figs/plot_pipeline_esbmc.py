@@ -1,3 +1,4 @@
+import os
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -37,5 +38,5 @@ ax.text(12.3, 1.15, "SAT\n(Falha + Contra-exemplo)", ha="left", va="center", fon
 ax.set_title("Pipeline de Verificação Formal Baseado em SMT (ESBMC)", fontsize=13, fontweight="bold", pad=10)
 
 plt.tight_layout()
-plt.savefig("/home/uchoa/esbmc/pibic/artigo/figs/fluxo-esbmc.png", dpi=150, bbox_inches="tight")
-print("Salvo: /home/uchoa/esbmc/pibic/artigo/figs/fluxo-esbmc.png")
+plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "fluxo-esbmc.png"), dpi=150, bbox_inches="tight")
+print("Salvo: fluxo-esbmc.png")

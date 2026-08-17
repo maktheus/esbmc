@@ -10,7 +10,15 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "pytest>=7.0",
-    "torch>=2.0",
-    "onnx>=1.14",
-    "numpy>=1.24"
+    "numpy>=1.24",
 ]
+
+# torch/onnx sao ~2 GB e NENHUM arquivo de core_verify os importa — o wrapper
+# so usa subprocess. Ficam opcionais, para quem for treinar ou extrair pesos.
+[project.optional-dependencies]
+models = ["torch>=2.0", "onnx>=1.14"]
+plots = ["matplotlib>=3.7"]
+python-frontend = ["ast2json>=0.3"]
+
+[tool.setuptools]
+packages = ["core_verify"]
