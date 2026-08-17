@@ -3,9 +3,9 @@
 Backlog derivado da auditoria de código de 2026-08-17. Cada tarefa carrega a
 evidência que a originou (`arquivo:linha`) e o nível de confiança dessa evidência.
 
-> **Este arquivo é a fonte de verdade do backlog.** O `prd.json` na raiz de `pibic/`
-> está corrompido — contém 200 tarefas de *"CLI (Cover Display) Framework"* (Android
-> foldable), não deste projeto. Ver `KB-F05`.
+> **Este arquivo é a fonte de verdade do backlog.** O `prd.json` (110 tarefas do
+> ESBMC) foi restaurado em `KB-F05` — estava sobrescrito com 200 tarefas de um
+> framework de display Android — mas serve ao *ralph loop*, não a esta priorização.
 
 ---
 
@@ -31,18 +31,23 @@ lugar errado.
    exclusiva de arquivos. Três retornaram; dois se perderam sem notificação — as
    áreas deles estão registradas na raia A como ⬜ não auditado, não como "ok".
 2. **Verificação direta** de toda afirmação de alto impacto, com comando e saída
-   registrados. É o que separa os 31 ✅ dos 19 🟡.
+   registrados. É o que separa os 36 ✅ dos 14 🟡.
 3. **Medição, não estimativa**, onde havia número em jogo: a parede do BMC e o
    resultado do IC3 na raia E vêm de execução cronometrada, não de extrapolação.
 
 ### Estado agora
 
+**20 das 52 tarefas concluídas**, entre elas 5 dos 11 P0. A suíte saiu de
+*21 falhas em 0,12 s* — porque nada rodava — para **31 testes passando em 12m49s**,
+agora verificando de verdade.
+
 | | |
 |---|---|
-| **Concluído** | `KB-C00` — as duas vacuidades P0 (Properties B e C) confirmadas por reprodução direta, sem rede neural. `KB-F08` — submódulo `famous_pid` registrado, biblioteca recuperada. `KB-E01` — pipeline IC3 versionado em `pibic/ic3/`. |
-| **Concluído (cont.)** | `KB-E02` — PDR e BMC medidos sobre o ator DDPG real. Empate técnico: nenhum decide a instância. |
-| **Em execução** | `KB-A01` e `KB-A02` — as duas auditorias que se perderam, relançadas. |
-| **Aberto, decisão do autor** | `KB-D02` — a Arduino-PID foi recuperada, mas o harness não compila por três motivos independentes; fechar exige compilar a ESBMC 8.0.0 ou retirar a afirmação. |
+| **Núcleo consertado** | `KB-B01`–`KB-B05`, `B07`, `B08`, `B10`, `B11`. O wrapper distingue erro de execução de propriedade violada; a CI passou a existir de fato. |
+| **Vacuidades confirmadas** | `KB-C00`–`KB-C02` no cartpole, e mais duas encontradas ao consertar a suíte: `kernels_benchmarks.cpp` não compilava (15 testes inertes) e o ruído dos 5 perfis de caos nunca chegava ao sistema. |
+| **Raia E encerrada** | `KB-E01`, `KB-E02`. Empate técnico no ator real: nenhum método decide. |
+| **Higiene** | `KB-D04`, `D08`, `D11`, `F01`, `F03`, `F05`, `F08`. |
+| **Em aberto** | As duas auditorias perdidas (`KB-A01`, `KB-A02`) e 6 dos 11 P0, todos na raia D — as afirmações do artigo sem evidência. |
 
 ### O que a raia E significa
 
@@ -109,17 +114,17 @@ Dois dos cinco agentes de auditoria não retornaram. Estas áreas seguem sem rev
 
 | ID | Prio | Tarefa | Evidência | Conf. | Status |
 |---|---|---|---|---|---|
-| KB-B01 | P0 | **`run_esbmc` não lê `returncode`** — todo modo de erro (flag inválida, parse error, arquivo ausente) colapsa em `is_safe=False`, que é o valor que significa "bug encontrado". Substituir por status tri-estado `{SAFE, UNSAFE, PARSE_ERROR, USAGE_ERROR, TIMEOUT, UNKNOWN}` | `core_verify/esbmc_caller.py:62-67` | 🟡 | `todo` |
-| KB-B02 | P0 | **`--bounds-check` e `--pointer-check` não existem no ESBMC.** Confirmado: `ESBMC error: unrecognised option '--bounds-check'` (exit 64). Esses checks são ligados por padrão; só existem as formas negativas. Enquanto não corrigido, os testes que os usam nunca executam verificação | `tests/test_chaos.py:18`, `tests/test_inference.py:25` | ✅ | `todo` |
-| KB-B03 | P1 | Caminho do binário rígido para `../../build/src/esbmc/esbmc`, que não existe. Sem fallback para `$PATH`, `$ESBMC_BIN`, ou o binário 6.8.0 presente no próprio repo | `core_verify/esbmc_caller.py:6` | ✅ | `todo` |
-| KB-B04 | P1 | **CI nunca rodou.** `esbmc-verify.yml` dispara em `main`; o branch default é `master`. Além disso, `export PATH` em um step não persiste para o próximo no GitHub Actions, e o step se chama literalmente *"(Mocked from latest release)"* | `.github/workflows/esbmc-verify.yml:3-7,25` | ✅ | `todo` |
-| KB-B05 | P1 | Adicionar `ast2json` a `requirements.txt` — sua ausência é a causa única da falha do Caso 1 | `results/case1_mlp.log` | ✅ | `todo` |
+| KB-B01 | P0 | **Feito.** Status tri-estado `{SAFE, UNSAFE, PARSE_ERROR, USAGE_ERROR, TIMEOUT, UNKNOWN}` derivado do `returncode` **cruzado** com o marcador da saída; discordância vira UNKNOWN. Códigos medidos no binário 6.8.0: 0/1/6/64 | `core_verify/esbmc_caller.py:62-67` | ✅ | `done` |
+| KB-B02 | P0 | **Feito.** `--bounds-check`/`--pointer-check` removidos; expostas as formas negativas `no_bounds_check`/`no_pointer_check`. Teste de regressão em `test_ground_truth.py` garante que as inexistentes nunca sejam emitidas | `tests/test_chaos.py:18`, `tests/test_inference.py:25` | ✅ | `done` |
+| KB-B03 | P1 | **Feito.** Resolução em cascata: `$ESBMC_BIN` → `$PATH` → build local → binário embarcado. `conftest.py` pula a suíte com motivo se nenhum existir | `core_verify/esbmc_caller.py:6` | ✅ | `done` |
+| KB-B04 | P1 | **Feito.** Gatilho corrigido para `[master, main]`; o `export PATH` que não persistia foi trocado por `$GITHUB_ENV` apontando para o binário embarcado | `.github/workflows/esbmc-verify.yml:3-7,25` | ✅ | `done` |
+| KB-B05 | P1 | **Feito.** `ast2json` e `matplotlib` adicionados a `requirements.txt` | `results/case1_mlp.log` | ✅ | `done` |
 | KB-B06 | P1 | Parser de contraexemplos: regex casam em linhas `PASSED:` (falso positivo em verificação bem-sucedida); `"NaN or Inf"` não existe na saída do ESBMC (é `"NaN on "`); `memory leak` engloba `dereference failure` | `core_verify/SMT_feedback_parser.py:14-17,38-40` | 🟡 | `todo` |
-| KB-B07 | P1 | `text=True` sem `errors=` derruba o processo com `UnicodeDecodeError` em traces não-UTF-8 | `core_verify/esbmc_caller.py:62` | 🟡 | `todo` |
-| KB-B08 | P1 | Adicionar casos ground-truth **pareados** (safe/unsafe). Hoje só há asserções negativas (`assert not is_safe`), satisfeitas por qualquer erro — por isso `KB-B01` é indetectável pela suíte | `roadmap.md:64-67` | 🟡 | `todo` |
+| KB-B07 | P1 | **Feito.** `encoding='utf-8', errors='replace'` — trace não-UTF-8 não derruba mais a execução | `core_verify/esbmc_caller.py:62` | ✅ | `done` |
+| KB-B08 | P1 | **Feito.** `tests/test_ground_truth.py`: par safe/unsafe mais os quatro modos de falha (arquivo ausente, fonte quebrado, flag inválida, timeout), cada um exigindo que NÃO sejam confundidos com UNSAFE. 15 asserções | `roadmap.md:64-67` | ✅ | `done` |
 | KB-B09 | P2 | `eval "$VERIFY_CMD"` executa string vinda de JSON que o próprio agente LLM edita | `ralph_loop_esbmc.sh:62` | ✅ | `todo` |
-| KB-B10 | P2 | `pyproject.toml` não instala: flat-layout com múltiplos pacotes top-level, e `readme = "README.md"` aponta para arquivo inexistente | `pyproject.toml:9` | 🟡 | `todo` |
-| KB-B11 | P2 | Timeout não mata o grupo de processos (sem `start_new_session` / `killpg`), apesar de `roadmap.md:5.2` prometer isso | `core_verify/esbmc_caller.py:69-73` | 🟡 | `todo` |
+| KB-B10 | P2 | **Feito.** `packages = ["core_verify"]`; `torch`/`onnx` movidos para extras opcionais — o wrapper não importa nenhum dos dois. `pip install -e .` funciona | `pyproject.toml:9` | ✅ | `done` |
+| KB-B11 | P2 | **Feito.** `start_new_session=True` + `os.killpg` no timeout | `core_verify/esbmc_caller.py:69-73` | ✅ | `done` |
 
 ---
 
@@ -149,14 +154,14 @@ independente: nenhuma correção deve ser feita sem reproduzir o diagnóstico pr
 | KB-D01 | P0 | **Tabela GEMM contradiz o único dado medido.** Artigo: N=2 → `<1s`, N=3 → `≈2s`. CSV real: `4.5900` e `53.2923` (9× e 27×). N=4, 5, 6 não existem em lugar nenhum. Reexecutar e logar, ou remover a tabela | `artigo/caps/4resultados.tex:176-190` vs `results/case2_benchmark.csv` | ✅ | `todo` |
 | KB-D02 | P0 | **Verificação da Arduino-PID-Library afirmada sem qualquer artefato.** `verification/famous_pid/` aparece vazio porque é um **submódulo quebrado**: está no índice como gitlink (modo `160000`, commit `524a4268`) mas **não existe `.gitmodules`** no repositório. **`KB-F08` recuperou a biblioteca, e a tentativa de reexecução revelou que o harness nunca pôde ter rodado.** Tentei `verify_pid.cpp` com as flags exatas do artigo (`--floatbv --unwind 11`) e encontrei **três bloqueios independentes**, cada um suficiente para impedir a execução: (1) o submódulo quebrado tornava `#include "famous_pid/PID_v1.h"` irresolvível — corrigido por `KB-F08`; (2) a macro `ARDUINO` **não é definida em lugar nenhum do repo**, então `PID_v1.cpp:8` cai no ramo pré-Arduino-1.0 e pede `WProgram.h`, que não existe (o mock `Arduino.h` só declara `millis()`); (3) `PID_v1.cpp:46` usa **construtor delegante C++11**, e o binário 6.8.0 embarcado **não tem a flag `--std`** (só existe na 8.0.0, `src/esbmc/options.cpp:136`) — testei `--std c++11`, `-std=c++11` e `--std=c++11`, todos `unrecognised option`. Conclusão: a afirmação de `VERIFICATION SUCCESSFUL` **não é reproduzível com o ferramental do repositório**. Para fechar: compilar a 8.0.0 e rodar com `--std c++11`, ou remover a afirmação | `artigo/caps/4resultados.tex:252-256`; execução registrada | ✅ | `todo` |
 | KB-D03 | P0 | **Nenhum log em `results/` contém `VERIFICATION SUCCESSFUL`.** Toda afirmação de prova bem-sucedida no capítulo 4 está sem evidência | `grep -rl` em `results/` | ✅ | `todo` |
-| KB-D04 | P0 | Remover as 6 legendas *"Elaborada pelo autor (Subagente Grafico/Curvas/Arquitetural/de Controle/RL)"* e *"sugerida pelo Subagente Metodológico"* | `4resultados.tex:73,117,217,245,308`; `3metodologia.tex:130` | ✅ | `todo` |
+| KB-D04 | P0 | **Feito.** As 6 legendas removidas de `4resultados.tex` e `3metodologia.tex` | `4resultados.tex:73,117,217,245,308`; `3metodologia.tex:130` | ✅ | `done` |
 | KB-D05 | P0 | **Caso 3 não produziu dados.** `case3_agent_stats.csv` e `case3_console.log` têm 0 bytes. Causa provável: `--smtlib` faz o ESBMC emitir a fórmula em vez de resolvê-la, então `"VERIFICATION SUCCESSFUL" in stdout` é sempre falso | `results/case3_*` (0 bytes); `3_neuro_symbolic/mock_agent.py:63,67` | ✅ | `todo` |
 | KB-D06 | P0 | Corrigir a afirmação de CI ativa no artigo — ou implementar a CI (ver `KB-B04`) | `artigo/caps/3metodologia.tex:258-260` | ✅ | `todo` |
 | KB-D07 | P1 | Instalar `ast2json` e reexecutar o Caso 1. O log atual termina em `ERROR: Module 'ast2json' not found` — a verificação de Python, pilar declarado do trabalho, nunca rodou | `results/case1_mlp.log` | ✅ | `todo` |
-| KB-D08 | P1 | **Criar `pibic/README.md`.** Não existe. Precisa de: setup do ESBMC (escolher entre binário embarcado e build from source), ordem de execução end-to-end, mapa dos diretórios, versões, como compilar o artigo | — | ✅ | `todo` |
+| KB-D08 | P1 | **Feito.** `pibic/README.md` criado: início rápido, mapa de diretórios, como interpretar um status, flags inexistentes, pipeline do IC3, e uma seção de limitações conhecidas | — | ✅ | `done` |
 | KB-D09 | P1 | Registrar ambiente por experimento (versão ESBMC, solver, flags, timeout, CPU/RAM, seed). Hoje há 4 combinações conflitantes no repo: 8.0.0/Z3, 6.8.0/Boolector 3.2, 6.8.0/Z3 4.8.9, "compilada do fonte". Usar `cartpole/ESBMC_NOTES.md` como modelo — é o melhor documento do repositório | `4resultados.tex:4` vs `apresentacao_pibic.tex:593` | 🟡 | `todo` |
 | KB-D10 | P1 | Religar as figuras aos dados. Nenhum script em `artigo/figs/` abre arquivo algum — todos os valores são literais. `plot_case2.py:7-8` tem a tabela GEMM inventada que contradiz o CSV | `artigo/figs/*.py` | 🟡 | `todo` |
-| KB-D11 | P1 | Corrigir caminho absoluto `/home/uchoa/...` em 9 arquivos — quebra a execução em qualquer outra máquina, e 2 imagens do `analysis_report.md` não renderizam para ninguém | `plot_pipeline_esbmc.py:40`, `results/analysis_report.md:118,122`, +6 | ✅ | `todo` |
+| KB-D11 | P1 | **Feito.** Caminhos `/home/uchoa` corrigidos em 7 arquivos; as 2 imagens que apontavam para fora do repo viraram comentário explícito de ausência | `plot_pipeline_esbmc.py:40`, `results/analysis_report.md:118,122`, +6 | ✅ | `done` |
 | KB-D12 | P2 | **Reconstruir `referencias.bib`.** 18 entradas, 2 citadas. 13 são de outro trabalho (futebol/visão computacional: `offside`, `soccer`, `yolo`). O artigo **não cita o ESBMC**, sua ferramenta central | `artigo/referencias.bib` | ✅ | `todo` |
 | KB-D13 | P2 | Incorporar ao artigo o trabalho feito e não reportado: cart-pole DQN/DDPG (34 arquivos, contraexemplos concretos) e FFN GPT-2/Llama (speedup 18–27×). É o material mais rigoroso do repositório e está ausente do capítulo 4 | — | 🟡 | `todo` |
 | KB-D14 | P2 | Substituir stubs do template abnTeX2: `an_1.tex`, `ap_1.tex`, `errata.tex` (errata sobre neoplasias em cães), `siglas.tex`, `simbolos.tex`, e placeholders "Nome Completo da Pessoa"/"CCHE/UEPB" | `artigo/anexos_apendices/`, `artigo/editar/` | 🟡 | `todo` |
@@ -211,11 +216,11 @@ Invariante encontrado: **4 cláusulas, 8 literais, 3 dos 65 bits de estado** —
 
 | ID | Prio | Tarefa | Evidência | Conf. | Status |
 |---|---|---|---|---|---|
-| KB-F01 | P1 | **Mover 6 arquivos do PIBIC da raiz do fork do ESBMC** para `pibic/`: `chatbot_hibrido.py`, `run_chatbot.sh`, `generated_code.c`, `nn_desconto_esbmc.c`, `case2_output.txt` (875 KB), `case3_output.txt` (0 bytes). Contaminam a árvore upstream e complicam rebase | `git ls-files` na raiz | ✅ | `todo` |
+| KB-F01 | P1 | **Feito.** Os 6 arquivos movidos da raiz do fork para `pibic/chatbot/` | `git ls-files` na raiz | ✅ | `done` |
 | KB-F02 | P1 | Decidir sobre os binários em `QNNVerifier/esbmc-6.8.0/`: 71 MB (`esbmc`) + 57 MB (`esbmc.exe`) + 15 MB (`libz3.dll`). `pibic/` tem 322 MB, dos quais 308 MB são `QNNVerifier/` | `du -sh` | ✅ | `todo` |
-| KB-F03 | P1 | Criar `pibic/.gitignore` — não existe. `tests/test_chaos.py` gera `.c` dentro da árvore de fontes | — | ✅ | `todo` |
+| KB-F03 | P1 | **Feito.** `pibic/.gitignore` criado — artefatos de verificação, cache Python, intermediários de LaTeX | — | ✅ | `done` |
 | KB-F04 | P2 | Reconciliar as duas taxonomias concorrentes: `1_python_models/`…`4_control_system/` (legado) vs `cases/` + `core_verify/` (roadmap). Ambas coexistem com código duplicado. Declarar qual é canônica | `roadmap.md:37-56` | 🟡 | `todo` |
-| KB-F05 | P2 | `prd.json` está corrompido — contém 200 tarefas de *"CLI (Cover Display) Framework"* (Android foldable). Regenerar de `generate_100_prd.py` ou aposentar em favor deste kanban. **Remover `recreate_prd.py`**, que causou o dano e aponta para `/home/uchoa/` | `prd.json`, `recreate_prd.py:4` | ✅ | `todo` |
+| KB-F05 | P2 | **Feito.** `recreate_prd.py` removido (gerava as tarefas de display Android) e `prd.json` regenerado com as 110 tarefas do ESBMC. `generate_100_prd.py` teve o caminho de saída corrigido | `prd.json`, `recreate_prd.py:4` | ✅ | `done` |
 | KB-F06 | P2 | Remover `teste_mlp/verify_mlp.c.draft` — conteria cadeia de raciocínio de LLM vazada (`// Wait, I noticed a typo in my thought`) e código que não compila | `teste_mlp/verify_mlp.c.draft` | 🟡 | `todo` |
 | KB-F07 | P2 | Consolidar as variantes de `verify_mlp*.c` — declarar `verify_mlp_qnn.c` (gerado) como canônico e remover as demais | `teste_mlp/` | 🟡 | `todo` |
 | KB-F08 | P1 | **Submódulo quebrado fazia o checkout do CI sair com código 128** — `pibic/verification/famous_pid` era gitlink `160000` sem `.gitmodules`. **Resolvido criando `.gitmodules`** apontando para `br3ttb/Arduino-PID-Library`: o commit `524a4268` existe upstream (br3ttb, 2024-05-31), então o conteúdo foi **recuperado, não descartado**. Verificado: `git submodule foreach` agora sai 0 (era 128); `git submodule update --init` faz checkout do commit exato e traz `PID_v1.cpp`/`PID_v1.h`; nenhum drift do gitlink | log do job 95281480323; `git submodule status` | ✅ | `done` |
@@ -304,9 +309,9 @@ ONDA 5  (depende de C e E)
 | D — Evidências & artigo | 6 | 5 | 4 | 15 |
 | E — IC3/PDR | — | 3 | 4 | 7 |
 | F — Higiene | — | 4 | 4 | 8 |
-| **Total** | **11** | **24** | **17** | **52** | **11** | **24** | **17** | **52** | **11** | **24** | **16** | **51** | **11** | **24** | **16** | **51** |
+| **Total** | **11** | **24** | **17** | **52** | **11** | **24** | **17** | **52** | **11** | **24** | **17** | **52** | **11** | **24** | **16** | **51** | **11** | **24** | **16** | **51** |
 
-Confiança: **31 ✅ verificado** · **19 🟡 relatado por agente** · **2 ⬜ não auditado**
+Confiança: **36 ✅ verificado** · **14 🟡 relatado por agente** · **2 ⬜ não auditado**
 
 Contagens conferidas por script sobre as próprias linhas da tabela, não à mão — as
 versões anteriores deste rodapé traziam 21/26/3 e 25/23/3, ambas erradas. Um board que
