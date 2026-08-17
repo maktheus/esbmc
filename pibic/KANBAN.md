@@ -40,7 +40,8 @@ lugar errado.
 | | |
 |---|---|
 | **Concluído** | `KB-C00` — as duas vacuidades P0 (Properties B e C) confirmadas por reprodução direta, sem rede neural. `KB-F08` — submódulo `famous_pid` registrado, biblioteca recuperada. `KB-E01` — pipeline IC3 versionado em `pibic/ic3/`. |
-| **Em execução** | `KB-A01` e `KB-A02` (as duas auditorias perdidas, relançadas). `KB-E02` — PDR sobre o ator DDPG real, forward já validado bit-a-bit (12/12 estados). |
+| **Concluído (cont.)** | `KB-E02` — PDR e BMC medidos sobre o ator DDPG real. Empate técnico: nenhum decide a instância. |
+| **Em execução** | `KB-A01` e `KB-A02` — as duas auditorias que se perderam, relançadas. |
 | **Aberto, decisão do autor** | `KB-D02` — a Arduino-PID foi recuperada, mas o harness não compila por três motivos independentes; fechar exige compilar a ESBMC 8.0.0 ou retirar a afirmação. |
 
 ### O que a raia E significa
