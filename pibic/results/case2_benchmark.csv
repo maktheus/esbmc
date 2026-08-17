@@ -1,3 +1,4 @@
-MatrixSize,Time(s),Result
-2,4.5900,Pass
-3,53.2923,Pass
+MatrixSize,Time(s),Status
+2,1.9676,SAFE
+3,16.8274,SAFE
+4,300.0466,TIMEOUT

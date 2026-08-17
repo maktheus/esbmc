@@ -166,36 +166,30 @@ A aplicacao de \texttt{\_\_ESBMC\_assume(seq\_len <= 10)} associado ao fato do a
 
 \subsection{Escalabilidade do GEMM}
 
-Para o kernel de multiplicação de matrizes com \textit{tiling}, foi realizada uma análise de escalabilidade variando a dimensão $N$. Os resultados estao sumarizados na \autoref{tab:gemm_tempo} e visualizados na \autoref{fig:case2_plot}.
+Para o kernel de multiplicação de matrizes com \textit{tiling}, foi realizada uma análise de escalabilidade variando a dimensão $N$. Os resultados estao sumarizados na \autoref{tab:gemm_tempo}.
 
 \begin{table}[htb]
-\caption{Tempo de verificação do kernel GEMM em função da dimensão da matriz.}
+\caption{Tempo de verificação do kernel GEMM em função da dimensão da matriz. Medição direta; ambiente completo em \texttt{results/case2\_ambiente.md}.}
 \label{tab:gemm_tempo}
 \begin{center}
-\begin{tabular}{c|c}
+\begin{tabular}{c|r|l}
 \hline
-\textbf{Dimensão N} & \textbf{Tempo (s)} \\
+\textbf{Dimensão N} & \textbf{Tempo (s)} & \textbf{Veredito} \\
 \hline
-2 & $<$ 1 \\
-3 & $\approx$ 2 \\
-4 & $\approx$ 5 \\
-5 & $\approx$ 8 \\
-6 & $\approx$ 15 \\
+2 & 1,97   & SAFE \\
+3 & 16,83  & SAFE \\
+4 & $>$ 300 & Indeciso (\textit{timeout}) \\
 \hline
 \end{tabular}
 \end{center}
 \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{table}
 
-\begin{figure}[htb]
-    \caption{\label{fig:case2_plot}Tempo de verificação vs dimensão da matriz, GEMM com tiling.}
-    \begin{center}
-        \includegraphics[width=0.98\textwidth]{case2_plot.png}
-    \end{center}
-    \legend{Fonte: Elaborada pelo autor, 2026.}
-\end{figure}
+O crescimento e acentuado: de $N=2$ para $N=3$ o tempo cresce cerca de $8{,}5\times$, e em $N=4$ o \textit{solver} nao decide dentro de 300 segundos. Vale registrar que \textit{timeout} e um resultado \textbf{indeciso} --- nao significa que a propriedade seja falsa, nem que seja verdadeira.
 
-O crescimento exponencial do tempo de verificacao com o tamanho da matriz confirma que a verificacao formal completa \'e inviavel para matrizes de LLMs em escala real (ex.: dimensao 4096) ou at\'e mesmo blocos medianos. A \autoref{fig:case2_plot} projeta a continuidade dessa escala exponencial para matrizes de dimensao $60 \times 60$, na qual o \textit{solver} atinge uma inviabilidade computacional pratica estimando-se tempos imensuraveis sob hardware convencional. Entretanto, a abordagem permanece \textbf{altamente eficaz} para verificar a corretude da l\'ogica, especialmente do algoritmo de \textit{tiling}, em inst\^ancias reduzidas (vide analise da \textit{Small Scope Hypothesis}).
+A parede aparece, portanto, ja em $N=4$, e nao em dimensoes grandes. Isso reforca a conclusao qualitativa de que a verificacao formal completa e inviavel para matrizes de LLMs em escala real (dimensao 4096), mas por uma margem muito maior do que se poderia supor: a inviabilidade nao comeca nas dezenas, comeca em quatro. Nao extrapolamos a curva para alem de $N=4$, por nao haver dado medido que sustente projecao --- tres pontos, um deles indeciso, nao definem uma exponencial.
+
+A abordagem permanece util para verificar a corretude logica do algoritmo de \textit{tiling} em instancias reduzidas ($N \leq 3$), o que e coerente com a \textit{Small Scope Hypothesis}.
 
 \section{Caso 3 --- Loop Neuro-Simbolico}
 
@@ -249,11 +243,19 @@ O verificador formal comprovou, via \texttt{VERIFICATION SUCCESSFUL}, que o cont
     \item \textbf{Painel inferior direito}: O erro de rastreamento $e(t) = \text{setpoint} - T_{\text{medido}}$ converge para zero em todos os perfis dentro dos 10 passos, comprovando a estabilidade do controlador mesmo sob caos estoc\'{a}stico. Ressalta-se formalmente que este Bounded Model Checking parametrizou o escudo (\textit{shield}) limitando o \textit{Engine} essencialmente nas captac\~oes ruidosas originadas no sensor (\textit{sensor-side}); analises sist\^emicas projetando a modelagem \textit{Chaos Engineering} na perturbacao final dos tuchos e motores atuadores (\textit{actuator-side}) consistem em desenvolvimentos vitais para os trabalhos subsequentes focados em interac\~oes eletromec\^anicas robustas.
 \end{alineas}
 
-\subsection{Verificacao de Biblioteca de Controle C++ Famosa (Arduino PID)}
+\subsection{Integracao de Biblioteca de Controle C++ de Terceiros (Arduino PID)}
 
-Para demonstrar a aplicabilidade da abordagem de verificacao formal formal a sistemas de controle reais em producao e consolidar o m\'etodo de Engenharia do Caos, a biblioteca padrao da ind\'ustria \textit{Arduino-PID-Library} (de Brett Beauregard) foi clonada diretamente do reposit\'orio oficial no GitHub. Foi desenvolvido um \textit{harness} em C++ (escrevendo \textit{mock} para as func\~oes temporais em placa, como \texttt{millis()}) que encapsula a inst\^ancia e execucao da classe \texttt{PID} sob a mesma planta t\'ermica e modelo de injecao de ru\'ido sensoriais variando entre $[-5, +5]$.
+Para avaliar a aplicabilidade da abordagem a sistemas de controle reais em producao, a biblioteca \textit{Arduino-PID-Library} (de Brett Beauregard) foi integrada ao repositorio como subm\'odulo Git, fixada no \textit{commit} \texttt{524a4268}. Foi desenvolvido um \textit{harness} (\texttt{verification/verify\_pid.cpp}) que instancia a classe \texttt{PID} sob a mesma planta t\'ermica e o mesmo modelo de ru\'ido sensorial em $[-5, +5]$, com \textit{mock} para \texttt{millis()}.
 
-O orquestrador ESBMC consumiu o c\'odigo C++ limpo (\texttt{PID\_v1.cpp}) sem qualquer modificacao ou \textit{downgrade} pragmatico na abstracao original em objeto. Ap\'os explorar os caminhos por \textit{Bounded Model Checking} (\texttt{-{}-floatbv -{}-unwind~11}), o \textit{solver} emitiu \textbf{VERIFICATION SUCCESSFUL}. O experimento atesta, com endosso formal, que algoritmos famosos \textit{open-source} blindados por invariantes SMT sao robustos o suficiente para integracao direta nos fluxos cr\'iticos.
+\textbf{A verificacao, contudo, nao foi concluida.} Ao executar o \textit{harness} com as flags previstas (\texttt{-{}-floatbv -{}-unwind~11}), foram encontrados tres obstaculos independentes, cada um suficiente para impedir a analise:
+
+\begin{enumerate}
+  \item A macro \texttt{ARDUINO} nao e definida em nenhum ponto do projeto, de modo que \texttt{PID\_v1.cpp} recai no ramo anterior ao Arduino~1.0 e requer \texttt{WProgram.h}, inexistente. O \textit{mock} \texttt{Arduino.h} declara apenas \texttt{millis()}.
+  \item \texttt{PID\_v1.cpp} emprega \textbf{construtor delegante}, recurso de C++11, e a versao do ESBMC disponivel (6.8.0) nao oferece a opcao \texttt{-{}-std}, introduzida apenas na versao 8.0.0.
+  \item O \textit{harness} usa o construtor de sete argumentos, que e justamente o delegante, de modo que o obstaculo anterior nao pode ser contornado.
+\end{enumerate}
+
+Registra-se, portanto, que a verificacao de bibliotecas C++ de terceiros \textbf{nao e imediata}: a barreira nao esta na complexidade do algoritmo de controle, mas na cobertura do \textit{front-end} C++ do verificador e nas convencoes de compilacao do ecossistema Arduino. Concluir este experimento exige compilar o ESBMC 8.0.0 e reexecutar com \texttt{-{}-std c++11}, o que fica indicado como trabalho futuro.
 
 
 \section{Caso 5   The Ralph Loop Concept e Validação em Larga Escala}

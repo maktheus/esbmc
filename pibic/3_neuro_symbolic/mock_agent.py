@@ -1,5 +1,11 @@
 import os
 import subprocess
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from core_verify.esbmc_caller import (
+    PARSE_ERROR, SAFE, USAGE_ERROR, run_esbmc,
+)
 import time
 import csv
 import random
@@ -56,30 +62,40 @@ def call_llm(prompt, iteration):
     return responses[min(iteration, len(responses)-1)]
 
 def verify_code(filename):
-    print(f"[ESBMC] Verifying {filename}...")
-    start_time = time.time()
-    # Run ESBMC
-    # --no-pointer-check to keep output simple for this demo
-    cmd = ["build/src/esbmc/esbmc", filename, "--overflow-check", "--memory-leak-check", "--no-pointer-check", "--smtlib"]
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    end_time = time.time()
-    
-    success = "VERIFICATION SUCCESSFUL" in result.stdout or "VERIFICATION SUCCESSFUL" in result.stderr
-    duration = end_time - start_time
-    return success, result.stdout, duration
+    """Verifica o codigo gerado e devolve (sucesso, saida, duracao).
+
+    DOIS DEFEITOS CORRIGIDOS, ambos suficientes para o loop nunca funcionar:
+
+      1. `--smtlib` faz o ESBMC **emitir a formula SMT em vez de resolve-la**,
+         entao "VERIFICATION SUCCESSFUL" nunca aparecia e `success` era
+         permanentemente falso. O loop gastava as 5 iteracoes sem poder
+         terminar, e `case3_agent_stats.csv` ficou com 0 bytes.
+      2. Caminho fixo para `build/src/esbmc/esbmc`, que nao existe. Agora usa
+         o `esbmc_caller`, que resolve o binario e distingue erro de execucao
+         de propriedade violada.
+    """
+    print(f"[ESBMC] Verificando {filename}...")
+    r = run_esbmc(filename, timeout=120, overflow_check=True,
+                  memory_leak_check=True, no_pointer_check=True)
+    if r.status in (PARSE_ERROR, USAGE_ERROR):
+        # nao verificou: distinguir de "encontrou bug" e o ponto todo
+        print(f"[ESBMC] NAO VERIFICOU: {r.status} rc={r.returncode}")
+    return r.status == SAFE, r.output, r.time_taken
 
 def main():
     print("--- Starting Neuro-Symbolic Agent Loop (Benchmark) ---")
     
-    c_file = "generated_code.c"
+    # caminhos ancorados no arquivo, nao no CWD: com "pibic/results" relativo,
+    # rodar de dentro de 3_neuro_symbolic/ criava 3_neuro_symbolic/pibic/results/
+    AQUI = os.path.dirname(os.path.abspath(__file__))
+    PIBIC = os.path.dirname(AQUI)
+    c_file = os.path.join(AQUI, "generated_code.c")
     max_iterations = 5
-    pibic_dir = "pibic/results"
-    if not os.path.exists(pibic_dir):
-        os.makedirs(pibic_dir)
-        
-    results_file = os.path.join(pibic_dir, "case3_agent_stats.csv")
+    results_dir = os.path.join(PIBIC, "results")
+    os.makedirs(results_dir, exist_ok=True)
+    results_file = os.path.join(results_dir, "case3_agent_stats.csv")
     
-    print(f"[Agent] optimized path: {results_file}")
+    print(f"[Agent] metricas -> {results_file}")
 
     try:
         # Initialize CSV

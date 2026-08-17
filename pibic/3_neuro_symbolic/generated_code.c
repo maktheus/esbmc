@@ -1,16 +1,18 @@
+
 #include <stdlib.h>
 #include <string.h>
 
 void parse_csv(char* input) {
+    // BUG: Fixed size buffer, input can be larger
     char buffer[10]; 
-    strcpy(buffer, input); // BUG: Buffer overflow
+    strcpy(buffer, input);
 }
 
 int main() {
-    char* input = calloc(20, 1);
-    if(input) {
-        parse_csv(input);
-        free(input);
-    }
+    char* input = malloc(20);
+    // Abstract input
+    parse_csv(input);
+    free(input);
     return 0;
 }
+    
