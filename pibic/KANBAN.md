@@ -85,7 +85,7 @@ propriedade deve ser feita sem reproduzir o diagnóstico primeiro.
 | ID | Prio | Tarefa | Evidência | Conf. | Status |
 |---|---|---|---|---|---|
 | KB-D01 | P0 | **Tabela GEMM contradiz o único dado medido.** Artigo: N=2 → `<1s`, N=3 → `≈2s`. CSV real: `4.5900` e `53.2923` (9× e 27×). N=4, 5, 6 não existem em lugar nenhum. Reexecutar e logar, ou remover a tabela | `artigo/caps/4resultados.tex:176-190` vs `results/case2_benchmark.csv` | ✅ | `todo` |
-| KB-D02 | P0 | **Verificação da Arduino-PID-Library afirmada sem qualquer artefato.** `verification/famous_pid/` existe e está vazio — sem `PID_v1.cpp`, sem harness, sem log | `artigo/caps/4resultados.tex:252-256` | ✅ | `todo` |
+| KB-D02 | P0 | **Verificação da Arduino-PID-Library afirmada sem qualquer artefato.** `verification/famous_pid/` aparece vazio porque é um **submódulo quebrado**: está no índice como gitlink (modo `160000`, commit `524a4268`) mas **não existe `.gitmodules`** no repositório. A biblioteca esteve na máquina do autor, mas só a referência foi commitada — o conteúdo é irrecuperável a partir do repo. Ou recuperar o conteúdo e commitar de verdade, ou remover a afirmação do artigo. Ver `KB-F08` | `artigo/caps/4resultados.tex:252-256`; `git ls-files -s pibic/verification/famous_pid` | ✅ | `todo` |
 | KB-D03 | P0 | **Nenhum log em `results/` contém `VERIFICATION SUCCESSFUL`.** Toda afirmação de prova bem-sucedida no capítulo 4 está sem evidência | `grep -rl` em `results/` | ✅ | `todo` |
 | KB-D04 | P0 | Remover as 6 legendas *"Elaborada pelo autor (Subagente Grafico/Curvas/Arquitetural/de Controle/RL)"* e *"sugerida pelo Subagente Metodológico"* | `4resultados.tex:73,117,217,245,308`; `3metodologia.tex:130` | ✅ | `todo` |
 | KB-D05 | P0 | **Caso 3 não produziu dados.** `case3_agent_stats.csv` e `case3_console.log` têm 0 bytes. Causa provável: `--smtlib` faz o ESBMC emitir a fórmula em vez de resolvê-la, então `"VERIFICATION SUCCESSFUL" in stdout` é sempre falso | `results/case3_*` (0 bytes); `3_neuro_symbolic/mock_agent.py:63,67` | ✅ | `todo` |
@@ -144,6 +144,7 @@ Invariante encontrado: **4 cláusulas, 8 literais, 3 dos 65 bits de estado** —
 | KB-F05 | P2 | `prd.json` está corrompido — contém 200 tarefas de *"CLI (Cover Display) Framework"* (Android foldable). Regenerar de `generate_100_prd.py` ou aposentar em favor deste kanban. **Remover `recreate_prd.py`**, que causou o dano e aponta para `/home/uchoa/` | `prd.json`, `recreate_prd.py:4` | ✅ | `todo` |
 | KB-F06 | P2 | Remover `teste_mlp/verify_mlp.c.draft` — conteria cadeia de raciocínio de LLM vazada (`// Wait, I noticed a typo in my thought`) e código que não compila | `teste_mlp/verify_mlp.c.draft` | 🟡 | `todo` |
 | KB-F07 | P2 | Consolidar as variantes de `verify_mlp*.c` — declarar `verify_mlp_qnn.c` (gerado) como canônico e remover as demais | `teste_mlp/` | 🟡 | `todo` |
+| KB-F08 | P1 | **Submódulo quebrado faz o checkout do CI falhar.** `pibic/verification/famous_pid` é gitlink `160000` sem entrada em `.gitmodules` (que não existe). Todo `git submodule` no CI emite `fatal: No url found for submodule path` e sai com código 128. Descoberto no log do build macOS da PR #19. Corrigir com `git rm --cached pibic/verification/famous_pid`, ou criar `.gitmodules` apontando para a Arduino-PID-Library | log do job 95281480323; `git ls-files -s` | ✅ | `todo` |
 
 ---
 
@@ -228,7 +229,7 @@ ONDA 5  (depende de C e E)
 | C — Propriedades | 3 | 4 | 1 | 8 |
 | D — Evidências & artigo | 6 | 5 | 4 | 15 |
 | E — IC3/PDR | — | 3 | 3 | 6 |
-| F — Higiene | — | 3 | 4 | 7 |
-| **Total** | **11** | **23** | **16** | **50** |
+| F — Higiene | — | 4 | 4 | 8 |
+| **Total** | **11** | **24** | **16** | **51** |
 
-Confiança: **21 ✅ verificado** · **26 🟡 relatado por agente** · **3 ⬜ não auditado**
+Confiança: **22 ✅ verificado** · **26 🟡 relatado por agente** · **3 ⬜ não auditado**
