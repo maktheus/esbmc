@@ -51,12 +51,22 @@ coisa: 4 passos custaram 909 s e 383 MB, e o custo explode. **É limite do méto
 do esforço.** Isso transforma a maior limitação do trabalho em contribuição — desde que
 a comparação seja feita com honestidade.
 
-Duas ressalvas que valem mais que o resultado: os 0,37 s de prova ilimitada foram sobre
-um **modelo sintético** com aritmética diferente da do projeto (soma-depois-divide, uma
-camada), e no modelo *sem batente físico* o PDR **também não convergiu**. A vantagem do
-IC3 é estrutural — memória independente da profundidade da prova, e um invariante
-indutivo em vez de "seguro até K" — não é vantagem incondicional. O número que vale para
-o artigo é o de `KB-E02`, sobre o ator real, e ainda está sendo medido.
+**O resultado sobre o ator real já saiu, e é um empate técnico:** nenhum dos dois
+métodos decide a instância. O `abc pdr` não convergiu em 1802 s; o `abc bmc3` alcançou
+5 frames em 901 s. `Timeout` é **indeciso** — tratá-lo como "seguro" seria o mesmo erro
+que a raia D acusa no artigo.
+
+Isso não enfraquece a tese, fortalece: o ABC parou em **5 frames** no ator real de 745
+parâmetros, e o ESBMC parou em **K=4** numa rede sintética 8× menor. Ferramentas,
+solvers e representações diferentes, **mesma parede** — logo o limite é do método, não
+da implementação. É essa a afirmação defensável para o artigo.
+
+O que a raia E entrega, então, não é "use IC3 e o problema acaba". É: (a) a parede do
+BMC medida no sistema real do projeto; (b) a demonstração, no modelo sintético, de que
+IC3 dá prova *ilimitada* em 0,37 s onde BMC dá 4 passos em 909 s; (c) o diagnóstico de
+que a instância real exige atacar a **representação**, não só trocar de motor — bit-blastar
+4 inteiros em 65 bits soltos destrói a estrutura que o PDR usa para generalizar. Daí
+`KB-E07`.
 
 ---
 
@@ -178,6 +188,8 @@ isso é um limite do método, não do esforço.
 | ABC BMC | 16-bit | 5 frames, sem veredito | 240 s | — |
 | ABC PDR | 16-bit | não convergiu | 500 s | 110 MB |
 | **ABC PDR** | **16-bit + batente** | **PROVADO ∀t** | **0,37 s** | trivial |
+| **ABC BMC** | **DDPG real 16-bit** | **5 frames, sem veredito** | **901 s** | **503 MB** |
+| **ABC PDR** | **DDPG real 16-bit** | **não convergiu** | **1802 s** | **708 MB** |
 
 Invariante encontrado: **4 cláusulas, 8 literais, 3 dos 65 bits de estado** —
 `th[13] ⟺ th[14] ⟺ th[15]`. Convergiu em `F[2]`.
@@ -185,12 +197,12 @@ Invariante encontrado: **4 cláusulas, 8 literais, 3 dos 65 bits de estado** —
 | ID | Prio | Tarefa | Evidência | Conf. | Status |
 |---|---|---|---|---|---|
 | KB-E01 | P1 | **Feito** — pipeline versionado em `pibic/ic3/` (commit `25d02b9f`): `gen_transition_system.py` (lê os pesos reais e emite o sistema de transição Verilog, `--bits 16|32`), `validate_forward.py` (prova bit-exatidão do forward contra referência Python) e `run_pdr.sh` (yosys → AIGER → `abc pdr`, com tempo e pico de RSS). O Verilog é o ponto de bifurcação: dele saem tanto AIGER quanto BTOR2, então trocar de motor não exige reescrever o gerador | `pibic/ic3/` | ✅ | `done` |
-| KB-E02 | P1 | **Gerador já lê os pesos reais** (`ddpg_weights_q88.json`, ator 4→24→24→1, 745 parâmetros) com a semântica exata do harness verificado: divisão **por termo**, truncamento para zero, ReLU, tanh de 5 ramos, dinâmica linearizada 4040/375. `validate_forward.py` confirma **12/12 estados exatos**, incluindo os dois cantos de fronteira. Diferença deliberada: os `__ESBMC_assume` de intervalo do harness C são **omitidos** — são muleta do BMC, e sem eles o modelo não descarta nenhum estado alcançável (ver `KB-C04`). Propriedade: `\|th\| ≤ 53` (12°) para sempre. **Execução do PDR em andamento** | `pibic/ic3/validate_forward.py` | ✅ | `doing` |
-| KB-E03 | P1 | Fechar a curva de escalabilidade do BMC com dado real: medir K=8 e K=16. **Não extrapolar** de 3 pontos — é exatamente o erro metodológico de `KB-D01` | `4resultados.tex:198` | ✅ | `todo` |
+| KB-E02 | P1 | **Medido sobre o ator real** (4→24→24→1, 745 parâmetros, forward validado bit-a-bit em 12/12 estados; sem os `__ESBMC_assume` de intervalo do harness C). Síntese: **904.242 portas AND, 65 latches, nível 689**. Resultado honesto: **nenhum dos dois métodos decide a instância** — `abc pdr` não convergiu em **1802 s / 708 MB**, e `abc bmc3` alcançou só **5 frames em 901 s / 503 MB**. `Timeout` é indeciso, **não** é 'seguro'. Confirmação da tese da raia: o ABC parou em 5 frames no ator real e o ESBMC parou em K=4 numa rede 8× menor — ferramentas e solvers diferentes, **mesma parede**, logo o limite é do método. Próximo passo em `KB-E07` | `pibic/ic3/cl_ddpg16.abc.out`, `cl_ddpg16.bmc.out` | ✅ | `done` |
+| KB-E03 | P1 | Fechar a curva de escalabilidade do BMC. **Parcialmente respondido**: no modelo real o BMC não passa de 5 frames em 901 s, então K=8 e K=16 estão fora de alcance nesta máquina — medir K=8/K=16 só faz sentido no modelo sintético, para a curva. **Não extrapolar** de poucos pontos: é o erro que `KB-D01` acusa | `cl_ddpg16.bmc.out` | ✅ | `todo` |
 | KB-E04 | P2 | Documentar as limitações honestas: (a) o PDR também não convergiu no modelo sintético sem batente (500 s); (b) a vantagem é **estrutural** — memória independente da profundidade — não incondicional; (c) bit-blastar para AIGER **perde a estrutura de palavra**, o que atrapalha a generalização de cláusulas do PDR. Ver `KB-E07` | ✅ medido | ✅ | `todo` |
 | KB-E05 | P2 | Avaliar `--overflow-check` / bit-width: 32→16 bits cortou o estado de 129 para 65 flops e a memória do PDR de 246 para 110 MB. O cartpole real é Q8.8 = 16 bits | ✅ medido | ✅ | `todo` |
 | KB-E06 | P2 | Reescrever o Caso 5 do artigo (52 topologias, sem artefato) usando os dados de `KB-E03` — resultado medido no lugar de número inventado | `4resultados.tex:265` | ✅ | `todo` |
-| KB-E07 | P2 | **Rota word-level como plano B.** Se o ABC não convergir no modelo real, exportar BTOR2 (`yosys write_btor`, já disponível) e usar um motor word-level — AVR, Pono ou `btormc`. Nenhum está instalado nem no apt (`btormc` vem com o Boolector; AVR e Pono exigem build do fonte). BTOR2 preserva os 4 inteiros em vez de 65 bits soltos, o que tende a ajudar muito a generalização | `yosys -p "help write_btor"`; `command -v avr pono btormc` → ausentes | ✅ | `todo` |
+| KB-E07 | P2 | **Rota word-level — agora o caminho principal, não plano B.** O ABC não convergiu no modelo real (`KB-E02`), e a hipótese mais provável é a perda de estrutura: bit-blastar 4 inteiros em 65 bits soltos destrói exatamente o que o PDR usa para generalizar cláusulas, e o invariante precisaria falar sobre `th` como palavra. Exportar BTOR2 (`yosys write_btor`, já disponível) e usar um motor word-level — AVR, Pono ou `btormc`. Nenhum está instalado nem no apt (`btormc` vem com o Boolector; AVR e Pono exigem build do fonte). BTOR2 preserva os 4 inteiros em vez de 65 bits soltos, o que tende a ajudar muito a generalização | `yosys -p "help write_btor"`; `command -v avr pono btormc` → ausentes | ✅ | `todo` |
 
 ---
 
@@ -291,7 +303,7 @@ ONDA 5  (depende de C e E)
 | D — Evidências & artigo | 6 | 5 | 4 | 15 |
 | E — IC3/PDR | — | 3 | 4 | 7 |
 | F — Higiene | — | 4 | 4 | 8 |
-| **Total** | **11** | **24** | **17** | **52** | **11** | **24** | **16** | **51** | **11** | **24** | **16** | **51** |
+| **Total** | **11** | **24** | **17** | **52** | **11** | **24** | **17** | **52** | **11** | **24** | **16** | **51** | **11** | **24** | **16** | **51** |
 
 Confiança: **31 ✅ verificado** · **19 🟡 relatado por agente** · **2 ⬜ não auditado**
 
