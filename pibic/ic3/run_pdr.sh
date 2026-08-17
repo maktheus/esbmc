@@ -45,9 +45,19 @@ p = subprocess.run(["yosys-abc", "-c", f"read_aiger {aig}; pdr -v -T {tmo}"],
 el = time.time() - t0
 rss = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss / 1024.0
 out = p.stdout + p.stderr
-for ln in out.splitlines():
-    if any(k in ln for k in ("Invariant", "Property proved", "asserted",
-                             "Timeout", "Unfinished", "Verification of")):
-        print("   ", ln.strip())
-print(f"\n    tempo={el:.1f}s  pico_RSS={rss:.0f}MB")
+# a saida BRUTA e sempre preservada: o filtro abaixo ja engoliu um veredito
+# inteiro uma vez, e "nenhuma linha casou" e indistinguivel de "nao rodou".
+raw = aig.replace(".aig", ".abc.out")
+with open(raw, "w") as fh:
+    fh.write(out)
+hits = [ln.strip() for ln in out.splitlines()
+        if any(k in ln for k in ("Invariant", "Property proved", "asserted",
+                                 "Timeout", "Unfinished", "Verification of",
+                                 "Reached", "No output asserted"))]
+for ln in hits[-6:]:
+    print("   ", ln)
+if not hits:
+    print("    (ABC nao emitiu linha de veredito — ver", raw, ")")
+    print("   ", "\n    ".join(out.strip().splitlines()[-4:]))
+print(f"\n    tempo={el:.1f}s  pico_RSS={rss:.0f}MB  bruto={raw}")
 PY
