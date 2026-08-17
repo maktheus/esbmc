@@ -40,14 +40,16 @@ struct float_interval_t
 
   /// Constructs a bounded interval [l, u]
   float_interval_t(float l, float u)
-    : is_bottom(false), lower_is_inf(false), upper_is_inf(false), lower(l),
+    : is_bottom(false),
+      lower_is_inf(false),
+      upper_is_inf(false),
+      lower(l),
       upper(u)
   {
   }
 
   /// Constructs the top interval (all possible floats)
-  float_interval_t()
-    : is_bottom(false), lower_is_inf(true), upper_is_inf(true)
+  float_interval_t() : is_bottom(false), lower_is_inf(true), upper_is_inf(true)
   {
   }
 
