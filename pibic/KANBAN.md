@@ -31,7 +31,7 @@ lugar errado.
    exclusiva de arquivos. Três retornaram; dois se perderam sem notificação — as
    áreas deles estão registradas na raia A como ⬜ não auditado, não como "ok".
 2. **Verificação direta** de toda afirmação de alto impacto, com comando e saída
-   registrados. É o que separa os 30 ✅ dos 19 🟡.
+   registrados. É o que separa os 31 ✅ dos 19 🟡.
 3. **Medição, não estimativa**, onde havia número em jogo: a parede do BMC e o
    resultado do IC3 na raia E vêm de execução cronometrada, não de extrapolação.
 
@@ -39,17 +39,24 @@ lugar errado.
 
 | | |
 |---|---|
-| **Concluído** | `KB-C00` — as duas vacuidades P0 (Properties B e C) confirmadas por reprodução direta, sem rede neural. Saíram de 🟡 para ✅. |
-| **Em execução** | `KB-A01` (auditoria de `cases/`) e `KB-A02` (harnesses de rede neural) — as duas que se perderam, relançadas com o binário `esbmc-6.8.0` do repo à disposição. |
-| **Bloqueado** | `KB-E02` (IC3 com pesos reais) — depende de `KB-C01`/`KB-C02`: escalar para 50 passos uma propriedade que não fala sobre o controlador não provaria nada. |
+| **Concluído** | `KB-C00` — as duas vacuidades P0 (Properties B e C) confirmadas por reprodução direta, sem rede neural. `KB-F08` — submódulo `famous_pid` registrado, biblioteca recuperada. `KB-E01` — pipeline IC3 versionado em `pibic/ic3/`. |
+| **Em execução** | `KB-A01` e `KB-A02` (as duas auditorias perdidas, relançadas). `KB-E02` — PDR sobre o ator DDPG real, forward já validado bit-a-bit (12/12 estados). |
+| **Aberto, decisão do autor** | `KB-D02` — a Arduino-PID foi recuperada, mas o harness não compila por três motivos independentes; fechar exige compilar a ESBMC 8.0.0 ou retirar a afirmação. |
 
 ### O que a raia E significa
 
 A verificação de malha fechada do cartpole é de **1 passo**, e o harness de 50 passos
 nunca foi implementado. A leitura fácil seria falta de tempo. A medição mostra outra
 coisa: 4 passos custaram 909 s e 383 MB, e o custo explode. **É limite do método, não
-do esforço** — e IC3/PDR provou o mesmo sistema para *sempre* em 0,37 s. Isso
-transforma a maior limitação do trabalho em contribuição.
+do esforço.** Isso transforma a maior limitação do trabalho em contribuição — desde que
+a comparação seja feita com honestidade.
+
+Duas ressalvas que valem mais que o resultado: os 0,37 s de prova ilimitada foram sobre
+um **modelo sintético** com aritmética diferente da do projeto (soma-depois-divide, uma
+camada), e no modelo *sem batente físico* o PDR **também não convergiu**. A vantagem do
+IC3 é estrutural — memória independente da profundidade da prova, e um invariante
+indutivo em vez de "seguro até K" — não é vantagem incondicional. O número que vale para
+o artigo é o de `KB-E02`, sobre o ator real, e ainda está sendo medido.
 
 ---
 
@@ -152,7 +159,16 @@ Origem: a verificação de malha fechada é de **1 passo**, e o harness de 50 pa
 (`cartpole/closedloop_esbmc_stub.c`) nunca foi implementado. A medição mostra que
 isso é um limite do método, não do esforço.
 
-**Dados medidos nesta auditoria** (mesmo sistema: 24 neurônios ReLU, seed 7, Q8.8):
+> ⚠️ **A tabela abaixo é de um modelo SINTÉTICO, não do DDPG do projeto.** São 24
+> neurônios em uma camada, pesos aleatórios de seed 7, e — a diferença que importa —
+> aritmética **soma-depois-divide** (`(w₀·x + w₁·ẋ + …)/256`). O ator real tem duas
+> camadas de 24 (745 parâmetros) e faz **divisão por termo**
+> (`(x·w₀)/256 + (ẋ·w₁)/256 + …`), com truncamento em cada produto. São
+> controladores diferentes. Os números servem para caracterizar a *parede do BMC*,
+> que é o ponto, mas **não são resultado sobre o controlador do projeto** — esse é o
+> objeto de `KB-E02`.
+
+**Dados medidos nesta auditoria** (modelo sintético: 24 neurônios ReLU, seed 7, Q8.8):
 
 | Método | Modelo | Veredito | Tempo | Pico RSS |
 |---|---|---|---|---|
@@ -168,12 +184,13 @@ Invariante encontrado: **4 cláusulas, 8 literais, 3 dos 65 bits de estado** —
 
 | ID | Prio | Tarefa | Evidência | Conf. | Status |
 |---|---|---|---|---|---|
-| KB-E01 | P1 | Versionar o pipeline `Verilog → yosys → AIGER → abc pdr` como script em `pibic/ic3/`. Protótipo validado em scratchpad | ✅ medido | ✅ | `todo` |
-| KB-E02 | P1 | Apontar o gerador para os **pesos reais** (`cartpole/webapp/public/ddpg_weights_q88.json`) em vez dos sintéticos. Desbloqueado por `KB-C00`, mas depende de `KB-C01`/`KB-C02`: não faz sentido escalar para 50 passos uma propriedade vácua | — | ✅ | `blocked` (por KB-C01, KB-C02) |
+| KB-E01 | P1 | **Feito** — pipeline versionado em `pibic/ic3/` (commit `25d02b9f`): `gen_transition_system.py` (lê os pesos reais e emite o sistema de transição Verilog, `--bits 16|32`), `validate_forward.py` (prova bit-exatidão do forward contra referência Python) e `run_pdr.sh` (yosys → AIGER → `abc pdr`, com tempo e pico de RSS). O Verilog é o ponto de bifurcação: dele saem tanto AIGER quanto BTOR2, então trocar de motor não exige reescrever o gerador | `pibic/ic3/` | ✅ | `done` |
+| KB-E02 | P1 | **Gerador já lê os pesos reais** (`ddpg_weights_q88.json`, ator 4→24→24→1, 745 parâmetros) com a semântica exata do harness verificado: divisão **por termo**, truncamento para zero, ReLU, tanh de 5 ramos, dinâmica linearizada 4040/375. `validate_forward.py` confirma **12/12 estados exatos**, incluindo os dois cantos de fronteira. Diferença deliberada: os `__ESBMC_assume` de intervalo do harness C são **omitidos** — são muleta do BMC, e sem eles o modelo não descarta nenhum estado alcançável (ver `KB-C04`). Propriedade: `\|th\| ≤ 53` (12°) para sempre. **Execução do PDR em andamento** | `pibic/ic3/validate_forward.py` | ✅ | `doing` |
 | KB-E03 | P1 | Fechar a curva de escalabilidade do BMC com dado real: medir K=8 e K=16. **Não extrapolar** de 3 pontos — é exatamente o erro metodológico de `KB-D01` | `4resultados.tex:198` | ✅ | `todo` |
-| KB-E04 | P2 | Documentar a limitação honesta: PDR também não convergiu no modelo sem batente (500 s). A vantagem é estrutural (memória independente da profundidade), não incondicional | ✅ medido | ✅ | `todo` |
+| KB-E04 | P2 | Documentar as limitações honestas: (a) o PDR também não convergiu no modelo sintético sem batente (500 s); (b) a vantagem é **estrutural** — memória independente da profundidade — não incondicional; (c) bit-blastar para AIGER **perde a estrutura de palavra**, o que atrapalha a generalização de cláusulas do PDR. Ver `KB-E07` | ✅ medido | ✅ | `todo` |
 | KB-E05 | P2 | Avaliar `--overflow-check` / bit-width: 32→16 bits cortou o estado de 129 para 65 flops e a memória do PDR de 246 para 110 MB. O cartpole real é Q8.8 = 16 bits | ✅ medido | ✅ | `todo` |
 | KB-E06 | P2 | Reescrever o Caso 5 do artigo (52 topologias, sem artefato) usando os dados de `KB-E03` — resultado medido no lugar de número inventado | `4resultados.tex:265` | ✅ | `todo` |
+| KB-E07 | P2 | **Rota word-level como plano B.** Se o ABC não convergir no modelo real, exportar BTOR2 (`yosys write_btor`, já disponível) e usar um motor word-level — AVR, Pono ou `btormc`. Nenhum está instalado nem no apt (`btormc` vem com o Boolector; AVR e Pono exigem build do fonte). BTOR2 preserva os 4 inteiros em vez de 65 bits soltos, o que tende a ajudar muito a generalização | `yosys -p "help write_btor"`; `command -v avr pono btormc` → ausentes | ✅ | `todo` |
 
 ---
 
@@ -272,11 +289,11 @@ ONDA 5  (depende de C e E)
 | B — Núcleo & CI | 2 | 6 | 3 | 11 |
 | C — Propriedades | 3 | 4 | 1 | 8 |
 | D — Evidências & artigo | 6 | 5 | 4 | 15 |
-| E — IC3/PDR | — | 3 | 3 | 6 |
+| E — IC3/PDR | — | 3 | 4 | 7 |
 | F — Higiene | — | 4 | 4 | 8 |
-| **Total** | **11** | **24** | **16** | **51** | **11** | **24** | **16** | **51** |
+| **Total** | **11** | **24** | **17** | **52** | **11** | **24** | **16** | **51** | **11** | **24** | **16** | **51** |
 
-Confiança: **30 ✅ verificado** · **19 🟡 relatado por agente** · **2 ⬜ não auditado**
+Confiança: **31 ✅ verificado** · **19 🟡 relatado por agente** · **2 ⬜ não auditado**
 
 Contagens conferidas por script sobre as próprias linhas da tabela, não à mão — as
 versões anteriores deste rodapé traziam 21/26/3 e 25/23/3, ambas erradas. Um board que
