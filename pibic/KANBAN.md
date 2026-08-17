@@ -9,6 +9,50 @@ evidência que a originou (`arquivo:linha`) e o nível de confiança dessa evid�
 
 ---
 
+## O que está sendo feito
+
+**O problema que esta auditoria encontrou não é código ruim — é evidência quebrada.**
+O projeto tem trabalho sólido dentro dele (a camada de quantização Q8.8 é bit-a-bit
+consistente entre Python, TypeScript e C, e o `quantization_report.json` reproduz até
+o 10º dígito). Mas o artigo afirma resultados que os arquivos do repositório não
+sustentam, e em alguns casos contradizem.
+
+Por isso a disciplina central deste board: **cada tarefa carrega a procedência da sua
+evidência.** Uma afirmação verificada por execução (✅) e uma relatada por agente sem
+confirmação (🟡) não são a mesma coisa, e tratá-las igual foi exatamente como o
+problema se instalou. Os agentes de auditoria, por exemplo, afirmaram que não existia
+`.github/` no repositório — existe, com 13 workflows, um deles o `esbmc-verify.yml`
+que nunca rodou. Se aquilo tivesse virado tarefa sem checagem, o esforço iria para o
+lugar errado.
+
+### Como o board foi produzido
+
+1. **Cinco agentes de auditoria read-only em paralelo**, um por área, com posse
+   exclusiva de arquivos. Três retornaram; dois se perderam sem notificação — as
+   áreas deles estão registradas na raia A como ⬜ não auditado, não como "ok".
+2. **Verificação direta** de toda afirmação de alto impacto, com comando e saída
+   registrados. É o que separa os 30 ✅ dos 19 🟡.
+3. **Medição, não estimativa**, onde havia número em jogo: a parede do BMC e o
+   resultado do IC3 na raia E vêm de execução cronometrada, não de extrapolação.
+
+### Estado agora
+
+| | |
+|---|---|
+| **Concluído** | `KB-C00` — as duas vacuidades P0 (Properties B e C) confirmadas por reprodução direta, sem rede neural. Saíram de 🟡 para ✅. |
+| **Em execução** | `KB-A01` (auditoria de `cases/`) e `KB-A02` (harnesses de rede neural) — as duas que se perderam, relançadas com o binário `esbmc-6.8.0` do repo à disposição. |
+| **Bloqueado** | `KB-E02` (IC3 com pesos reais) — depende de `KB-C01`/`KB-C02`: escalar para 50 passos uma propriedade que não fala sobre o controlador não provaria nada. |
+
+### O que a raia E significa
+
+A verificação de malha fechada do cartpole é de **1 passo**, e o harness de 50 passos
+nunca foi implementado. A leitura fácil seria falta de tempo. A medição mostra outra
+coisa: 4 passos custaram 909 s e 383 MB, e o custo explode. **É limite do método, não
+do esforço** — e IC3/PDR provou o mesmo sistema para *sempre* em 0,37 s. Isso
+transforma a maior limitação do trabalho em contribuição.
+
+---
+
 ## Legenda
 
 **Status:** `todo` · `doing` · `blocked` · `done`
@@ -230,9 +274,13 @@ ONDA 5  (depende de C e E)
 | D — Evidências & artigo | 6 | 5 | 4 | 15 |
 | E — IC3/PDR | — | 3 | 3 | 6 |
 | F — Higiene | — | 4 | 4 | 8 |
-| **Total** | **11** | **24** | **16** | **51** |
+| **Total** | **11** | **24** | **16** | **51** | **11** | **24** | **16** | **51** |
 
-Confiança: **25 ✅ verificado** · **23 🟡 relatado por agente** · **3 ⬜ não auditado**
+Confiança: **30 ✅ verificado** · **19 🟡 relatado por agente** · **2 ⬜ não auditado**
+
+Contagens conferidas por script sobre as próprias linhas da tabela, não à mão — as
+versões anteriores deste rodapé traziam 21/26/3 e 25/23/3, ambas erradas. Um board que
+acusa números sem evidência não pode ter números sem evidência.
 
 Progresso: `KB-C00` concluída — as duas vacuidades P0 (`KB-C01`, `KB-C02`) saíram de
 🟡 para ✅ por reprodução direta. As auditorias `KB-A01` e `KB-A02` estão em execução.
