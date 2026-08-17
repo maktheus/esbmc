@@ -63,15 +63,15 @@ Dois dos cinco agentes de auditoria não retornaram. Estas áreas seguem sem rev
 
 ## Raia C — Propriedades formais
 
-**Confirmar antes de agir.** Os itens 🟡 desta raia vêm de um agente e não foram
-verificados independentemente — a checagem foi interrompida. Nenhuma correção de
-propriedade deve ser feita sem reproduzir o diagnóstico primeiro.
+**`KB-C01` e `KB-C02` estão confirmadas** — reproduzidas por execução direta, não são
+mais relato de agente. Os demais itens 🟡 desta raia seguem sem confirmação
+independente: nenhuma correção deve ser feita sem reproduzir o diagnóstico primeiro.
 
 | ID | Prio | Tarefa | Evidência | Conf. | Status |
 |---|---|---|---|---|---|
-| KB-C00 | P0 | **Reproduzir os diagnósticos de vacuidade** de `KB-C01` e `KB-C02` antes de tocar no código. Método: rodar o assert isolado, sem a rede neural, e ver se o veredito muda | — | — | `todo` |
-| KB-C01 | P0 | **Property B seria vácua**: `th_new` não dependeria de `F_Q`. A saída do controlador alimenta `th_acc → thd_new`, que nunca é asserido — toda a rede (745 pesos, 48 ReLUs) seria *dead code* para esta propriedade | `cartpole/verify_ddpg_closed_loop.py:185-189` | 🟡 | `blocked` (por KB-C00) |
-| KB-C02 | P0 | **Property C seria vácua**: `\|F_Q\| ≤ 2550` valeria por construção de `tanh_q88` (satura em 255), independente dos pesos. Reclassificar como sanity check da quantização, não como prova | `cartpole/verify_ddpg_closed_loop.py:226` | 🟡 | `blocked` (por KB-C00) |
+| KB-C00 | P0 | **Reproduzir os diagnósticos de vacuidade** de `KB-C01` e `KB-C02`. Método: rodar o assert isolado, sem a rede neural. **Feito** — ambos confirmados, ver as duas linhas abaixo | `scratchpad/kbc00/propB_sem_rede.c`, `propC_sem_rede.c` | ✅ | `done` |
+| KB-C01 | P0 | **Property B é vácua — confirmado.** O assert é sobre `th_new = th + (5*thd)/256`, que depende só de `th` e `thd`, ambas entradas livres; `F_Q` não aparece. `F_Q` alimenta apenas `th_acc → thd_new`, nunca asseridos. Rodei sem rede alguma e com `F_Q` arbitrário: `VERIFICATION FAILED` em **0,16 s**, contraexemplo `th=53, thd=64 → th_new=54`. Os 90 s e o contraexemplo publicados não dizem nada sobre o controlador. Reescrever o assert para depender de `F_Q` (ex.: sobre `thd_new`, ou sobre `th` após 2 passos) e, até lá, remover a Property B do webapp | `cartpole/verify_ddpg_closed_loop.py:185-190` | ✅ | `todo` |
+| KB-C02 | P0 | **Property C é vácua — confirmado.** `tanh_abs` satura em 255 nos cinco ramos da aproximação, logo `F_Q = (255*10*256)/256 = 2550 < 2560` **por construção**, independente dos pesos. Rodei com `z = nondet_int()` livre, sem rede: `VERIFICATION SUCCESSFUL` em **0,72 s**. Reclassificar como sanity check da quantização — não é prova sobre o controlador. Bônus: `(tanh_z * 10 * 256) / 256` multiplica e divide por 256 sem efeito | `cartpole/verify_ddpg_closed_loop.py:226`; `TANH_APPROX_C` em `:70-80` | ✅ | `todo` |
 | KB-C03 | P1 | Property A: trocar `assert(z > 0)` por `assert(F_Q > 0)`. A equivalência `z>0 ⟺ F>0` falha em Q8.8 porque `tanh_q88(1) = 0` | `cartpole/verify_ddpg_closed_loop.py:113,143` | 🟡 | `todo` |
 | KB-C04 | P1 | `pre_bound` fixos (2048/4096) seriam arbitrários, não derivados. Substituir por `interval_propagate_layer`, já usado no closed-loop. Adicionar assert de sanidade que falhe se o `assume` for insatisfazível — hoje vacuidade seria interpretada como "neurônio morto" | `cartpole/verify_ddpg_dead_neurons.py:227,233` | 🟡 | `todo` |
 | KB-C05 | P1 | Veredito "vivo" da camada 2 não seria sound (`h1` como caixa relaxada). Enquanto não corrigido, reportar "24/48 provados", não "0/48 mortos" | `cartpole/verify_ddpg_dead_neurons.py:105-139` | 🟡 | `todo` |
@@ -125,7 +125,7 @@ Invariante encontrado: **4 cláusulas, 8 literais, 3 dos 65 bits de estado** —
 | ID | Prio | Tarefa | Evidência | Conf. | Status |
 |---|---|---|---|---|---|
 | KB-E01 | P1 | Versionar o pipeline `Verilog → yosys → AIGER → abc pdr` como script em `pibic/ic3/`. Protótipo validado em scratchpad | ✅ medido | ✅ | `todo` |
-| KB-E02 | P1 | Apontar o gerador para os **pesos reais** (`cartpole/webapp/public/ddpg_weights_q88.json`) em vez dos sintéticos | — | ✅ | `blocked` (por KB-C00) |
+| KB-E02 | P1 | Apontar o gerador para os **pesos reais** (`cartpole/webapp/public/ddpg_weights_q88.json`) em vez dos sintéticos. Desbloqueado por `KB-C00`, mas depende de `KB-C01`/`KB-C02`: não faz sentido escalar para 50 passos uma propriedade vácua | — | ✅ | `blocked` (por KB-C01, KB-C02) |
 | KB-E03 | P1 | Fechar a curva de escalabilidade do BMC com dado real: medir K=8 e K=16. **Não extrapolar** de 3 pontos — é exatamente o erro metodológico de `KB-D01` | `4resultados.tex:198` | ✅ | `todo` |
 | KB-E04 | P2 | Documentar a limitação honesta: PDR também não convergiu no modelo sem batente (500 s). A vantagem é estrutural (memória independente da profundidade), não incondicional | ✅ medido | ✅ | `todo` |
 | KB-E05 | P2 | Avaliar `--overflow-check` / bit-width: 32→16 bits cortou o estado de 129 para 65 flops e a memória do PDR de 246 para 110 MB. O cartpole real é Q8.8 = 16 bits | ✅ medido | ✅ | `todo` |
@@ -232,4 +232,7 @@ ONDA 5  (depende de C e E)
 | F — Higiene | — | 4 | 4 | 8 |
 | **Total** | **11** | **24** | **16** | **51** |
 
-Confiança: **22 ✅ verificado** · **26 🟡 relatado por agente** · **3 ⬜ não auditado**
+Confiança: **25 ✅ verificado** · **23 🟡 relatado por agente** · **3 ⬜ não auditado**
+
+Progresso: `KB-C00` concluída — as duas vacuidades P0 (`KB-C01`, `KB-C02`) saíram de
+🟡 para ✅ por reprodução direta. As auditorias `KB-A01` e `KB-A02` estão em execução.
