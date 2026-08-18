@@ -37,7 +37,9 @@ lugar errado.
 
 ### Estado agora
 
-**29 das 52 tarefas concluídas, e os 11 P0 estão fechados.** A cobertura da
+**29 das 52 tarefas concluídas, e 9 dos 11 P0.** Os dois P0 restantes são
+`KB-C01` e `KB-C02`: a vacuidade das Properties B e C está **confirmada por execução**,
+mas os asserts ainda não foram reescritos — diagnóstico fechado, correção pendente. A cobertura da
 auditoria está completa — não há mais área ⬜. A suíte saiu de *21 falhas em 0,12 s*,
 porque nada rodava, para **31 testes passando em 12m49s**, verificando de verdade.
 Cada afirmação de veredito do capítulo 4 agora aponta para um log versionado.
@@ -48,7 +50,7 @@ Cada afirmação de veredito do capítulo 4 agora aponta para um log versionado.
 | **Vacuidades confirmadas** | `KB-C00`–`KB-C02` no cartpole, e mais duas encontradas ao consertar a suíte: `kernels_benchmarks.cpp` não compilava (15 testes inertes) e o ruído dos 5 perfis de caos nunca chegava ao sistema. |
 | **Raia E encerrada** | `KB-E01`, `KB-E02`. Empate técnico no ator real: nenhum método decide. |
 | **Higiene** | `KB-D04`, `D08`, `D11`, `F01`, `F03`, `F05`, `F08`. |
-| **Em aberto** | As duas auditorias perdidas (`KB-A01`, `KB-A02`) e 6 dos 11 P0, todos na raia D — as afirmações do artigo sem evidência. |
+| **Em aberto** | `KB-C01`/`KB-C02` (P0): reescrever os asserts vácuos do cartpole. Mais 23 itens P1/P2. |
 
 ### Uma armadilha recorrente: timeout arbitrário
 
