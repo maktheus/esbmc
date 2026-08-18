@@ -37,9 +37,9 @@ lugar errado.
 
 ### Estado agora
 
-**29 das 52 tarefas concluídas, e 9 dos 11 P0.** Os dois P0 restantes são
-`KB-C01` e `KB-C02`: a vacuidade das Properties B e C está **confirmada por execução**,
-mas os asserts ainda não foram reescritos — diagnóstico fechado, correção pendente. A cobertura da
+**31 das 52 tarefas concluídas, e os 11 P0 agora estão realmente fechados** —
+diagnóstico *e* correção. As Properties B e C do cartpole foram reescritas, e a
+Property D foi criada para cobrir o que a C não podia decidir. A cobertura da
 auditoria está completa — não há mais área ⬜. A suíte saiu de *21 falhas em 0,12 s*,
 porque nada rodava, para **31 testes passando em 12m49s**, verificando de verdade.
 Cada afirmação de veredito do capítulo 4 agora aponta para um log versionado.
@@ -156,8 +156,8 @@ independente: nenhuma correção deve ser feita sem reproduzir o diagnóstico pr
 | ID | Prio | Tarefa | Evidência | Conf. | Status |
 |---|---|---|---|---|---|
 | KB-C00 | P0 | **Reproduzir os diagnósticos de vacuidade** de `KB-C01` e `KB-C02`. Método: rodar o assert isolado, sem a rede neural. **Feito** — ambos confirmados, ver as duas linhas abaixo | `scratchpad/kbc00/propB_sem_rede.c`, `propC_sem_rede.c` | ✅ | `done` |
-| KB-C01 | P0 | **Property B é vácua — confirmado.** O assert é sobre `th_new = th + (5*thd)/256`, que depende só de `th` e `thd`, ambas entradas livres; `F_Q` não aparece. `F_Q` alimenta apenas `th_acc → thd_new`, nunca asseridos. Rodei sem rede alguma e com `F_Q` arbitrário: `VERIFICATION FAILED` em **0,16 s**, contraexemplo `th=53, thd=64 → th_new=54`. Os 90 s e o contraexemplo publicados não dizem nada sobre o controlador. Reescrever o assert para depender de `F_Q` (ex.: sobre `thd_new`, ou sobre `th` após 2 passos) e, até lá, remover a Property B do webapp | `cartpole/verify_ddpg_closed_loop.py:185-190` | ✅ | `todo` |
-| KB-C02 | P0 | **Property C é vácua — confirmado.** `tanh_abs` satura em 255 nos cinco ramos da aproximação, logo `F_Q = (255*10*256)/256 = 2550 < 2560` **por construção**, independente dos pesos. Rodei com `z = nondet_int()` livre, sem rede: `VERIFICATION SUCCESSFUL` em **0,72 s**. Reclassificar como sanity check da quantização — não é prova sobre o controlador. Bônus: `(tanh_z * 10 * 256) / 256` multiplica e divide por 256 sem efeito | `cartpole/verify_ddpg_closed_loop.py:226`; `TANH_APPROX_C` em `:70-80` | ✅ | `todo` |
+| KB-C01 | P0 | **Corrigida.** O assert era sobre `th_new`, que não depende de `F_Q` — os 745 pesos eram código morto. Reescrita para **dois passos**, asserindo `th_2 = th_new + (5·thd_new)/256`, onde a força alcança θ via `thd`. Dependência provada: com `F_Q` livre o contraexemplo é `th_2=79`, com `F_Q=0` é `th_2=55`. **Caracterização do envelope** (`caracteriza_prop_b.py`): violada para `θ̇ ≥ 2,5 em módulo rad/s` (contraexemplo em ~28 s); de `1,25 rad/s` para baixo **indecisa** em 300 s. Encolher a caixa torna o problema mais difícil — com caixa larga há contraexemplo e SAT é barato; com caixa estreita é preciso provar, e UNSAT é caro. É a mesma assimetria da raia E | `cartpole/caracteriza_prop_b.py` | ✅ | `done` |
+| KB-C02 | P0 | **Corrigida.** Property C mantida, mas **reclassificada como sanidade da quantização** — valida que o `tanh` Q8.8 satura corretamente (pegaria erro de LUT ou escala), e não é prova sobre o ator: `F_Q ≤ 2550 em módulo` vale por construção, com `z` livre a prova passa em 0,72 s. Criada a **Property D** para dar o que a C não podia: na zona de perigo o controlador deve aplicar `F ≥ 0,5 N em módulo`. Não vale por construção e exige percorrer os 745 pesos. Discriminação verificada: com `z=0` FAILED, com `z=900` SUCCESSFUL | `cartpole/verify_ddpg_closed_loop.py` | ✅ | `done` |
 | KB-C03 | P1 | Property A: trocar `assert(z > 0)` por `assert(F_Q > 0)`. A equivalência `z>0 ⟺ F>0` falha em Q8.8 porque `tanh_q88(1) = 0` | `cartpole/verify_ddpg_closed_loop.py:113,143` | 🟡 | `todo` |
 | KB-C04 | P1 | `pre_bound` fixos (2048/4096) seriam arbitrários, não derivados. Substituir por `interval_propagate_layer`, já usado no closed-loop. Adicionar assert de sanidade que falhe se o `assume` for insatisfazível — hoje vacuidade seria interpretada como "neurônio morto" | `cartpole/verify_ddpg_dead_neurons.py:227,233` | 🟡 | `todo` |
 | KB-C05 | P1 | Veredito "vivo" da camada 2 não seria sound (`h1` como caixa relaxada). Enquanto não corrigido, reportar "24/48 provados", não "0/48 mortos" | `cartpole/verify_ddpg_dead_neurons.py:105-139` | 🟡 | `todo` |
