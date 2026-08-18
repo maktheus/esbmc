@@ -31,7 +31,7 @@ lugar errado.
    exclusiva de arquivos. Três retornaram; dois se perderam sem notificação — as
    áreas deles estão registradas na raia A como ⬜ não auditado, não como "ok".
 2. **Verificação direta** de toda afirmação de alto impacto, com comando e saída
-   registrados. É o que separa os 42 ✅ dos 10 🟡.
+   registrados. É o que separa os 46 ✅ dos 6 🟡.
 3. **Medição, não estimativa**, onde havia número em jogo: a parede do BMC e o
    resultado do IC3 na raia E vêm de execução cronometrada, não de extrapolação.
 
@@ -158,10 +158,10 @@ independente: nenhuma correção deve ser feita sem reproduzir o diagnóstico pr
 | KB-C00 | P0 | **Reproduzir os diagnósticos de vacuidade** de `KB-C01` e `KB-C02`. Método: rodar o assert isolado, sem a rede neural. **Feito** — ambos confirmados, ver as duas linhas abaixo | `scratchpad/kbc00/propB_sem_rede.c`, `propC_sem_rede.c` | ✅ | `done` |
 | KB-C01 | P0 | **Corrigida.** O assert era sobre `th_new`, que não depende de `F_Q` — os 745 pesos eram código morto. Reescrita para **dois passos**, asserindo `th_2 = th_new + (5·thd_new)/256`, onde a força alcança θ via `thd`. Dependência provada: com `F_Q` livre o contraexemplo é `th_2=79`, com `F_Q=0` é `th_2=55`. **Caracterização do envelope** (`caracteriza_prop_b.py`): violada para `θ̇ ≥ 2,5 em módulo rad/s` (contraexemplo em ~28 s); de `1,25 rad/s` para baixo **indecisa** em 300 s. Encolher a caixa torna o problema mais difícil — com caixa larga há contraexemplo e SAT é barato; com caixa estreita é preciso provar, e UNSAT é caro. É a mesma assimetria da raia E | `cartpole/caracteriza_prop_b.py` | ✅ | `done` |
 | KB-C02 | P0 | **Corrigida.** Property C mantida, mas **reclassificada como sanidade da quantização** — valida que o `tanh` Q8.8 satura corretamente (pegaria erro de LUT ou escala), e não é prova sobre o ator: `F_Q ≤ 2550 em módulo` vale por construção, com `z` livre a prova passa em 0,72 s. Criada a **Property D** para dar o que a C não podia: na zona de perigo o controlador deve aplicar `F ≥ 0,5 N em módulo`. Não vale por construção e exige percorrer os 745 pesos. Discriminação verificada: com `z=0` FAILED, com `z=900` SUCCESSFUL | `cartpole/verify_ddpg_closed_loop.py` | ✅ | `done` |
-| KB-C03 | P1 | Property A: trocar `assert(z > 0)` por `assert(F_Q > 0)`. A equivalência `z>0 ⟺ F>0` falha em Q8.8 porque `tanh_q88(1) = 0` | `cartpole/verify_ddpg_closed_loop.py:113,143` | 🟡 | `todo` |
-| KB-C04 | P1 | `pre_bound` fixos (2048/4096) seriam arbitrários, não derivados. Substituir por `interval_propagate_layer`, já usado no closed-loop. Adicionar assert de sanidade que falhe se o `assume` for insatisfazível — hoje vacuidade seria interpretada como "neurônio morto" | `cartpole/verify_ddpg_dead_neurons.py:227,233` | 🟡 | `todo` |
-| KB-C05 | P1 | Veredito "vivo" da camada 2 não seria sound (`h1` como caixa relaxada). Enquanto não corrigido, reportar "24/48 provados", não "0/48 mortos" | `cartpole/verify_ddpg_dead_neurons.py:105-139` | 🟡 | `todo` |
-| KB-C06 | P1 | Habilitar `--overflow-check` em ao menos uma execução por harness. Nenhuma das 6 invocações usa — ausência de overflow é assumida, não provada | 6 chamadas em `cartpole/verify_*.py` | 🟡 | `todo` |
+| KB-C03 | P1 | **CONFIRMADO pelo solver.** Rodei o assert `F_Q > 0` sob `assume(z > 0)`: FAILED com `z = 1` → `tanh_z = 0` → `F_Q = 0`. A causa é a divisão inteira do primeiro ramo, `(1·252)/256 = 0`. Logo `z>0` **não** implica `F>0`, e um controlador que emitisse `z=1` na zona de perigo passaria na Property A aplicando **força nula**. Corrigir trocando o assert por `F_Q > 0`, reusando `TANH_APPROX_C` | `scratchpad/kbc00/propA_gap.c` | ✅ | `todo` |
+| KB-C04 | P1 | **CONFIRMADO, porém latente.** Os bounds são mesmo arbitrários: propagação de intervalo sobre os pesos reais dá envelope máximo **5.690** na camada 1 (bound 2048, **7 de 24** excedem) e **60.954** na camada 2 (bound 4096, **21 de 24** excedem). O `assume` poda a maior parte do espaço alcançável. **Mas o risco não se materializou**: testei os 24 harnesses da camada 2 com `assert(0)` após os assumes e **nenhum** provou — ou seja, nenhum assume é insatisfazível, e nenhum "neurônio morto" falso está sendo reportado hoje. Defeito latente, não ativo. Corrigir usando `interval_propagate_layer` e adicionar o teste de vacuidade como guarda permanente | teste de vacuidade nos 24 harnesses L2 | ✅ | `todo` |
+| KB-C05 | P1 | **CONFIRMADO por leitura do gerador.** `harness_layer2` declara `int h1_k = nondet_int()` restrito apenas a uma caixa `[lo_h1, hi_h1]` — **não** computa `h1` a partir de `x`. É relaxação: admite vetores `h1` que nenhuma entrada produz. Consequência assimétrica: `SUCCESSFUL` (morto) é sound, pois vale para o subconjunto alcançável; `FAILED` (vivo) **não é**, pois a testemunha pode ser inalcançável. Os 24 vereditos "vivo" da camada 2 não estão provados — o titular "0/48 mortos" vale para 24 de 48. Corrigir com propagação simbólica `x → h1 → h2`, que o closed-loop já gera | `cartpole/verify_ddpg_dead_neurons.py:105-139` | ✅ | `todo` |
+| KB-C06 | P1 | **CONFIRMADO.** As 6 invocações passam exatamente `[ESBMC, c_file, "--no-unwinding-assertions", "--boolector"]` — nenhuma tem `--overflow-check`. Ausência de overflow é assumida, não provada, num projeto de verificação formal. Os envelopes calculados em `KB-C04` mostram que o produto intermediário máximo fica em ~9,2e6, folgado em `int32`, mas isso é argumento analítico, não prova do solver | grep nas 6 invocações | ✅ | `todo` |
 | KB-C07 | P2 | Unificar a física: `webapp/lib/physics.ts` teria divergido de `cartpole_env.py` (parede com restituição, critério de falha só em θ). Treino, verificação e demonstração usariam três plantas diferentes | `webapp/lib/physics.ts:35-56` vs `cartpole_env.py:59-68` | 🟡 | `todo` |
 
 ---
@@ -330,7 +330,7 @@ ONDA 5  (depende de C e E)
 | F — Higiene | — | 4 | 4 | 8 |
 | **Total** | **11** | **24** | **17** | **52** |
 
-Confiança: **42 ✅ verificado** · **10 🟡 relatado por agente** · **0 ⬜ não auditado**
+Confiança: **46 ✅ verificado** · **6 🟡 relatado por agente** · **0 ⬜ não auditado**
 
 Contagens conferidas por script sobre as próprias linhas da tabela, não à mão — as
 versões anteriores deste rodapé traziam 21/26/3 e 25/23/3, ambas erradas. Um board que
