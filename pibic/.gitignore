@@ -3,6 +3,7 @@
 *.abc.out
 *.bmc.out
 pid_test_*.c
+_prop_b_tmp.c          # harness temporario de caracteriza_prop_b.py
 cases/control_chaos_testing/pid_test_*.c
 
 # python
