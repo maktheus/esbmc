@@ -58,6 +58,8 @@ HARNESSES = [
      dict(memory_leak_check=True, overflow_check=True, unwind=10,
           no_unwinding_assertions=True, boolector=True,
           extra_args=["-DDIM_LIMIT=3"]), 120, False),
+    ("Caso 4", "PID sob ruído [-5,+5], 10 passos", "4_control_system/pid_controller.c",
+     dict(floatbv=True, unwind=11, no_unwinding_assertions=True), 400, True),
     ("Caso 6", "Política RL (bounds do atuador)", "cases/ai_model_checking/rl_policy.c",
      dict(floatbv=True, unwind=1, z3=True), 120, False),
     ("FFN/LLM", "GPT-2 2x4 (QNN, GeLU exato)",

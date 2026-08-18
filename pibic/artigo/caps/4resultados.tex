@@ -229,7 +229,9 @@ O \textit{overhead} do verificador ficou abaixo de 0,15\,s nas duas iteracoes, m
 
 \section{Caso 4 --- Controlador PID com Engenharia do Caos e SMT}
 
-O verificador formal comprovou, via \texttt{VERIFICATION SUCCESSFUL}, que o controlador PID mant\'{e}m $T < 150\,^{\circ}$C para todos os 10 passos e para qualquer ru\'{i}do em $[-5, +5]$. A \autoref{fig:case4_plot} apresenta a din\^{a}mica completa simulada com os par\^{a}metros reais do c\'{o}digo, para cinco perfis de ru\'{i}do distintos.
+O verificador formal comprovou, via \texttt{VERIFICATION SUCCESSFUL} em \textbf{217\,s}, que o controlador PID mant\'{e}m $T < 150\,^{\circ}$C para todos os 10 passos e para qualquer ru\'{i}do em $[-5, +5]$ (log bruto em \texttt{results/logs/pid\_controller.log}).
+
+Cabe registrar o custo dessa prova: 217 segundos para dez passos de um controlador PID escalar. Uma primeira medicao com limite de 200\,s havia resultado em \textit{timeout}, o que quase levou a classificar a propriedade como nao verificada --- ela e verdadeira, e o limite e que era curto. \textit{Timeout} nao e veredito: le-lo como "seguro" inventa uma prova, e le-lo como "sem evidencia" descarta uma prova legitima. A \autoref{fig:case4_plot} apresenta a din\^{a}mica completa simulada com os par\^{a}metros reais do c\'{o}digo, para cinco perfis de ru\'{i}do distintos.
 
 \begin{figure}[htb]
     \caption{\label{fig:case4_plot}Caso~4: Evolucao da Temperatura, Sinal de Controle PID e Erro de Rastreamento sob Cinco Perfis de Ru\'{i}do de Sensor.}

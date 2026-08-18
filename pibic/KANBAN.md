@@ -31,15 +31,16 @@ lugar errado.
    exclusiva de arquivos. Três retornaram; dois se perderam sem notificação — as
    áreas deles estão registradas na raia A como ⬜ não auditado, não como "ok".
 2. **Verificação direta** de toda afirmação de alto impacto, com comando e saída
-   registrados. É o que separa os 39 ✅ dos 13 🟡.
+   registrados. É o que separa os 40 ✅ dos 12 🟡.
 3. **Medição, não estimativa**, onde havia número em jogo: a parede do BMC e o
    resultado do IC3 na raia E vêm de execução cronometrada, não de extrapolação.
 
 ### Estado agora
 
-**28 das 52 tarefas concluídas**, entre elas **10 dos 11 P0**, e a cobertura da
+**29 das 52 tarefas concluídas, e os 11 P0 estão fechados.** A cobertura da
 auditoria está completa — não há mais área ⬜. A suíte saiu de *21 falhas em 0,12 s*,
 porque nada rodava, para **31 testes passando em 12m49s**, verificando de verdade.
+Cada afirmação de veredito do capítulo 4 agora aponta para um log versionado.
 
 | | |
 |---|---|
@@ -48,6 +49,20 @@ porque nada rodava, para **31 testes passando em 12m49s**, verificando de verdad
 | **Raia E encerrada** | `KB-E01`, `KB-E02`. Empate técnico no ator real: nenhum método decide. |
 | **Higiene** | `KB-D04`, `D08`, `D11`, `F01`, `F03`, `F05`, `F08`. |
 | **Em aberto** | As duas auditorias perdidas (`KB-A01`, `KB-A02`) e 6 dos 11 P0, todos na raia D — as afirmações do artigo sem evidência. |
+
+### Uma armadilha recorrente: timeout arbitrário
+
+O artigo afirmava, no Caso 4, que o PID mantém `T < 150 °C` para 10 passos sob
+qualquer ruído em `[-5,+5]`. Uma primeira medição com limite de 200 s deu timeout,
+e a afirmação quase foi classificada como sem evidência. Reexecutada com folga:
+**`VERIFICATION SUCCESSFUL` em 217 s** — dezessete segundos além do primeiro
+limite. A afirmação era verdadeira.
+
+Isso é a face inversa do erro que este board persegue. Ler `TIMEOUT` como
+"seguro" inventa uma prova; ler `TIMEOUT` como "sem evidência" destrói uma
+prova legítima. Nos dois casos o defeito é o mesmo: **tratar ausência de sinal
+como sinal**. Daí a coluna de veredito de `results/EVIDENCIAS.md` distinguir
+`TIMEOUT` de `SAFE` e de `UNSAFE`, e nunca colapsar os três.
 
 ### O que a raia E significa
 
@@ -155,13 +170,13 @@ independente: nenhuma correção deve ser feita sem reproduzir o diagnóstico pr
 |---|---|---|---|---|---|
 | KB-D01 | P0 | **Feito.** O experimento não media nada: `run_benchmark.py` passava `-DDIM_LIMIT=<n>`, mas `matmul_kernel.cpp` **nunca usava o macro** — M=N=K=2 fixos em todos os "tamanhos". Corrigidos o kernel (parametrizado), a extensão (`.cpp`→`.c`), o `--smtlib` (impedia resolver) e o caminho fixo. **Medido:** N=2 → 1,97 s SAFE; N=3 → 16,83 s SAFE; N=4 → **>300 s TIMEOUT**. O artigo publicava `<1`, `≈2`, `≈5`, `≈8`, `≈15` s. A parede está em N=4; as linhas 4–6 descreviam execuções que não completam. Tabela substituída, figura que extrapolava até N=60 removida | `results/case2_ambiente.md` | ✅ | `done` |
 | KB-D02 | P0 | **Feito (documentado como limitação).** Três bloqueios independentes medidos: macro `ARDUINO` não definida → `WProgram.h` ausente; `PID_v1.cpp:46` usa construtor delegante C++11 e a 6.8.0 não tem `--std`; o harness usa justamente o construtor de 7 argumentos, que é o delegante. Seção reescrita: reporta integração e obstáculos, sem afirmar veredito | execução direta | ✅ | `done` |
-| KB-D03 | P0 | **Nenhum log em `results/` contém `VERIFICATION SUCCESSFUL`.** Toda afirmação de prova bem-sucedida no capítulo 4 está sem evidência | `grep -rl` em `results/` | ✅ | `todo` |
+| KB-D03 | P0 | **Feito.** Criado `scripts/gerar_evidencias.py`: roda cada harness citado no artigo, grava a saída **bruta** do solver em `results/logs/` e consolida em `results/EVIDENCIAS.md` a tabela afirmação→comando→veredito→log. Regras: saída bruta sempre salva (para "nada casou" seguir distinguível de "não rodou"), `TIMEOUT` como **indeciso**, ambiente junto dos números, e harness que não compila aparece como `PARSE_ERROR` em vez de sumir. **Medido: 8 provados, 3 com contraexemplo, 0 indecisos** de 11 harnesses, todos com log versionado. Rendeu também a primeira contagem de VCCs do projeto (28 geradas, 4 após simplificação no stub do Transformer), KPI que o `roadmap.md` pede e nada reportava | `results/EVIDENCIAS.md`, `results/logs/` | ✅ | `done` |
 | KB-D04 | P0 | **Feito.** As 6 legendas removidas de `4resultados.tex` e `3metodologia.tex` | `4resultados.tex:73,117,217,245,308`; `3metodologia.tex:130` | ✅ | `done` |
 | KB-D05 | P0 | **Feito.** `--smtlib` fazia o ESBMC emitir a fórmula em vez de resolver, então `success` era permanentemente falso e o CSV ficava com 0 bytes. Trocado pelo `esbmc_caller`; caminhos ancorados no script. **Medido:** 2 iterações — UNSAFE 0,13 s, SAFE 0,11 s. O artigo afirmava 5, inalcançáveis porque o loop encerra na primeira prova | `results/case3_agent_stats.csv` | ✅ | `done` |
 | KB-D06 | P0 | **Feito.** Seção de CI reescrita para o workflow que realmente roda, incluindo por que o binário é versionado em vez de baixado e por que o caminho vai por `$GITHUB_ENV` | `.github/workflows/esbmc-verify.yml` | ✅ | `done` |
 | KB-D07 | P1 | **Diagnóstico corrigido.** Instalar `ast2json` **não basta**: o binário 6.8.0 embarcado **não tem o frontend Python compilado** — `failed to figure out type of file` para qualquer `.py`. Exige compilar a 8.0.0 com `-DENABLE_PYTHON_FRONTEND=ON`. Mesmo bloqueio de `KB-D02` | execução direta | ✅ | `todo` |
 | KB-D08 | P1 | **Feito.** `pibic/README.md` criado: início rápido, mapa de diretórios, como interpretar um status, flags inexistentes, pipeline do IC3, e uma seção de limitações conhecidas | — | ✅ | `done` |
-| KB-D09 | P1 | Registrar ambiente por experimento (versão ESBMC, solver, flags, timeout, CPU/RAM, seed). Hoje há 4 combinações conflitantes no repo: 8.0.0/Z3, 6.8.0/Boolector 3.2, 6.8.0/Z3 4.8.9, "compilada do fonte". Usar `cartpole/ESBMC_NOTES.md` como modelo — é o melhor documento do repositório | `4resultados.tex:4` vs `apresentacao_pibic.tex:593` | 🟡 | `todo` |
+| KB-D09 | P1 | **Parcial.** `results/EVIDENCIAS.md`, `results/case2_ambiente.md` e `ic3/EVIDENCIA.md` passam a registrar versão do ESBMC, solver, flags completas, timeout, SO e CPU junto de cada número. Falta reconciliar as combinações conflitantes que ainda constam do artigo e da apresentação (8.0.0/Z3, 6.8.0/Boolector 3.2, 6.8.0/Z3 4.8.9) | `4resultados.tex:4` vs `apresentacao_pibic.tex:593` | ✅ | `todo` |
 | KB-D10 | P1 | Religar as figuras aos dados. Nenhum script em `artigo/figs/` abre arquivo algum — todos os valores são literais. `plot_case2.py:7-8` tem a tabela GEMM inventada que contradiz o CSV | `artigo/figs/*.py` | 🟡 | `todo` |
 | KB-D11 | P1 | **Feito.** Caminhos `/home/uchoa` corrigidos em 7 arquivos; as 2 imagens que apontavam para fora do repo viraram comentário explícito de ausência | `plot_pipeline_esbmc.py:40`, `results/analysis_report.md:118,122`, +6 | ✅ | `done` |
 | KB-D12 | P2 | **Feito.** 14 das 18 entradas eram de um trabalho de futebol/visão computacional; removidas. Adicionadas ESBMC, Z3, Boolector, Bitwuzla, IC3 (Bradley), PDR (Eén), ABC, Yosys, Reluplex, Marabou, Neurify, DDPG e cart-pole — cada uma marcada para conferência contra a fonte | `artigo/referencias.bib` | ✅ | `done` |
@@ -313,7 +328,7 @@ ONDA 5  (depende de C e E)
 | F — Higiene | — | 4 | 4 | 8 |
 | **Total** | **11** | **24** | **17** | **52** |
 
-Confiança: **39 ✅ verificado** · **13 🟡 relatado por agente** · **0 ⬜ não auditado**
+Confiança: **40 ✅ verificado** · **12 🟡 relatado por agente** · **0 ⬜ não auditado**
 
 Contagens conferidas por script sobre as próprias linhas da tabela, não à mão — as
 versões anteriores deste rodapé traziam 21/26/3 e 25/23/3, ambas erradas. Um board que
