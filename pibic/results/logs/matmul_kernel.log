@@ -1,13 +1,13 @@
 $ esbmc 2_inference_engine/matmul_kernel.c --memory-leak-check --overflow-check --no-unwinding-assertions --boolector --unwind 10 -DDIM_LIMIT=3
 # ESBMC version 6.8.0 64-bit x86_64 linux
-# status=SAFE rc=0 tempo=17.03s
+# status=SAFE rc=0 tempo=17.51s
 
 ESBMC version 6.8.0 64-bit x86_64 linux
 file /home/user/esbmc/pibic/2_inference_engine/matmul_kernel.c: Parsing
 Converting
 Generating GOTO Program
-GOTO program creation time: 0.086s
-GOTO program processing time: 0.001s
+GOTO program creation time: 0.080s
+GOTO program processing time: 0.000s
 Starting Bounded Model Checking
 Unwinding loop 6  iteration  1   file string.c line 272 function __memset_impl
 Unwinding loop 6  iteration  2   file string.c line 272 function __memset_impl
@@ -80,14 +80,14 @@ Unwinding loop 2  iteration  3   file matmul_kernel.c line 17 function matmul_ti
 Unwinding loop 3  iteration  3   file matmul_kernel.c line 16 function matmul_tiled
 Unwinding loop 4  iteration  1   file matmul_kernel.c line 15 function matmul_tiled
 Unwinding loop 5  iteration  1   file matmul_kernel.c line 14 function matmul_tiled
-Symex completed in: 0.474s (1932 assignments)
+Symex completed in: 0.421s (1932 assignments)
 Slicing time: 0.013s (removed 192 assignments)
 Generated 1553 VCC(s), 1550 remaining after simplification (1740 assignments)
 Encoding remaining VCC(s) using bit-vector/floating-point arithmetic
-Encoding to solver time: 0.058s
+Encoding to solver time: 0.054s
 Solving with solver Boolector 3.2.0
-Encoding to solver time: 0.058s
-Runtime decision procedure: 16.312s
-BMC program time: 16.858s
+Encoding to solver time: 0.054s
+Runtime decision procedure: 16.857s
+BMC program time: 17.345s
 
 VERIFICATION SUCCESSFUL

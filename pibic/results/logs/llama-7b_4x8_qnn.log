@@ -6,7 +6,7 @@ ESBMC version 6.8.0 64-bit x86_64 linux
 file /home/user/esbmc/pibic/cases/llm_ffn_verification/verify_output/llama-7b_4x8_qnn.c: Parsing
 Converting
 Generating GOTO Program
-GOTO program creation time: 0.072s
+GOTO program creation time: 0.076s
 GOTO program processing time: 0.001s
 Starting Bounded Model Checking
 Symex completed in: 0.002s (166 assignments)
@@ -16,7 +16,7 @@ Encoding remaining VCC(s) using bit-vector/floating-point arithmetic
 Encoding to solver time: 0.001s
 Solving with solver Boolector 3.2.0
 Encoding to solver time: 0.001s
-Runtime decision procedure: 3.378s
-BMC program time: 3.381s
+Runtime decision procedure: 3.365s
+BMC program time: 3.369s
 
 VERIFICATION SUCCESSFUL

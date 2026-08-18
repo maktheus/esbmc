@@ -1,22 +1,22 @@
 $ esbmc cases/ai_model_checking/rl_policy.c --floatbv --z3 --unwind 1
 # ESBMC version 6.8.0 64-bit x86_64 linux
-# status=UNSAFE rc=1 tempo=2.41s
+# status=UNSAFE rc=1 tempo=2.58s
 
 ESBMC version 6.8.0 64-bit x86_64 linux
 file /home/user/esbmc/pibic/cases/ai_model_checking/rl_policy.c: Parsing
 Converting
 Generating GOTO Program
-GOTO program creation time: 0.074s
+GOTO program creation time: 0.078s
 GOTO program processing time: 0.000s
 Starting Bounded Model Checking
-Symex completed in: 0.000s (21 assignments)
+Symex completed in: 0.001s (21 assignments)
 Slicing time: 0.000s (removed 10 assignments)
 Generated 1 VCC(s), 1 remaining after simplification (11 assignments)
 Encoding remaining VCC(s) using bit-vector/floating-point arithmetic
 Encoding to solver time: 0.000s
 Solving with solver Z3 v4.8.9
 Encoding to solver time: 0.000s
-Runtime decision procedure: 2.324s
+Runtime decision procedure: 2.493s
 Building error trace
 
 Counterexample:

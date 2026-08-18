@@ -1,12 +1,12 @@
 $ esbmc verification/property_check.c --floatbv --no-unwinding-assertions
 # ESBMC version 6.8.0 64-bit x86_64 linux
-# status=UNSAFE rc=1 tempo=195.95s
+# status=UNSAFE rc=1 tempo=197.82s
 
 ESBMC version 6.8.0 64-bit x86_64 linux
 file /home/user/esbmc/pibic/verification/property_check.c: Parsing
 Converting
 Generating GOTO Program
-GOTO program creation time: 0.135s
+GOTO program creation time: 0.103s
 GOTO program processing time: 0.002s
 Starting Bounded Model Checking
 Unwinding loop 7  iteration  1   file property_check.c line 12 function main
@@ -71,15 +71,15 @@ Unwinding loop 5  iteration  6   file nn_forward_pass.c line 29 function run_net
 Unwinding loop 5  iteration  7   file nn_forward_pass.c line 29 function run_network
 Unwinding loop 5  iteration  8   file nn_forward_pass.c line 29 function run_network
 Unwinding loop 6  iteration  2   file nn_forward_pass.c line 27 function run_network
-Symex completed in: 0.011s (174 assignments)
-Slicing time: 0.000s (removed 89 assignments)
+Symex completed in: 0.009s (174 assignments)
+Slicing time: 0.001s (removed 89 assignments)
 Generated 317 VCC(s), 1 remaining after simplification (85 assignments)
 No solver specified; defaulting to Boolector
 Encoding remaining VCC(s) using bit-vector/floating-point arithmetic
-Encoding to solver time: 0.058s
+Encoding to solver time: 0.051s
 Solving with solver Boolector 3.2.0
-Encoding to solver time: 0.058s
-Runtime decision procedure: 195.636s
+Encoding to solver time: 0.051s
+Runtime decision procedure: 197.540s
 Building error trace
 
 Counterexample:
