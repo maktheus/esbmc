@@ -1,0 +1,22 @@
+$ esbmc cases/llm_ffn_verification/verify_output/gpt2_4x8_qnn.c --boolector --no-unwinding-assertions
+# ESBMC version 6.8.0 64-bit x86_64 linux
+# status=SAFE rc=0 tempo=4.17s
+
+ESBMC version 6.8.0 64-bit x86_64 linux
+file /home/user/esbmc/pibic/cases/llm_ffn_verification/verify_output/gpt2_4x8_qnn.c: Parsing
+Converting
+Generating GOTO Program
+GOTO program creation time: 0.087s
+GOTO program processing time: 0.001s
+Starting Bounded Model Checking
+Symex completed in: 0.002s (166 assignments)
+Slicing time: 0.000s (removed 50 assignments)
+Generated 4 VCC(s), 4 remaining after simplification (116 assignments)
+Encoding remaining VCC(s) using bit-vector/floating-point arithmetic
+Encoding to solver time: 0.001s
+Solving with solver Boolector 3.2.0
+Encoding to solver time: 0.001s
+Runtime decision procedure: 4.064s
+BMC program time: 4.068s
+
+VERIFICATION SUCCESSFUL

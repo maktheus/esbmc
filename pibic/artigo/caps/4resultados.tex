@@ -21,7 +21,7 @@ Neste caso de uso, as primitivas magnas da verificacao \textbf{foram meticulosam
 
 \subsection{Resultado da Verificacao do Emulador QNN}
 
-O ESBMC retornou o veredicto \textbf{VERIFICATION SUCCESSFUL} confirmando a eficácia do método misto (Python limitando as fronteiras via simulacro de EVA):
+O ESBMC retornou o veredicto \textbf{VERIFICATION SUCCESSFUL} em 0,10\,s (log bruto em \texttt{results/logs/verify\_mlp\_qnn.log}; tabela completa em \texttt{results/EVIDENCIAS.md}):
 
 \begin{alineas}
     \item \textbf{Propriedades de Conversão}: As macros literais \texttt{fxp\_add} e \texttt{fxp\_mult} efeturam matematicamente precisas as rolagens lógicas sem acusarem sobrecargas.
@@ -191,6 +191,14 @@ A parede aparece, portanto, ja em $N=4$, e nao em dimensoes grandes. Isso reforc
 
 A abordagem permanece util para verificar a corretude logica do algoritmo de \textit{tiling} em instancias reduzidas ($N \leq 3$), o que e coerente com a \textit{Small Scope Hypothesis}.
 
+Todos os harnesses citados neste capitulo sao reexecutaveis por
+\texttt{scripts/gerar\_evidencias.py}, que grava a saida bruta do solver em
+\texttt{results/logs/} e consolida os vereditos em \texttt{results/EVIDENCIAS.md}.
+Na execucao registrada, dos 11 harnesses: \textbf{8 provados}, \textbf{3 com
+contra-exemplo}, nenhum indeciso. O \textit{stub} do Transformer, por exemplo,
+gera \textbf{28 condicoes de verificacao} (4 restantes apos simplificacao) e e
+provado em 0,08\,s.
+
 \section{Caso 3 --- Loop Neuro-Simbolico}
 
 O agente executou o ciclo completo em \textbf{duas} iteracoes --- o loop encerra na primeira verificacao bem-sucedida, de modo que cinco iteracoes nao sao alcancaveis com este \textit{mock}. Os dados medidos estao em \texttt{results/case3\_agent\_stats.csv}.
@@ -247,15 +255,15 @@ O verificador formal comprovou, via \texttt{VERIFICATION SUCCESSFUL}, que o cont
 
 Para avaliar a aplicabilidade da abordagem a sistemas de controle reais em producao, a biblioteca \textit{Arduino-PID-Library} (de Brett Beauregard) foi integrada ao repositorio como subm\'odulo Git, fixada no \textit{commit} \texttt{524a4268}. Foi desenvolvido um \textit{harness} (\texttt{verification/verify\_pid.cpp}) que instancia a classe \texttt{PID} sob a mesma planta t\'ermica e o mesmo modelo de ru\'ido sensorial em $[-5, +5]$, com \textit{mock} para \texttt{millis()}.
 
-\textbf{A verificacao, contudo, nao foi concluida.} Ao executar o \textit{harness} com as flags previstas (\texttt{-{}-floatbv -{}-unwind~11}), foram encontrados tres obstaculos independentes, cada um suficiente para impedir a analise:
+\textbf{A verificacao, contudo, nao foi concluida.} Ao executar o \textit{harness} com as flags previstas (\texttt{-{}-floatbv -{}-unwind~11}), foram encontrados tres obstaculos independentes, dois deles ja removidos:
 
 \begin{enumerate}
-  \item A macro \texttt{ARDUINO} nao e definida em nenhum ponto do projeto, de modo que \texttt{PID\_v1.cpp} recai no ramo anterior ao Arduino~1.0 e requer \texttt{WProgram.h}, inexistente. O \textit{mock} \texttt{Arduino.h} declara apenas \texttt{millis()}.
-  \item \texttt{PID\_v1.cpp} emprega \textbf{construtor delegante}, recurso de C++11, e a versao do ESBMC disponivel (6.8.0) nao oferece a opcao \texttt{-{}-std}, introduzida apenas na versao 8.0.0.
-  \item O \textit{harness} usa o construtor de sete argumentos, que e justamente o delegante, de modo que o obstaculo anterior nao pode ser contornado.
+  \item O \textit{harness} declarava \texttt{void \_\_ESBMC\_assume(int)}, em conflito com a declaracao \texttt{bool} dos \textit{intrinsics} do ESBMC, e por isso sequer era analisado. \textbf{Corrigido}: o arquivo agora compila.
+  \item A macro \texttt{ARDUINO} nao e definida em nenhum ponto do projeto, de modo que \texttt{PID\_v1.cpp} recai no ramo anterior ao Arduino~1.0 e requer \texttt{WProgram.h}, inexistente. Contornavel com \texttt{-DARDUINO=100} na linha de comando.
+  \item \textbf{Obstaculo remanescente}: \texttt{PID\_v1.cpp} emprega \textbf{construtor delegante}, recurso de C++11, e o ESBMC 6.8.0 nao oferece a opcao \texttt{-{}-std}, introduzida apenas na 8.0.0. O \textit{harness} usa justamente o construtor de sete argumentos, que e o delegante, de modo que o recurso nao pode ser evitado.
 \end{enumerate}
 
-Registra-se, portanto, que a verificacao de bibliotecas C++ de terceiros \textbf{nao e imediata}: a barreira nao esta na complexidade do algoritmo de controle, mas na cobertura do \textit{front-end} C++ do verificador e nas convencoes de compilacao do ecossistema Arduino. Concluir este experimento exige compilar o ESBMC 8.0.0 e reexecutar com \texttt{-{}-std c++11}, o que fica indicado como trabalho futuro.
+Registra-se, portanto, que a verificacao de bibliotecas C++ de terceiros \textbf{nao e imediata}: a barreira nao esta na complexidade do algoritmo de controle, mas na cobertura do \textit{front-end} C++ do verificador e nas convencoes de compilacao do ecossistema Arduino. Apos as correcoes, resta um unico bloqueio: concluir este experimento exige compilar o ESBMC 8.0.0 e reexecutar com \texttt{-{}-std c++11}. O mesmo defeito de declaracao (\texttt{int} em vez de \texttt{\_Bool}/\texttt{bool}) foi encontrado e corrigido em outros dois arquivos do projeto, entre eles o \textit{stub} do Transformer, que passou a ser verificavel e e provado em 0,08\,s.
 
 
 \section{Caso 5   The Ralph Loop Concept e Validação em Larga Escala}

@@ -15,6 +15,9 @@ venv/
 # latex
 *.aux
 *.log
+# ...exceto as evidencias de execucao: versiona-las e o ponto do KB-D03,
+# que registrou que nenhum log commitado continha um veredito.
+!results/logs/*.log
 *.nav
 *.out
 *.snm
