@@ -31,7 +31,7 @@ lugar errado.
    exclusiva de arquivos. Três retornaram; dois se perderam sem notificação — as
    áreas deles estão registradas na raia A como ⬜ não auditado, não como "ok".
 2. **Verificação direta** de toda afirmação de alto impacto, com comando e saída
-   registrados. É o que separa os 40 ✅ dos 12 🟡.
+   registrados. É o que separa os 41 ✅ dos 11 🟡.
 3. **Medição, não estimativa**, onde havia número em jogo: a parede do BMC e o
    resultado do IC3 na raia E vêm de execução cronometrada, não de extrapolação.
 
@@ -182,7 +182,7 @@ independente: nenhuma correção deve ser feita sem reproduzir o diagnóstico pr
 | KB-D10 | P1 | Religar as figuras aos dados. Nenhum script em `artigo/figs/` abre arquivo algum — todos os valores são literais. `plot_case2.py:7-8` tem a tabela GEMM inventada que contradiz o CSV | `artigo/figs/*.py` | 🟡 | `todo` |
 | KB-D11 | P1 | **Feito.** Caminhos `/home/uchoa` corrigidos em 7 arquivos; as 2 imagens que apontavam para fora do repo viraram comentário explícito de ausência | `plot_pipeline_esbmc.py:40`, `results/analysis_report.md:118,122`, +6 | ✅ | `done` |
 | KB-D12 | P2 | **Feito.** 14 das 18 entradas eram de um trabalho de futebol/visão computacional; removidas. Adicionadas ESBMC, Z3, Boolector, Bitwuzla, IC3 (Bradley), PDR (Eén), ABC, Yosys, Reluplex, Marabou, Neurify, DDPG e cart-pole — cada uma marcada para conferência contra a fonte | `artigo/referencias.bib` | ✅ | `done` |
-| KB-D13 | P2 | Incorporar ao artigo o trabalho feito e não reportado: cart-pole DQN/DDPG (34 arquivos, contraexemplos concretos) e FFN GPT-2/Llama (speedup 18–27×). É o material mais rigoroso do repositório e está ausente do capítulo 4 | — | 🟡 | `todo` |
+| KB-D13 | P2 | **Feito.** Dois casos novos escritos no capítulo 4, ambos com dado medido: **Caso 5 — FFN de LLMs** (GPT-2/LLaMA, tabela de tempos medidos, reprodutibilidade byte-a-byte dos geradores e LUTs, e o compromisso entre os dois métodos de codificação: o mais rápido usa proxy ReLU e não verifica a ativação implantada) e **Caso 7 — malha fechada DDPG** (fidelidade Q8.8, as duas vacuidades identificadas e corrigidas, o envelope de segurança medido, a parede do BMC e a comparação com IC3). Citações adicionadas para ESBMC, Boolector, IC3, PDR, ABC, Yosys e DDPG — o capítulo tinha zero | `artigo/caps/4resultados.tex` | ✅ | `done` |
 | KB-D14 | P2 | **Feito (parcial).** Errata de exemplo sobre neoplasias em cães neutralizada; placeholders de examinador e a instituição errada (`CCHE/UEPB` em vez de UFAM) marcados com `TODO(autor)`. Stubs de siglas/símbolos seguem comentados, não entram no PDF | `artigo/editar/` | ✅ | `done` |
 | KB-D15 | P2 | Fechar `test.md`: os 3 itens (`poisoning`, `propriedade nova para regressão`, `DS verifier`) estão integralmente não iniciados. Ou entram no plano com escopo, ou saem | `test.md` | 🟡 | `todo` |
 
@@ -226,7 +226,7 @@ Invariante encontrado: **4 cláusulas, 8 literais, 3 dos 65 bits de estado** —
 | KB-E03 | P1 | Fechar a curva de escalabilidade do BMC. **Parcialmente respondido**: no modelo real o BMC não passa de 5 frames em 901 s, então K=8 e K=16 estão fora de alcance nesta máquina — medir K=8/K=16 só faz sentido no modelo sintético, para a curva. **Não extrapolar** de poucos pontos: é o erro que `KB-D01` acusa | `cl_ddpg16.bmc.out` | ✅ | `todo` |
 | KB-E04 | P2 | Documentar as limitações honestas: (a) o PDR também não convergiu no modelo sintético sem batente (500 s); (b) a vantagem é **estrutural** — memória independente da profundidade — não incondicional; (c) bit-blastar para AIGER **perde a estrutura de palavra**, o que atrapalha a generalização de cláusulas do PDR. Ver `KB-E07` | ✅ medido | ✅ | `todo` |
 | KB-E05 | P2 | Avaliar `--overflow-check` / bit-width: 32→16 bits cortou o estado de 129 para 65 flops e a memória do PDR de 246 para 110 MB. O cartpole real é Q8.8 = 16 bits | ✅ medido | ✅ | `todo` |
-| KB-E06 | P2 | Reescrever o Caso 5 do artigo (52 topologias, sem artefato) usando os dados de `KB-E03` — resultado medido no lugar de número inventado | `4resultados.tex:265` | ✅ | `todo` |
+| KB-E06 | P2 | **Feito.** A seção do Caso 5 que reportava 52 topologias (34 seguras / 15 adversariais / 3 timeouts) foi **substituída** — aqueles números vinham de valores fixos nos scripts de plotagem, e o Ralph Loop que os produziria tem o portão de verificação comentado. Em seu lugar, o subprojeto FFN, integralmente reprodutível. As três figuras que plotavam os dados inventados foram removidas | `artigo/caps/4resultados.tex` | ✅ | `done` |
 | KB-E07 | P2 | **Rota word-level — agora o caminho principal, não plano B.** O ABC não convergiu no modelo real (`KB-E02`), e a hipótese mais provável é a perda de estrutura: bit-blastar 4 inteiros em 65 bits soltos destrói exatamente o que o PDR usa para generalizar cláusulas, e o invariante precisaria falar sobre `th` como palavra. Exportar BTOR2 (`yosys write_btor`, já disponível) e usar um motor word-level — AVR, Pono ou `btormc`. Nenhum está instalado nem no apt (`btormc` vem com o Boolector; AVR e Pono exigem build do fonte). BTOR2 preserva os 4 inteiros em vez de 65 bits soltos, o que tende a ajudar muito a generalização | `yosys -p "help write_btor"`; `command -v avr pono btormc` → ausentes | ✅ | `todo` |
 
 ---
@@ -330,7 +330,7 @@ ONDA 5  (depende de C e E)
 | F — Higiene | — | 4 | 4 | 8 |
 | **Total** | **11** | **24** | **17** | **52** |
 
-Confiança: **40 ✅ verificado** · **12 🟡 relatado por agente** · **0 ⬜ não auditado**
+Confiança: **41 ✅ verificado** · **11 🟡 relatado por agente** · **0 ⬜ não auditado**
 
 Contagens conferidas por script sobre as próprias linhas da tabela, não à mão — as
 versões anteriores deste rodapé traziam 21/26/3 e 25/23/3, ambas erradas. Um board que
