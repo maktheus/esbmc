@@ -3,6 +3,9 @@ Gera os graficos do Caso 3 (Loop Neuro-Simbolico) e Caso 4 (PID Chaos)
 com dados realistas baseados nos arquivos-fonte reais do projeto.
 Saida: case3_plot.png  (substituido) e  case4_chart.png  (substituido)
 """
+import csv
+import os
+
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -11,62 +14,62 @@ import matplotlib.patches as mpatches
 from matplotlib.gridspec import GridSpec
 
 # ─── CASO 3 — Loop Neuro-Simbolico ──────────────────────────────────────────
-# Dados simulados fieis ao mock_agent.py:
-# - Iteracao 0: codigo ruim (strcpy / buffer overflow) → FALHA
-# - Iteracoes 1-4: codigo corrigido (strncpy) → SUCESSO
-# Tempos: LLM delay 0.5-2.0s + ESBMC ~0.3-0.8s
-rng = np.random.default_rng(42)
-iters = [0, 1, 2, 3, 4]
-llm_times   = [1.4, 0.9, 1.1, 0.7, 1.3]   # delay simulado do LLM
-esbmc_times = [0.62, 0.48, 0.51, 0.45, 0.53]  # tempo do verificador
-results     = ["FALHA\n(Buffer Overflow)", "SUCESSO", "SUCESSO", "SUCESSO", "SUCESSO"]
-colors_bar  = ["#e15759", "#59a14f", "#59a14f", "#59a14f", "#59a14f"]
+# Dados MEDIDOS, lidos de results/case3_agent_stats.csv.
+#
+# A versao anterior usava listas fixas no proprio script:
+#     llm_times   = [1.4, 0.9, 1.1, 0.7, 1.3]
+#     esbmc_times = [0.62, 0.48, 0.51, 0.45, 0.53]
+# comentadas como "dados simulados fieis ao mock_agent.py". Nao eram fieis: o
+# loop encerra na primeira verificacao bem-sucedida, entao cinco iteracoes sao
+# inalcancaveis. Medido: duas iteracoes, 0,13 s e 0,11 s de verificador.
+CSV = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                   "..", "..", "results", "case3_agent_stats.csv")
+if not os.path.exists(CSV):
+    raise SystemExit(f"{CSV} ausente — rode 3_neuro_symbolic/mock_agent.py antes")
+
+iters, esbmc_times, status = [], [], []
+with open(CSV) as fh:
+    for row in csv.DictReader(fh):
+        iters.append(int(row["Iteration"]))
+        esbmc_times.append(float(row["Duration(s)"]))
+        status.append(row["Status"])
+
+results    = [("FALHA\n(Buffer Overflow)" if s == "UNSAFE" else
+               "SUCESSO" if s == "SAFE" else s) for s in status]
+colors_bar = ["#e15759" if s == "UNSAFE" else "#59a14f" for s in status]
 
 fig, axes = plt.subplots(1, 2, figsize=(13, 5))
 
-# -- Grafico 1: stacked bar por iteracao
+# -- Grafico 1: tempo do verificador por iteracao
 ax = axes[0]
 x = np.arange(len(iters))
-b1 = ax.bar(x, llm_times, color="#4c78a8", label="Tempo LLM (delay)", width=0.5)
-b2 = ax.bar(x, esbmc_times, bottom=llm_times, color="#f58518", label="Tempo ESBMC", width=0.5)
-
-for i, (lt, et, res) in enumerate(zip(llm_times, esbmc_times, results)):
-    ax.text(i, lt + et + 0.05, res, ha="center", va="bottom",
-            fontsize=7.5, color=colors_bar[i], fontweight="bold")
-
-ax.set_xticks(x)
-ax.set_xticklabels([f"It. {i}" for i in iters])
+b1 = ax.bar(x, esbmc_times, color="#4c78a8", width=0.5,
+            label="Tempo do verificador (ESBMC)")
+for xi, t, r in zip(x, esbmc_times, results):
+    ax.text(xi, t + max(esbmc_times) * 0.04, f"{t:.3f}s",
+            ha="center", fontsize=9)
+ax.set_xticks(x); ax.set_xticklabels([f"Iter. {i}" for i in iters])
 ax.set_ylabel("Tempo (s)")
-ax.set_title("Caso 3: Tempo por Iteracao do Loop Agente-ESBMC\n(LLM delay + verificacao formal)", fontsize=10)
-ax.legend(fontsize=9)
-ax.set_ylim(0, 3.5)
-ax.grid(axis="y", alpha=0.3)
+ax.set_title("Caso 3: tempo de verificacao por iteracao (medido)")
+ax.set_ylim(0, max(esbmc_times) * 1.35)
+ax.legend(loc="upper right", fontsize=9)
+ax.grid(axis="y", alpha=.3)
 
-# Anotacao tecnica
-ax.annotate("Contra-exemplo SMT\nencontrado aqui",
-            xy=(0, llm_times[0] + esbmc_times[0]),
-            xytext=(0.5, 2.8),
-            arrowprops=dict(arrowstyle="->", color="#e15759"),
-            fontsize=8, color="#e15759")
-
-# -- Grafico 2: overhead ESBMC vs tamanho codigo
-ax2 = axes[1]
-code_sizes = [278, 312, 298, 305, 310]   # bytes do codigo gerado em cada iteracao
-ax2.scatter([0], [esbmc_times[0]], color="#e15759", s=180, zorder=5, label="Iteracao falha")
-ax2.scatter(iters[1:], esbmc_times[1:], color="#59a14f", s=120, zorder=5, label="Iteracoes OK")
-ax2.plot(iters, esbmc_times, color="#aaa", lw=1.2, ls="--")
-ax2.set_xlabel("Iteracao do Agente")
-ax2.set_ylabel("Tempo ESBMC (s)")
-ax2.set_title("Overhead do Verificador por Iteracao\n(overhead constante < 1s)", fontsize=10)
-ax2.set_ylim(0, 1.0)
-ax2.axhline(1.0, color="red", lw=1, ls=":", label="Limite pratico (1s)")
-ax2.legend(fontsize=9)
-ax2.grid(alpha=0.3)
+# -- Grafico 2: veredito por iteracao
+ax = axes[1]
+ax.bar(x, [1] * len(x), color=colors_bar, width=0.5)
+for xi, r in zip(x, results):
+    ax.text(xi, 0.5, r, ha="center", va="center", fontsize=9,
+            color="white", fontweight="bold")
+ax.set_xticks(x); ax.set_xticklabels([f"Iter. {i}" for i in iters])
+ax.set_yticks([])
+ax.set_title("Caso 3: veredito do ESBMC por iteracao")
+ax.set_ylim(0, 1)
 
 plt.tight_layout()
 plt.savefig("case3_plot.png", dpi=150, bbox_inches="tight")
-print("Salvo: case3_plot.png")
 plt.close()
+print(f"case3_plot.png: {len(iters)} iteracoes lidas de {CSV}")
 
 # ─── CASO 4 — Controlador PID com Caos ──────────────────────────────────────
 # Simula a evolucao do sistema PID com os parametros reais do pid_controller.c

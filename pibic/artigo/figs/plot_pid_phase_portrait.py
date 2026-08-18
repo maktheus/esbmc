@@ -1,4 +1,8 @@
 import numpy as np
+
+# seed fixa: sem ela a figura nao regenera igual, e uma figura de artigo que
+# muda a cada execucao nao e evidencia de nada
+np.random.seed(42)
 import matplotlib.pyplot as plt
 
 # Simulate chaos PID for phase portrait
