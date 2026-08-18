@@ -31,7 +31,7 @@ lugar errado.
    exclusiva de arquivos. Três retornaram; dois se perderam sem notificação — as
    áreas deles estão registradas na raia A como ⬜ não auditado, não como "ok".
 2. **Verificação direta** de toda afirmação de alto impacto, com comando e saída
-   registrados. É o que separa os 41 ✅ dos 11 🟡.
+   registrados. É o que separa os 42 ✅ dos 10 🟡.
 3. **Medição, não estimativa**, onde havia número em jogo: a parede do BMC e o
    resultado do IC3 na raia E vêm de execução cronometrada, não de extrapolação.
 
@@ -179,7 +179,7 @@ independente: nenhuma correção deve ser feita sem reproduzir o diagnóstico pr
 | KB-D07 | P1 | **Diagnóstico corrigido.** Instalar `ast2json` **não basta**: o binário 6.8.0 embarcado **não tem o frontend Python compilado** — `failed to figure out type of file` para qualquer `.py`. Exige compilar a 8.0.0 com `-DENABLE_PYTHON_FRONTEND=ON`. Mesmo bloqueio de `KB-D02` | execução direta | ✅ | `todo` |
 | KB-D08 | P1 | **Feito.** `pibic/README.md` criado: início rápido, mapa de diretórios, como interpretar um status, flags inexistentes, pipeline do IC3, e uma seção de limitações conhecidas | — | ✅ | `done` |
 | KB-D09 | P1 | **Parcial.** `results/EVIDENCIAS.md`, `results/case2_ambiente.md` e `ic3/EVIDENCIA.md` passam a registrar versão do ESBMC, solver, flags completas, timeout, SO e CPU junto de cada número. Falta reconciliar as combinações conflitantes que ainda constam do artigo e da apresentação (8.0.0/Z3, 6.8.0/Boolector 3.2, 6.8.0/Z3 4.8.9) | `4resultados.tex:4` vs `apresentacao_pibic.tex:593` | ✅ | `todo` |
-| KB-D10 | P1 | Religar as figuras aos dados. Nenhum script em `artigo/figs/` abre arquivo algum — todos os valores são literais. `plot_case2.py:7-8` tem a tabela GEMM inventada que contradiz o CSV | `artigo/figs/*.py` | 🟡 | `todo` |
+| KB-D10 | P1 | **Feito.** Três figuras religadas a dado real: **Caso 3** lê `results/case3_agent_stats.csv` (as 2 iterações medidas, não as 5 inventadas); **pesos do Caso 1** leem `teste_mlp/mlp_weights.h`, a rede efetivamente verificada, e a legenda deixou de afirmar que o heatmap atesta a origem das VCCs; **Caso 6 RL** avalia a mesma expressão de `rl_policy.c` sobre a mesma caixa do harness — o contraexemplo fica visível na figura (ação máxima 1,50 contra limite 1,0; 12,6% da grade viola). `plot_pid_phase_portrait.py` ganhou seed fixa. Criado `gerar_figuras.sh`, que regenera as 9 e falha se alguma quebrar, classificando cada script em: lê dado medido, avalia função, ou é ilustração | `artigo/figs/gerar_figuras.sh` | ✅ | `done` |
 | KB-D11 | P1 | **Feito.** Caminhos `/home/uchoa` corrigidos em 7 arquivos; as 2 imagens que apontavam para fora do repo viraram comentário explícito de ausência | `plot_pipeline_esbmc.py:40`, `results/analysis_report.md:118,122`, +6 | ✅ | `done` |
 | KB-D12 | P2 | **Feito.** 14 das 18 entradas eram de um trabalho de futebol/visão computacional; removidas. Adicionadas ESBMC, Z3, Boolector, Bitwuzla, IC3 (Bradley), PDR (Eén), ABC, Yosys, Reluplex, Marabou, Neurify, DDPG e cart-pole — cada uma marcada para conferência contra a fonte | `artigo/referencias.bib` | ✅ | `done` |
 | KB-D13 | P2 | **Feito.** Dois casos novos escritos no capítulo 4, ambos com dado medido: **Caso 5 — FFN de LLMs** (GPT-2/LLaMA, tabela de tempos medidos, reprodutibilidade byte-a-byte dos geradores e LUTs, e o compromisso entre os dois métodos de codificação: o mais rápido usa proxy ReLU e não verifica a ativação implantada) e **Caso 7 — malha fechada DDPG** (fidelidade Q8.8, as duas vacuidades identificadas e corrigidas, o envelope de segurança medido, a parede do BMC e a comparação com IC3). Citações adicionadas para ESBMC, Boolector, IC3, PDR, ABC, Yosys e DDPG — o capítulo tinha zero | `artigo/caps/4resultados.tex` | ✅ | `done` |
@@ -330,7 +330,7 @@ ONDA 5  (depende de C e E)
 | F — Higiene | — | 4 | 4 | 8 |
 | **Total** | **11** | **24** | **17** | **52** |
 
-Confiança: **41 ✅ verificado** · **11 🟡 relatado por agente** · **0 ⬜ não auditado**
+Confiança: **42 ✅ verificado** · **10 🟡 relatado por agente** · **0 ⬜ não auditado**
 
 Contagens conferidas por script sobre as próprias linhas da tabela, não à mão — as
 versões anteriores deste rodapé traziam 21/26/3 e 25/23/3, ambas erradas. Um board que
