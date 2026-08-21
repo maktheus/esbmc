@@ -62,16 +62,16 @@ HARNESSES = [
      dict(floatbv=True, unwind=11, no_unwinding_assertions=True), 400, True),
     ("Caso 6", "Política RL (bounds do atuador)", "cases/ai_model_checking/rl_policy.c",
      dict(floatbv=True, unwind=1, z3=True), 120, False),
-    ("FFN/LLM", "GPT-2 2x4 (QNN, GeLU exato)",
+    ("FFN/LLM", "GPT-2 2x4 (QNN, abstração intervalar GeLU)",
      "cases/llm_ffn_verification/verify_output/gpt2_2x4_qnn.c",
      dict(boolector=True, no_unwinding_assertions=True), 120, False),
-    ("FFN/LLM", "GPT-2 4x8 (QNN, GeLU exato)",
+    ("FFN/LLM", "GPT-2 4x8 (QNN, abstração intervalar GeLU)",
      "cases/llm_ffn_verification/verify_output/gpt2_4x8_qnn.c",
      dict(boolector=True, no_unwinding_assertions=True), 120, False),
-    ("FFN/LLM", "LLaMA-7B 4x8 (QNN, SiLU exato)",
+    ("FFN/LLM", "LLaMA-7B 4x8 (QNN, abstração intervalar SiLU)",
      "cases/llm_ffn_verification/verify_output/llama-7b_4x8_qnn.c",
      dict(boolector=True, no_unwinding_assertions=True), 120, False),
-    ("FFN/LLM", "GPT-2 4x16 (QNN, GeLU exato)",
+    ("FFN/LLM", "GPT-2 4x16 (QNN, abstração intervalar GeLU)",
      "cases/llm_ffn_verification/verify_output/gpt2_4x16_qnn.c",
      dict(boolector=True, no_unwinding_assertions=True), 120, True),
 ]
@@ -131,9 +131,9 @@ def main():
 
 Gerado por `scripts/gerar_evidencias.py`. **Não editar à mão** — reexecute.
 
-Cada linha aponta para a saída **bruta** do solver em `results/logs/`. Existe
-porque `KB-D03` registrou que nenhum log versionado continha um veredito,
-enquanto o capítulo 4 afirmava provas bem-sucedidas.
+Cada linha aponta para a saída **bruta** do solver em `results/logs/`. Antes de
+`KB-D03`, nenhum log versionado continha um veredito, embora o capítulo 4
+afirmasse provas bem-sucedidas.
 
 `TIMEOUT` é **indeciso**: não significa seguro nem inseguro.
 
@@ -157,6 +157,12 @@ enquanto o capítulo 4 afirmava provas bem-sucedidas.
         ind = sum(1 for *_, st, _, _ in linhas if st in ("TIMEOUT", "UNKNOWN"))
         fh.write(f"\n**{ok} provados · {ns} com contraexemplo · {ind} indecisos** "
                  f"de {len(linhas)} harnesses.\n")
+        fh.write(
+            "\nNos quatro harnesses FFN, `SAFE` vale para a sobreaproximação "
+            "definida pelos intervalos injetados. Transferir o veredito para "
+            "GeLU/SiLU reais exige que esses bounds sejam conservadores; o "
+            "encoding não representa a relação funcional exata.\n"
+        )
 
     print(f"\n{SAIDA}\n{LOGS}/")
 

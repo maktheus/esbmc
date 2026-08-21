@@ -37,20 +37,31 @@ lugar errado.
 
 ### Estado agora
 
-**31 das 52 tarefas concluídas, e os 11 P0 agora estão realmente fechados** —
+**36 das 52 tarefas concluídas, e os 11 P0 agora estão realmente fechados** —
 diagnóstico *e* correção. As Properties B e C do cartpole foram reescritas, e a
 Property D foi criada para cobrir o que a C não podia decidir. A cobertura da
 auditoria está completa — não há mais área ⬜. A suíte saiu de *21 falhas em 0,12 s*,
-porque nada rodava, para **31 testes passando em 12m49s**, verificando de verdade.
+porque nada rodava, para **44 testes coletados**; os testes focados desta rodada
+passam localmente, enquanto a suíte integral inclui verificações formais longas.
 Cada afirmação de veredito do capítulo 4 agora aponta para um log versionado.
 
 | | |
 |---|---|
-| **Núcleo consertado** | `KB-B01`–`KB-B05`, `B07`, `B08`, `B10`, `B11`. O wrapper distingue erro de execução de propriedade violada; a CI passou a existir de fato. |
-| **Vacuidades confirmadas** | `KB-C00`–`KB-C02` no cartpole, e mais duas encontradas ao consertar a suíte: `kernels_benchmarks.cpp` não compilava (15 testes inertes) e o ruído dos 5 perfis de caos nunca chegava ao sistema. |
-| **Raia E encerrada** | `KB-E01`, `KB-E02`. Empate técnico no ator real: nenhum método decide. |
+| **Núcleo consertado** | `KB-B01`–`KB-B11`. O wrapper distingue erro de execução de propriedade violada e o Ralph Loop valida código de saída, marcador e alvo canônico. |
+| **Vacuidades corrigidas** | `KB-C00` reproduziu os defeitos históricos; `KB-C01` reescreveu a Property B em dois passos e `KB-C02` reclassificou a Property C como sanidade da quantização, acrescentando a Property D. Mais duas vacuidades foram encontradas ao consertar a suíte: `kernels_benchmarks.cpp` não compilava (15 testes inertes) e o ruído dos 5 perfis de caos nunca chegava ao sistema. |
+| **Raia E versionada** | `KB-E01`, `KB-E02`. O pipeline e a medição histórica estão registrados; `KB-E03` e `KB-E07` continuam como pesquisa futura. |
 | **Higiene** | `KB-D04`, `D08`, `D11`, `F01`, `F03`, `F05`, `F08`. |
-| **Em aberto** | `KB-C01`/`KB-C02` (P0): reescrever os asserts vácuos do cartpole. Mais 23 itens P1/P2. |
+| **Em aberto** | Nenhum P0. Restam 16 itens P1/P2; os limites de escalabilidade e as inconsistências de ambiente/solver continuam explicitamente rastreados. |
+
+### Decisão de escopo desta rodada — 2026-08-21
+
+Por decisão explícita do mantenedor, os workflows e resultados de **CI remota e
+multiplataforma ficaram fora do escopo deste PR**. As alterações experimentais em
+`.github/workflows/` e no CMake foram revertidas. Checks vermelhos, cancelados ou
+sem runner não são apresentados como evidência de correção e tampouco foram usados
+para validar as mudanças: a aceitação desta rodada se apoia somente nas verificações
+locais documentadas. A estabilização de Windows, macOS e ARM permanece como trabalho
+separado e não deve ser confundida com conclusão científica do PIBIC.
 
 ### Uma armadilha recorrente: timeout arbitrário
 
@@ -79,10 +90,11 @@ métodos decide a instância. O `abc pdr` não convergiu em 1802 s; o `abc bmc3`
 5 frames em 901 s. `Timeout` é **indeciso** — tratá-lo como "seguro" seria o mesmo erro
 que a raia D acusa no artigo.
 
-Isso não enfraquece a tese, fortalece: o ABC parou em **5 frames** no ator real de 745
-parâmetros, e o ESBMC parou em **K=4** numa rede sintética 8× menor. Ferramentas,
-solvers e representações diferentes, **mesma parede** — logo o limite é do método, não
-da implementação. É essa a afirmação defensável para o artigo.
+Os dois resultados são evidência sugestiva de uma barreira de escalabilidade: o ABC
+parou em **5 frames** no ator real de 745 parâmetros, e o ESBMC parou em **K=4** numa
+rede sintética 8× menor. Como modelos, propriedades, representações e solvers diferem,
+eles não isolam causalidade nem provam que o limite pertence ao método. Essa hipótese
+exige uma comparação controlada sobre a mesma instância e o mesmo encoding.
 
 O que a raia E entrega, então, não é "use IC3 e o problema acaba". É: (a) a parede do
 BMC medida no sistema real do projeto; (b) a demonstração, no modelo sintético, de que
@@ -138,10 +150,10 @@ por execução direta. Um falso achado meu foi detectado e retirado no processo.
 | KB-B03 | P1 | **Feito.** Resolução em cascata: `$ESBMC_BIN` → `$PATH` → build local → binário embarcado. `conftest.py` pula a suíte com motivo se nenhum existir | `core_verify/esbmc_caller.py:6` | ✅ | `done` |
 | KB-B04 | P1 | **Feito.** Gatilho corrigido para `[master, main]`; o `export PATH` que não persistia foi trocado por `$GITHUB_ENV` apontando para o binário embarcado | `.github/workflows/esbmc-verify.yml:3-7,25` | ✅ | `done` |
 | KB-B05 | P1 | **Feito.** `ast2json` e `matplotlib` adicionados a `requirements.txt` | `results/case1_mlp.log` | ✅ | `done` |
-| KB-B06 | P1 | Parser de contraexemplos: regex casam em linhas `PASSED:` (falso positivo em verificação bem-sucedida); `"NaN or Inf"` não existe na saída do ESBMC (é `"NaN on "`); `memory leak` engloba `dereference failure` | `core_verify/SMT_feedback_parser.py:14-17,38-40` | 🟡 | `todo` |
+| KB-B06 | P1 | **Feito.** Violações só são extraídas quando existe `VERIFICATION FAILED`; o parser reconhece `NaN on` e separa vazamento de memória de falha genérica de desreferência. Regressões cobrem a saída segura e cada diagnóstico | `core_verify/SMT_feedback_parser.py`, `tests/test_parser.py` | ✅ | `done` |
 | KB-B07 | P1 | **Feito.** `encoding='utf-8', errors='replace'` — trace não-UTF-8 não derruba mais a execução | `core_verify/esbmc_caller.py:62` | ✅ | `done` |
 | KB-B08 | P1 | **Feito.** `tests/test_ground_truth.py`: par safe/unsafe mais os quatro modos de falha (arquivo ausente, fonte quebrado, flag inválida, timeout), cada um exigindo que NÃO sejam confundidos com UNSAFE. 15 asserções | `roadmap.md:64-67` | ✅ | `done` |
-| KB-B09 | P2 | `eval "$VERIFY_CMD"` executa string vinda de JSON que o próprio agente LLM edita | `ralph_loop_esbmc.sh:62` | ✅ | `todo` |
+| KB-B09 | P2 | **Feito.** O PRD usa `verify_argv`; o loop executa argv sem `eval`, valida identificador, alvo canônico e comando permitido, e só aceita SAFE quando código de saída e marcador concordam | `ralph_loop_esbmc.sh`, `tests/test_ralph_security.py` | ✅ | `done` |
 | KB-B10 | P2 | **Feito.** `packages = ["core_verify"]`; `torch`/`onnx` movidos para extras opcionais — o wrapper não importa nenhum dos dois. `pip install -e .` funciona | `pyproject.toml:9` | ✅ | `done` |
 | KB-B11 | P2 | **Feito.** `start_new_session=True` + `os.killpg` no timeout | `core_verify/esbmc_caller.py:69-73` | ✅ | `done` |
 
@@ -172,7 +184,7 @@ independente: nenhuma correção deve ser feita sem reproduzir o diagnóstico pr
 |---|---|---|---|---|---|
 | KB-D01 | P0 | **Feito.** O experimento não media nada: `run_benchmark.py` passava `-DDIM_LIMIT=<n>`, mas `matmul_kernel.cpp` **nunca usava o macro** — M=N=K=2 fixos em todos os "tamanhos". Corrigidos o kernel (parametrizado), a extensão (`.cpp`→`.c`), o `--smtlib` (impedia resolver) e o caminho fixo. **Medido:** N=2 → 1,97 s SAFE; N=3 → 16,83 s SAFE; N=4 → **>300 s TIMEOUT**. O artigo publicava `<1`, `≈2`, `≈5`, `≈8`, `≈15` s. A parede está em N=4; as linhas 4–6 descreviam execuções que não completam. Tabela substituída, figura que extrapolava até N=60 removida | `results/case2_ambiente.md` | ✅ | `done` |
 | KB-D02 | P0 | **Feito (documentado como limitação).** Três bloqueios independentes medidos: macro `ARDUINO` não definida → `WProgram.h` ausente; `PID_v1.cpp:46` usa construtor delegante C++11 e a 6.8.0 não tem `--std`; o harness usa justamente o construtor de 7 argumentos, que é o delegante. Seção reescrita: reporta integração e obstáculos, sem afirmar veredito | execução direta | ✅ | `done` |
-| KB-D03 | P0 | **Feito.** Criado `scripts/gerar_evidencias.py`: roda cada harness citado no artigo, grava a saída **bruta** do solver em `results/logs/` e consolida em `results/EVIDENCIAS.md` a tabela afirmação→comando→veredito→log. Regras: saída bruta sempre salva (para "nada casou" seguir distinguível de "não rodou"), `TIMEOUT` como **indeciso**, ambiente junto dos números, e harness que não compila aparece como `PARSE_ERROR` em vez de sumir. **Medido: 8 provados, 3 com contraexemplo, 0 indecisos** de 11 harnesses, todos com log versionado. Rendeu também a primeira contagem de VCCs do projeto (28 geradas, 4 após simplificação no stub do Transformer), KPI que o `roadmap.md` pede e nada reportava | `results/EVIDENCIAS.md`, `results/logs/` | ✅ | `done` |
+| KB-D03 | P0 | **Feito.** Criado `scripts/gerar_evidencias.py`: roda cada harness citado no artigo, grava a saída **bruta** do solver em `results/logs/` e consolida em `results/EVIDENCIAS.md` a tabela afirmação→comando→veredito→log. Regras: saída bruta sempre salva, `TIMEOUT` como **indeciso**, ambiente junto dos números, e falha de compilação aparece como `PARSE_ERROR`. **Medido: 9 provados, 3 com contraexemplo, 0 indecisos** de 12 harnesses, todos com log versionado | `results/EVIDENCIAS.md`, `results/logs/` | ✅ | `done` |
 | KB-D04 | P0 | **Feito.** As 6 legendas removidas de `4resultados.tex` e `3metodologia.tex` | `4resultados.tex:73,117,217,245,308`; `3metodologia.tex:130` | ✅ | `done` |
 | KB-D05 | P0 | **Feito.** `--smtlib` fazia o ESBMC emitir a fórmula em vez de resolver, então `success` era permanentemente falso e o CSV ficava com 0 bytes. Trocado pelo `esbmc_caller`; caminhos ancorados no script. **Medido:** 2 iterações — UNSAFE 0,13 s, SAFE 0,11 s. O artigo afirmava 5, inalcançáveis porque o loop encerra na primeira prova | `results/case3_agent_stats.csv` | ✅ | `done` |
 | KB-D06 | P0 | **Feito.** Seção de CI reescrita para o workflow que realmente roda, incluindo por que o binário é versionado em vez de baixado e por que o caminho vai por `$GITHUB_ENV` | `.github/workflows/esbmc-verify.yml` | ✅ | `done` |
@@ -221,11 +233,11 @@ Invariante encontrado: **4 cláusulas, 8 literais, 3 dos 65 bits de estado** —
 
 | ID | Prio | Tarefa | Evidência | Conf. | Status |
 |---|---|---|---|---|---|
-| KB-E01 | P1 | **Feito** — pipeline versionado em `pibic/ic3/` (commit `25d02b9f`): `gen_transition_system.py` (lê os pesos reais e emite o sistema de transição Verilog, `--bits 16|32`), `validate_forward.py` (prova bit-exatidão do forward contra referência Python) e `run_pdr.sh` (yosys → AIGER → `abc pdr`, com tempo e pico de RSS). O Verilog é o ponto de bifurcação: dele saem tanto AIGER quanto BTOR2, então trocar de motor não exige reescrever o gerador | `pibic/ic3/` | ✅ | `done` |
-| KB-E02 | P1 | **Medido sobre o ator real** (4→24→24→1, 745 parâmetros, forward validado bit-a-bit em 12/12 estados; sem os `__ESBMC_assume` de intervalo do harness C). Síntese: **904.242 portas AND, 65 latches, nível 689**. Resultado honesto: **nenhum dos dois métodos decide a instância** — `abc pdr` não convergiu em **1802 s / 708 MB**, e `abc bmc3` alcançou só **5 frames em 901 s / 503 MB**. `Timeout` é indeciso, **não** é 'seguro'. Confirmação da tese da raia: o ABC parou em 5 frames no ator real e o ESBMC parou em K=4 numa rede 8× menor — ferramentas e solvers diferentes, **mesma parede**, logo o limite é do método. Próximo passo em `KB-E07` | `pibic/ic3/cl_ddpg16.abc.out`, `cl_ddpg16.bmc.out` | ✅ | `done` |
+| KB-E01 | P1 | **Feito** — pipeline versionado em `pibic/ic3/`: `gen_transition_system.py` lê os pesos reais e emite Verilog (`--bits 16|32`), `validate_forward.py` faz teste diferencial amostral e `run_pdr.sh` preserva logs, tempo e pico de RSS. A validação obteve coincidência em 12/12 estados; isso **não prova equivalência universal** entre implementações | `pibic/ic3/` | ✅ | `done` |
+| KB-E02 | P1 | **Medição histórica sobre o ator real** (4→24→24→1, 745 parâmetros; forward coincidente em 12/12 amostras). Síntese: **904.242 portas AND, 65 latches, nível 689**. `abc pdr` não convergiu em **1802 s / 708 MB** e `abc bmc3` alcançou 5 frames em **901 s / 503 MB**. O stdout bruto do PDR não foi preservado, portanto tempo/RSS são histórico do wrapper, não execução integralmente reproduzível. A semelhança com a parede do ESBMC é hipótese, não causalidade demonstrada | `pibic/ic3/EVIDENCIA.md`, `cl_ddpg16.bmc.out` | ✅ | `done` |
 | KB-E03 | P1 | Fechar a curva de escalabilidade do BMC. **Parcialmente respondido**: no modelo real o BMC não passa de 5 frames em 901 s, então K=8 e K=16 estão fora de alcance nesta máquina — medir K=8/K=16 só faz sentido no modelo sintético, para a curva. **Não extrapolar** de poucos pontos: é o erro que `KB-D01` acusa | `cl_ddpg16.bmc.out` | ✅ | `todo` |
-| KB-E04 | P2 | Documentar as limitações honestas: (a) o PDR também não convergiu no modelo sintético sem batente (500 s); (b) a vantagem é **estrutural** — memória independente da profundidade — não incondicional; (c) bit-blastar para AIGER **perde a estrutura de palavra**, o que atrapalha a generalização de cláusulas do PDR. Ver `KB-E07` | ✅ medido | ✅ | `todo` |
-| KB-E05 | P2 | Avaliar `--overflow-check` / bit-width: 32→16 bits cortou o estado de 129 para 65 flops e a memória do PDR de 246 para 110 MB. O cartpole real é Q8.8 = 16 bits | ✅ medido | ✅ | `todo` |
+| KB-E04 | P2 | **Documentado.** PDR evita construir uma fórmula monolítica com K transições, mas frames e cláusulas ainda podem crescer; AIGER perde estrutura de palavra; timeout permanece indeciso. Ver `ic3/README.md` e `ic3/EVIDENCIA.md` | ✅ documentado | ✅ | `done` |
+| KB-E05 | P2 | Avaliar bit-width: 32→16 bits reduz o estado gerado de 129 para 65 flops. A comparação de memória 246→110 MB não tem os dois logs brutos e foi retirada como conclusão; overflow/wrap de 16 bits precisa integrar explicitamente a propriedade | `ic3/EVIDENCIA.md` | ✅ parcial | ✅ | `todo` |
 | KB-E06 | P2 | **Feito.** A seção do Caso 5 que reportava 52 topologias (34 seguras / 15 adversariais / 3 timeouts) foi **substituída** — aqueles números vinham de valores fixos nos scripts de plotagem, e o Ralph Loop que os produziria tem o portão de verificação comentado. Em seu lugar, o subprojeto FFN, integralmente reprodutível. As três figuras que plotavam os dados inventados foram removidas | `artigo/caps/4resultados.tex` | ✅ | `done` |
 | KB-E07 | P2 | **Rota word-level — agora o caminho principal, não plano B.** O ABC não convergiu no modelo real (`KB-E02`), e a hipótese mais provável é a perda de estrutura: bit-blastar 4 inteiros em 65 bits soltos destrói exatamente o que o PDR usa para generalizar cláusulas, e o invariante precisaria falar sobre `th` como palavra. Exportar BTOR2 (`yosys write_btor`, já disponível) e usar um motor word-level — AVR, Pono ou `btormc`. Nenhum está instalado nem no apt (`btormc` vem com o Boolector; AVR e Pono exigem build do fonte). BTOR2 preserva os 4 inteiros em vez de 65 bits soltos, o que tende a ajudar muito a generalização | `yosys -p "help write_btor"`; `command -v avr pono btormc` → ausentes | ✅ | `todo` |
 
@@ -336,5 +348,7 @@ Contagens conferidas por script sobre as próprias linhas da tabela, não à mã
 versões anteriores deste rodapé traziam 21/26/3 e 25/23/3, ambas erradas. Um board que
 acusa números sem evidência não pode ter números sem evidência.
 
-Progresso: `KB-C00` concluída — as duas vacuidades P0 (`KB-C01`, `KB-C02`) saíram de
-🟡 para ✅ por reprodução direta. As auditorias `KB-A01` e `KB-A02` estão em execução.
+Progresso: **36/52 concluídas e 11/11 P0 fechadas.** `KB-C00` reproduziu diretamente
+as duas vacuidades históricas; `KB-C01` e `KB-C02` registram as correções e as novas
+propriedades. As auditorias `KB-A01` e `KB-A02` também foram concluídas por execução
+direta. O histórico detalhado permanece nas respectivas linhas da tabela.

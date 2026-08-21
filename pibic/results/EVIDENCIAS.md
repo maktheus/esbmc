@@ -2,9 +2,9 @@
 
 Gerado por `scripts/gerar_evidencias.py`. **Não editar à mão** — reexecute.
 
-Cada linha aponta para a saída **bruta** do solver em `results/logs/`. Existe
-porque `KB-D03` registrou que nenhum log versionado continha um veredito,
-enquanto o capítulo 4 afirmava provas bem-sucedidas.
+Cada linha aponta para a saída **bruta** do solver em `results/logs/`. Antes de
+`KB-D03`, nenhum log versionado continha um veredito, embora o capítulo 4
+afirmasse provas bem-sucedidas.
 
 `TIMEOUT` é **indeciso**: não significa seguro nem inseguro.
 
@@ -25,9 +25,13 @@ enquanto o capítulo 4 afirmava provas bem-sucedidas.
 | Caso 2 | GEMM com tiling (N=3) | **SAFE** | 17.51 s | `--memory-leak-check --overflow-check --no-unwinding-assertions --boolector --unwind 10 -DDIM_LIMIT=3` | [`matmul_kernel.log`](logs/matmul_kernel.log) |
 | Caso 4 | PID sob ruído [-5,+5], 10 passos | **SAFE** | 213.47 s | `--floatbv --no-unwinding-assertions --unwind 11` | [`pid_controller.log`](logs/pid_controller.log) |
 | Caso 6 | Política RL (bounds do atuador) | **UNSAFE** | 2.58 s | `--floatbv --z3 --unwind 1` | [`rl_policy.log`](logs/rl_policy.log) |
-| FFN/LLM | GPT-2 2x4 (QNN, GeLU exato) | **SAFE** | 0.24 s | `--boolector --no-unwinding-assertions` | [`gpt2_2x4_qnn.log`](logs/gpt2_2x4_qnn.log) |
-| FFN/LLM | GPT-2 4x8 (QNN, GeLU exato) | **SAFE** | 4.24 s | `--boolector --no-unwinding-assertions` | [`gpt2_4x8_qnn.log`](logs/gpt2_4x8_qnn.log) |
-| FFN/LLM | LLaMA-7B 4x8 (QNN, SiLU exato) | **SAFE** | 3.46 s | `--boolector --no-unwinding-assertions` | [`llama-7b_4x8_qnn.log`](logs/llama-7b_4x8_qnn.log) |
-| FFN/LLM | GPT-2 4x16 (QNN, GeLU exato) | **SAFE** | 20.10 s | `--boolector --no-unwinding-assertions` | [`gpt2_4x16_qnn.log`](logs/gpt2_4x16_qnn.log) |
+| FFN/LLM | GPT-2 2x4 (QNN, abstração intervalar GeLU) | **SAFE** | 0.24 s | `--boolector --no-unwinding-assertions` | [`gpt2_2x4_qnn.log`](logs/gpt2_2x4_qnn.log) |
+| FFN/LLM | GPT-2 4x8 (QNN, abstração intervalar GeLU) | **SAFE** | 4.24 s | `--boolector --no-unwinding-assertions` | [`gpt2_4x8_qnn.log`](logs/gpt2_4x8_qnn.log) |
+| FFN/LLM | LLaMA-7B 4x8 (QNN, abstração intervalar SiLU) | **SAFE** | 3.46 s | `--boolector --no-unwinding-assertions` | [`llama-7b_4x8_qnn.log`](logs/llama-7b_4x8_qnn.log) |
+| FFN/LLM | GPT-2 4x16 (QNN, abstração intervalar GeLU) | **SAFE** | 20.10 s | `--boolector --no-unwinding-assertions` | [`gpt2_4x16_qnn.log`](logs/gpt2_4x16_qnn.log) |
 
 **9 provados · 3 com contraexemplo · 0 indecisos** de 12 harnesses.
+
+Nos quatro harnesses FFN, `SAFE` vale para a sobreaproximação definida pelos
+intervalos injetados. Transferir o veredito para GeLU/SiLU reais exige que esses
+bounds sejam conservadores; o encoding não representa a relação funcional exata.

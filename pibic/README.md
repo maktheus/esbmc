@@ -16,8 +16,24 @@ agentes neuro-simbólicos e controle híbrido.
 git clone --recurse-submodules <url>        # o submodulo famous_pid importa
 cd esbmc/pibic
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+python -m pip install -e ".[test]"
 pytest tests/ -v
+```
+
+O pacote base instala apenas o wrapper, que usa a biblioteca padrão do Python.
+Testes, treino, extração de modelos e gráficos ficam em grupos opcionais:
+
+```bash
+python -m pip install -e ".[test,models,plots,python-frontend]"
+# ou, para reproduzir o ambiente completo legado:
+python -m pip install -r requirements.txt
+```
+
+Para gerar e inspecionar o wheel sem instalar o projeto:
+
+```bash
+python -m pip wheel . --no-deps --wheel-dir dist
+python -m zipfile -l dist/core_verify-*.whl
 ```
 
 O binário do ESBMC **já vem no repositório**
@@ -98,21 +114,22 @@ No wrapper: `no_bounds_check=True`, `no_pointer_check=True`.
 ## Verificação ilimitada (`ic3/`)
 
 O BMC responde "seguro até K passos". Para malha fechada isso não basta, e o
-custo explode: 4 passos custaram 909 s e 383 MB nesta máquina. IC3/PDR devolve
-um **invariante indutivo** — "seguro para sempre" — com memória independente da
-profundidade da prova.
+custo explode: 4 passos custaram 909 s e 383 MB nesta máquina. IC3/PDR busca um
+**invariante indutivo** sem construir uma fórmula monolítica com K cópias da
+transição. Isso não torna a memória independente da profundidade: frames e
+cláusulas ainda podem crescer durante a busca.
 
 ```bash
 sudo apt-get install -y yosys        # traz o ABC embutido
 cd ic3
 python3 gen_transition_system.py --bits 16 -o cl_ddpg16.v
-python3 validate_forward.py          # exige 12/12 estados bit-exatos
+python3 validate_forward.py          # teste diferencial em 12 estados
 ./run_pdr.sh cl_ddpg16.v 1800
 ```
 
-`validate_forward.py` não é opcional: ele prova que o Verilog gerado computa a
-**mesma** aritmética Q8.8 do harness C verificado. Sem isso, o resultado seria
-sobre outro controlador.
+`validate_forward.py` não é opcional: ele compara o Verilog gerado com a
+referência Q8.8 em 12 estados. A coincidência das 12 amostras detecta regressões,
+mas não constitui prova de equivalência universal entre as implementações.
 
 Resultados medidos em [`ic3/EVIDENCIA.md`](ic3/EVIDENCIA.md).
 
@@ -140,21 +157,43 @@ Requer `abntex2` e `abntex2-alf.bst` (incluso).
 
 ---
 
+## Aplicação web do Cart-Pole
+
+A visualização é uma exportação estática Next.js e requer Node.js 20.9 ou mais
+recente. O `basePath` é opcional e permite publicar em um subdiretório:
+
+```bash
+cd cartpole/webapp
+npm ci
+npm run lint
+npm run build
+# PowerShell: $env:NEXT_PUBLIC_BASE_PATH = "/pibic"
+# Bash:       NEXT_PUBLIC_BASE_PATH=/pibic npm run build
+```
+
+O conteúdo exportado fica em `cartpole/webapp/out/`.
+
+---
+
 ## Limitações conhecidas
 
 Registradas para que ninguém as descubra por acidente. Detalhe e evidência em
 [`KANBAN.md`](KANBAN.md).
 
-- **Duas das três propriedades do cartpole são vácuas** (`KB-C01`, `KB-C02`),
-  confirmado por execução: a Property B não depende da saída do controlador, e
-  a Property C vale por construção do `tanh`.
-- **A verificação em malha fechada é de 1 passo.** O harness de 50 passos nunca
-  foi implementado, e a medição mostra que não era alcançável com BMC.
+- **As Properties B e C originais do Cart-Pole eram vácuas, mas esse defeito já
+  foi corrigido.** A B agora mede segurança em dois passos; a C foi
+  reclassificada como teste da quantização, e a nova Property D depende da saída
+  do ator. Evidência e discriminação estão em [`KB-C01` e `KB-C02`](KANBAN.md#raia-c--propriedades-formais).
+- **A verificação em malha fechada continua limitada.** A propriedade atual cobre
+  dois passos; o esboço de 50 passos não foi concluído, e as medições mostram a
+  parede do BMC em 4 passos no modelo sintético e 5 frames no ator real.
 - **Nenhum dos dois métodos decide o controlador DDPG real** — PDR não convergiu
   em 1802 s, BMC parou em 5 frames.
 - **A verificação da Arduino-PID não é reproduzível** com o binário embarcado:
   `PID_v1.cpp` exige C++11 e a 6.8.0 não tem `--std` (`KB-D02`).
 - **Perfis de caos com faixa contínua não decidem** sob `--floatbv`; só o perfil
   discreto (`Impulse`) decide, em 27 s.
-- **Vários números do artigo não têm evidência no repositório** (`KB-D01` a
-  `KB-D06`), e a tabela do GEMM contradiz o único CSV medido por 9× e 27×.
+- **Ainda há combinações conflitantes de versão e solver** entre artigo,
+  apresentação e READMEs (`KB-D09`). Os vereditos corrigidos e seus logs estão em
+  [`results/EVIDENCIAS.md`](results/EVIDENCIAS.md); números sem log não devem ser
+  usados como evidência.
