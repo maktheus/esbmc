@@ -88,7 +88,8 @@ export default function StatePlot({ data, currentIdx, field, label, unit, limit,
     ctx.beginPath();
     values.forEach((v, i) => {
       const px = toX(i), py = toY(v);
-      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
     });
     ctx.stroke();
 

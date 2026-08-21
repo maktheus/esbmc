@@ -267,7 +267,8 @@ function MiniPlot({ history, label, limit, color, unit }: {
       history.forEach((v, i) => {
         const x = (i / (HISTORY_LEN - 1)) * cw;
         const y = toY(v);
-        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
       });
       ctx.stroke();
     }
@@ -308,8 +309,6 @@ function parseCounterexampleState(str: string): CartPoleState | null {
 
 export default function SimulationPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [floatWeights, setFloatWeights] = useState<DDPGWeights | null>(null);
-  const [qWeights, setQWeights] = useState<QuantizedWeights | null>(null);
   const [running, setRunning] = useState(false);
   const [failed, setFailed] = useState(false);
   const [mode, setMode] = useState<ControlMode>('q88');
@@ -318,6 +317,8 @@ export default function SimulationPage() {
   const [error, setError] = useState('');
   const [ceActive, setCeActive] = useState(false);
   const [verData, setVerData] = useState<DDPGVerificationData | null>(null);
+  const [displayState, setDisplayState] = useState<CartPoleState>(() => resetState());
+  const [manualForce, setManualForce] = useState(0);
 
   const stateRef = useRef<CartPoleState>(resetState());
   const forceRef = useRef(0);
@@ -346,8 +347,8 @@ export default function SimulationPage() {
   useEffect(() => {
     const base = process.env.NEXT_PUBLIC_BASE_PATH || '';
     Promise.all([
-      loadWeights().then(w => { setFloatWeights(w); floatWeightsRef.current = w; }),
-      loadQuantizedWeights().then(w => { setQWeights(w); qWeightsRef.current = w; }),
+      loadWeights().then(w => { floatWeightsRef.current = w; }),
+      loadQuantizedWeights().then(w => { qWeightsRef.current = w; }),
       fetch(`${base}/ddpg_verification_data.json`).then(r => r.ok ? r.json() : null).then(setVerData),
     ]).catch(() => setError('Falha ao carregar pesos'));
   }, []);
@@ -361,6 +362,9 @@ export default function SimulationPage() {
     setCeActive(false);
     setSteps(0);
     setForce(0);
+    setDisplayState(stateRef.current);
+    manualForceRef.current = 0;
+    setManualForce(0);
     histXRef.current = [];
     histXdRef.current = [];
     histThRef.current = [];
@@ -386,6 +390,7 @@ export default function SimulationPage() {
     setCeActive(true);
     setSteps(0);
     setForce(0);
+    setDisplayState(parsed);
     histXRef.current = [];
     histXdRef.current = [];
     histThRef.current = [];
@@ -447,6 +452,7 @@ export default function SimulationPage() {
       if (frameCount % 3 === 0) {
         setSteps(prev => prev + 3);
         setForce(f);
+        setDisplayState(ns);
         setHistX([...histXRef.current]);
         setHistXd([...histXdRef.current]);
         setHistTh([...histThRef.current]);
@@ -456,6 +462,9 @@ export default function SimulationPage() {
 
       if (done && !failRef.current) {
         failRef.current = true;
+        // A falha pode ocorrer entre as atualizações agrupadas a cada 3
+        // frames; publique sempre o estado exato que disparou o limite.
+        setDisplayState(ns);
         setFailed(true);
         setRunning(true);
       }
@@ -490,12 +499,14 @@ export default function SimulationPage() {
     const mx = (e.clientX - rect.left) / rect.width * W;
     const dx = mx - dragXRef.current;
     manualForceRef.current = Math.max(-FORCE_MAX, Math.min(FORCE_MAX, dx * 0.5));
+    setManualForce(manualForceRef.current);
     dragXRef.current = mx;
   }, []);
 
   const onMouseUp = useCallback(() => {
     dragRef.current = false;
     manualForceRef.current = 0;
+    setManualForce(0);
   }, []);
 
   const onTouchStart = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
@@ -516,21 +527,32 @@ export default function SimulationPage() {
     const mx = (e.touches[0].clientX - rect.left) / rect.width * W;
     const dx = mx - dragXRef.current;
     manualForceRef.current = Math.max(-FORCE_MAX, Math.min(FORCE_MAX, dx * 0.5));
+    setManualForce(manualForceRef.current);
     dragXRef.current = mx;
   }, []);
 
   const onTouchEnd = useCallback(() => {
     dragRef.current = false;
     manualForceRef.current = 0;
+    setManualForce(0);
   }, []);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft')  manualForceRef.current = -FORCE_MAX;
-      if (e.key === 'ArrowRight') manualForceRef.current = FORCE_MAX;
+      if (e.key === 'ArrowLeft') {
+        manualForceRef.current = -FORCE_MAX;
+        setManualForce(-FORCE_MAX);
+      }
+      if (e.key === 'ArrowRight') {
+        manualForceRef.current = FORCE_MAX;
+        setManualForce(FORCE_MAX);
+      }
     };
     const upHandler = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') manualForceRef.current = 0;
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        manualForceRef.current = 0;
+        setManualForce(0);
+      }
     };
     window.addEventListener('keydown', handler);
     window.addEventListener('keyup', upHandler);
@@ -707,10 +729,10 @@ export default function SimulationPage() {
         <p className="text-gray-400 text-xs uppercase tracking-wider mb-3">Estado numerico</p>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 font-mono text-sm">
           {[
-            { label: 'x',         val: stateRef.current.x,         unit: 'm',     col: 'text-blue-300',  limit: X_LIMIT },
-            { label: 'x_dot',     val: stateRef.current.x_dot,     unit: 'm/s',   col: 'text-blue-300',  limit: 5.0 },
-            { label: 'theta',     val: stateRef.current.theta,     unit: 'rad',   col: 'text-green-300', limit: THETA_LIMIT },
-            { label: 'theta_dot', val: stateRef.current.theta_dot, unit: 'rad/s', col: 'text-green-300', limit: 5.0 },
+            { label: 'x',         val: displayState.x,         unit: 'm',     col: 'text-blue-300',  limit: X_LIMIT },
+            { label: 'x_dot',     val: displayState.x_dot,     unit: 'm/s',   col: 'text-blue-300',  limit: 5.0 },
+            { label: 'theta',     val: displayState.theta,     unit: 'rad',   col: 'text-green-300', limit: THETA_LIMIT },
+            { label: 'theta_dot', val: displayState.theta_dot, unit: 'rad/s', col: 'text-green-300', limit: 5.0 },
             { label: 'F',         val: force,                       unit: 'N',     col: 'text-yellow-300', limit: FORCE_MAX },
           ].map(({ label, val, unit, col, limit }) => {
             const danger = Math.abs(val) > limit * 0.8;
@@ -736,8 +758,12 @@ export default function SimulationPage() {
             min={-FORCE_MAX}
             max={FORCE_MAX}
             step={0.1}
-            value={manualForceRef.current}
-            onChange={e => { manualForceRef.current = parseFloat(e.target.value); }}
+            value={manualForce}
+            onChange={e => {
+              const value = parseFloat(e.target.value);
+              manualForceRef.current = value;
+              setManualForce(value);
+            }}
             className="w-full accent-purple-500"
           />
           <div className="flex justify-between text-gray-500 text-xs mt-1">

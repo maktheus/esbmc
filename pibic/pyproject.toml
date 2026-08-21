@@ -8,17 +8,19 @@ version = "0.1.0"
 description = "ESBMC AI Verification Toolkit in Python"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-    "pytest>=7.0",
-    "numpy>=1.24",
-]
+dependencies = []
 
 # torch/onnx sao ~2 GB e NENHUM arquivo de core_verify os importa — o wrapper
 # so usa subprocess. Ficam opcionais, para quem for treinar ou extrair pesos.
 [project.optional-dependencies]
-models = ["torch>=2.0", "onnx>=1.14"]
-plots = ["matplotlib>=3.7"]
+test = ["pytest>=7.0"]
+models = ["numpy>=1.24", "torch>=2.0", "onnx>=1.14"]
+plots = ["numpy>=1.24", "matplotlib>=3.7"]
 python-frontend = ["ast2json>=0.3"]
 
 [tool.setuptools]
 packages = ["core_verify"]
+include-package-data = false
+
+[tool.setuptools.exclude-package-data]
+core_verify = ["__pycache__/*", "*.py[cod]"]
