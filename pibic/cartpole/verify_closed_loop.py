@@ -9,11 +9,11 @@ Propriedades verificadas:
       Se emitir ação=0, é falha do controlador.
     Simétrico: θ < -threshold AND θ_dot ≤ 0 → assert(action==0)
 
-  Property B — Segurança em passo único com dinâmica linearizada:
+  Property B — Segurança em dois passos com dinâmica linearizada:
     Para s₀ ∈ S_safe (simbólico e limitado):
       1. Executa passagem completa do DQN para obter ação
       2. Aplica UM passo de dinâmica linearizada (sin≈θ, cos≈1)
-      3. Verifica que θ₁ ∈ [-53, 53] (em Q8.8)
+      3. Verifica que θ₂ ∈ [-53, 53] (em Q8.8), quando a ação já alcançou θ
 
   ESBMC FAILED   = contraexemplo encontrado (falha detectada)
   ESBMC SUCCESS  = propriedade satisfeita para todo estado no domínio
@@ -22,10 +22,13 @@ Uso:
     python verify_closed_loop.py
 """
 
-import subprocess, re, os, sys, json, math, tempfile
+import re, os, sys, json, math, tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from onnx_controller_extractor import extract_controller_weights
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from core_verify.esbmc_caller import (
+    SAFE, UNSAFE, run_esbmc as run_esbmc_canonical,
+)
 
 ESBMC     = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                          "../QNNVerifier/esbmc-6.8.0/esbmc")
@@ -233,7 +236,7 @@ int main(void) {{
 
 def harness_prop_b(controller_body, n_out=2):
     """
-    Segurança em passo único com dinâmica linearizada (sin≈θ, cos≈1).
+    Segurança em dois passos com dinâmica linearizada (sin≈θ, cos≈1).
 
     Fórmulas Q8.8 derivadas dos parâmetros físicos:
       Parâmetros: g=9.8, M=1.0, m=0.1, L=0.5, F_mag=10N, dt=0.02
@@ -257,15 +260,15 @@ def harness_prop_b(controller_body, n_out=2):
     """
     return f"""\
 /*
- * prop_b_safety.c — Property B: segurança em passo único (dinâmica linearizada)
+ * prop_b_safety.c — Property B: segurança em dois passos (dinâmica linearizada)
  *
  * Para qualquer s0 ∈ S_safe:
  *   1. Executa DQN para obter ação
  *   2. Aplica UM passo de dinâmica linearizada (sin≈θ, cos≈1)
- *   3. Verifica que th_new ∈ [-{TH_BND}, {TH_BND}] (seguro)
+ *   3. Verifica que th_2 ∈ [-{TH_BND}, {TH_BND}] (seguro)
  *
- * ESBMC FAILED   = encontrou estado onde sistema sai da região segura em 1 passo
- * ESBMC SUCCESS  = sistema sempre permanece seguro após 1 passo
+ * ESBMC FAILED   = encontrou estado onde sistema sai da região segura em 2 passos
+ * ESBMC SUCCESS  = sistema sempre permanece seguro após 2 passos
  *
  * Linearização (válida para |θ| ≤ 12°):
  *   th_acc_Q = (4040 * th - 375 * F_Q) / 256
@@ -298,9 +301,13 @@ int main(void) {{
     int th_new  = th  + (5 * thd)   / 256;
     int thd_new = thd + (5 * th_acc) / 256;
 
-    /* Propriedade: pêndulo deve permanecer na região segura após 1 passo */
-    __ESBMC_assert(th_new >= -{TH_BND} && th_new <= {TH_BND},
-                   "PropB: theta sai da regiao segura apos 1 passo!");
+    /* A acao altera thd no passo 1 e so alcanca theta no passo 2. Asserir
+       th_new tornaria toda a rede codigo morto para esta propriedade. */
+    int th_2 = th_new + (5 * thd_new) / 256;
+
+    /* Propriedade: pêndulo deve permanecer na região segura após 2 passos */
+    __ESBMC_assert(th_2 >= -{TH_BND} && th_2 <= {TH_BND},
+                   "PropB: theta sai da regiao segura apos 2 passos!");
     return 0;
 }}
 """
@@ -310,38 +317,35 @@ int main(void) {{
 
 def run_esbmc(c_file, timeout=TIMEOUT):
     """Executa ESBMC e retorna (ok, counterexample_str, raw_output)."""
-    try:
-        r = subprocess.run(
-            [ESBMC, c_file, "--no-unwinding-assertions", "--boolector"],
-            capture_output=True, text=True, timeout=timeout,
-        )
-        out = r.stdout + r.stderr
+    result = run_esbmc_canonical(
+        c_file, timeout=timeout, no_unwinding_assertions=True, z3=True)
+    out = result.output
 
-        if "VERIFICATION SUCCESSFUL" in out:
-            return True, "", out
-        elif "VERIFICATION FAILED" in out:
-            # Tenta extrair valores do contraexemplo
-            ce_parts = []
-            for name, label in [("x", "x"), ("xd", "xd"), ("th", "th"), ("thd", "thd")]:
-                m = re.search(rf'\b{name}\s*=\s*(-?\d+)', out)
-                if m:
-                    val = int(m.group(1))
-                    ce_parts.append(f"{label}={val/SCALE:.4f}")
-            # Também tenta action
-            m_act = re.search(r'\baction\s*=\s*(-?\d+)', out)
-            if m_act:
-                ce_parts.append(f"action={m_act.group(1)}")
-            ce_str = "  ".join(ce_parts) if ce_parts else "(ver saída ESBMC)"
-            return False, ce_str, out
-        else:
-            return None, "resultado desconhecido", out
-    except subprocess.TimeoutExpired:
-        return None, "TIMEOUT", ""
+    if result.status == SAFE:
+        return True, "", out
+    if result.status == UNSAFE:
+        # Tenta extrair valores do contraexemplo
+        ce_parts = []
+        for name, label in [("x", "x"), ("xd", "xd"), ("th", "th"), ("thd", "thd")]:
+            m = re.search(rf'\b{name}\s*=\s*(-?\d+)', out)
+            if m:
+                val = int(m.group(1))
+                ce_parts.append(f"{label}={val/SCALE:.4f}")
+        m_act = re.search(r'\baction\s*=\s*(-?\d+)', out)
+        if m_act:
+            ce_parts.append(f"action={m_act.group(1)}")
+        ce_str = "  ".join(ce_parts) if ce_parts else "(ver saída ESBMC)"
+        return False, ce_str, out
+    return None, result.status, out
 
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
 def main():
+    # ONNX e necessario apenas para extrair pesos; geradores e runner formal
+    # continuam testaveis sem essa dependencia opcional.
+    from onnx_controller_extractor import extract_controller_weights
+
     print("=" * 65)
     print("Verificação em Malha Fechada — DQN Cart-Pole")
     print(f"Domínio Q8.8 (scale={SCALE}): x∈[±{X_BND}] xd∈[±{XD_BND}]"
@@ -386,7 +390,7 @@ def main():
     print(f"Property A — θ > {DANGER_TH/256:.2f} rad AND θ_dot ≥ 0 → push right (action=1)")
     print(f"{'─'*65}")
     src_ar = harness_prop_a_right(ctrl_body, n_out=n_out)
-    f_ar = "/tmp/cl_prop_a_right.c"
+    f_ar = os.path.join(tempfile.gettempdir(), "cl_prop_a_right.c")
     with open(f_ar, "w") as f:
         f.write(src_ar)
     print(f"Harness gerado: {f_ar}")
@@ -412,7 +416,7 @@ def main():
     print(f"Property A — θ < -{DANGER_TH/256:.2f} rad AND θ_dot ≤ 0 → push left (action=0)")
     print(f"{'─'*65}")
     src_al = harness_prop_a_left(ctrl_body, n_out=n_out)
-    f_al = "/tmp/cl_prop_a_left.c"
+    f_al = os.path.join(tempfile.gettempdir(), "cl_prop_a_left.c")
     with open(f_al, "w") as f:
         f.write(src_al)
     print(f"Harness gerado: {f_al}")
@@ -435,10 +439,10 @@ def main():
 
     # ── Property B ────────────────────────────────────────────────────────────
     print(f"\n{'─'*65}")
-    print("Property B — Segurança em passo único (dinâmica linearizada)")
+    print("Property B — Segurança em dois passos (dinâmica linearizada)")
     print(f"{'─'*65}")
     src_b = harness_prop_b(ctrl_body, n_out=n_out)
-    f_b = "/tmp/cl_prop_b_safety.c"
+    f_b = os.path.join(tempfile.gettempdir(), "cl_prop_b_safety.c")
     with open(f_b, "w") as f:
         f.write(src_b)
     print(f"Harness gerado: {f_b}")
@@ -447,13 +451,13 @@ def main():
     ok_b, ce_b, out_b = run_esbmc(f_b)
 
     if ok_b is True:
-        print("\nProperty B (segurança 1 passo): SUCCESSFUL")
-        print("  Sistema SEMPRE permanece seguro após 1 passo para todo s0 ∈ S_safe")
+        print("\nProperty B (segurança 2 passos): SUCCESSFUL")
+        print("  Sistema SEMPRE permanece seguro após 2 passos para todo s0 ∈ S_safe")
         results["property_b_safety"] = {"result": "SUCCESSFUL", "counterexample": ""}
     elif ok_b is False:
-        print("\nProperty B (segurança 1 passo): FAILED — CONTRAEXEMPLO ENCONTRADO!")
+        print("\nProperty B (segurança 2 passos): FAILED — CONTRAEXEMPLO ENCONTRADO!")
         print(f"  Estado s0: {ce_b}")
-        print("  SISTEMA SAI DA REGIAO SEGURA APOS 1 PASSO!")
+        print("  SISTEMA SAI DA REGIAO SEGURA APOS 2 PASSOS!")
         results["property_b_safety"] = {"result": "FAILED", "counterexample": ce_b}
     else:
         print(f"\nProperty B (segurança 1 passo): {ce_b}")
@@ -481,12 +485,12 @@ def main():
     else:
         print(f"  {r_al['result']}")
 
-    print("\nProperty B (segurança em 1 passo):")
+    print("\nProperty B (segurança em 2 passos):")
     r_b = results["property_b_safety"]
     if r_b["result"] == "FAILED":
-        print(f"  FAILED — s₀ encontrado: {r_b['counterexample']} → θ₁ > limite")
+        print(f"  FAILED — s₀ encontrado: {r_b['counterexample']} → θ₂ > limite")
     elif r_b["result"] == "SUCCESSFUL":
-        print("  SUCCESSFUL — sistema seguro por 1 passo")
+        print("  SUCCESSFUL — sistema seguro por 2 passos")
     else:
         print(f"  {r_b['result']}")
 

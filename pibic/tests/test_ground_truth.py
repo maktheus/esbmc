@@ -12,12 +12,15 @@ O par safe/unsafe conserta o buraco: um caso que **deve** provar e um que
 o caso positivo quebra imediatamente.
 """
 
+import os
+import subprocess
 import textwrap
 
 import pytest
 
 from core_verify.esbmc_caller import (
-    PARSE_ERROR, SAFE, UNSAFE, USAGE_ERROR, run_esbmc,
+    ERROR, ESBMC_BIN, EXEC_ERROR, PARSE_ERROR, SAFE, UNSAFE, TIMEOUT,
+    USAGE_ERROR, run_esbmc,
 )
 
 
@@ -105,6 +108,99 @@ def test_timeout_nao_vira_unsafe(tmp_path):
     r = run_esbmc(f, unwind=200000, timeout=3)
     assert not r.verificou, f"esperado indeciso, obtido {r.status}"
     assert not r.is_unsafe
+
+
+def test_falha_ao_iniciar_binario_nao_vira_unsafe(tmp_path, monkeypatch):
+    """PE/ELF incompatível, DLL ausente etc. são erro de execução, não bug."""
+    f = _escreve(tmp_path, "trivial.c", "int main(void) { return 0; }")
+
+    def falha(*args, **kwargs):
+        raise OSError("formato de executavel invalido")
+
+    monkeypatch.setattr(subprocess, "Popen", falha)
+    r = run_esbmc(f)
+    assert r.status == EXEC_ERROR
+    assert not r.verificou
+    assert not r.is_unsafe
+
+
+def test_binario_embarcado_nativo_tem_precedencia():
+    """No Windows havia um .exe válido, mas `_find_esbmc` escolhia o ELF."""
+    if os.name == "nt":
+        assert ESBMC_BIN.lower().endswith(".exe"), ESBMC_BIN
+
+
+def test_timeout_windows_mata_arvore_sem_api_posix(monkeypatch):
+    from core_verify import esbmc_caller
+
+    calls = []
+    def taskkill(argv, **kw):
+        calls.append((argv, kw))
+        return subprocess.CompletedProcess(argv, 0)
+
+    monkeypatch.setattr(subprocess, "run", taskkill)
+
+    class Proc:
+        pid = 4321
+
+        def kill(self):
+            raise AssertionError("taskkill funcionou; fallback nao era esperado")
+
+    esbmc_caller._terminate_process_tree(Proc(), platform="nt")
+    assert calls[0][0] == ["taskkill.exe", "/PID", "4321", "/T", "/F"]
+
+
+def test_timeout_windows_faz_fallback_se_taskkill_falhar(monkeypatch):
+    from core_verify import esbmc_caller
+
+    monkeypatch.setattr(
+        subprocess, "run",
+        lambda argv, **kw: subprocess.CompletedProcess(argv, 1),
+    )
+
+    class Proc:
+        pid = 4321
+
+        def __init__(self):
+            self.killed = False
+
+        def kill(self):
+            self.killed = True
+
+    proc = Proc()
+    esbmc_caller._terminate_process_tree(proc, platform="nt")
+    assert proc.killed
+
+
+def test_binario_ausente_retorna_exec_error(monkeypatch):
+    from core_verify import esbmc_caller
+
+    monkeypatch.setattr(esbmc_caller, "ESBMC_BIN", None)
+    result = esbmc_caller.run_esbmc("trivial.c")
+
+    assert result.status == EXEC_ERROR
+    assert result.outcome == ERROR
+    assert result.is_error
+    assert not result.verificou
+    assert "não encontrado" in result.stderr
+
+
+def test_solver_nao_compilado_e_erro_de_configuracao():
+    from core_verify.esbmc_caller import _classify
+
+    out = "The boolector solver has not been built into this version of ESBMC"
+    assert _classify(1, out) == USAGE_ERROR
+
+
+def test_categorias_publicas_nao_colapsam_erro_em_unsafe(tmp_path):
+    safe_file = _escreve(tmp_path, "safe.c", "int main(void) { return 0; }")
+    safe = run_esbmc(safe_file)
+    error = run_esbmc(str(tmp_path / "ausente.c"))
+
+    assert safe.outcome == SAFE
+    assert error.outcome == ERROR
+    assert error.is_error
+    assert TIMEOUT != ERROR != UNSAFE
 
 
 # ─── a linha de comando, sem subprocess ──────────────────────────────────────

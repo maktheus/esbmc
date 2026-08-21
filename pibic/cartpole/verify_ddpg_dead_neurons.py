@@ -23,7 +23,6 @@ Uso:
 import subprocess, re, os, sys, argparse, math, json
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from ddpg_weight_extractor import extract_ddpg_weights
 
 HERE    = os.path.dirname(os.path.abspath(__file__))
 ESBMC   = os.path.join(HERE, "../QNNVerifier/esbmc-6.8.0/esbmc")
@@ -198,6 +197,11 @@ def verify_layer(layer, qw, qb, lo_h=None, hi_h=None, pre_bound=2048):
 
 
 def main():
+    # PyTorch e necessario apenas para ler o checkpoint. Manter o import aqui
+    # permite testar geracao de harnesses e aritmetica formal sem essa
+    # dependencia pesada instalada.
+    from ddpg_weight_extractor import extract_ddpg_weights
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--layer", type=int, choices=[1, 2], default=1)
     parser.add_argument("--all", action="store_true")

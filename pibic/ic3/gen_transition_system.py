@@ -24,7 +24,7 @@ resultado é qualitativamente diferente — um invariante indutivo, isto é
 
 FIDELIDADE À ARITMÉTICA VERIFICADA
 ----------------------------------
-O forward replica exatamente `generate_controller_body` de
+O forward foi implementado para replicar `generate_controller_body` de
 `cartpole/verify_ddpg_closed_loop.py:35-65`:
 
   - divisão por 256 **por termo**, não soma-depois-divide;
@@ -40,6 +40,9 @@ intervalo. Isso é muleta do BMC — poda o espaço para a fórmula caber. Aqui
 esses assumes são OMITIDOS, então o modelo é estritamente mais fiel: nenhum
 estado alcançável é descartado. Ver KB-C04.
 
+`validate_forward.py` faz teste diferencial em estados concretos. Ele detecta
+divergências, mas a amostragem, sozinha, não prova equivalência universal.
+
 Uso:
     python3 gen_transition_system.py --bits 32 -o cl_ddpg32.v
     python3 gen_transition_system.py --bits 16 -o cl_ddpg16.v
@@ -47,12 +50,13 @@ Uso:
 
 import argparse
 import json
-import os
+from pathlib import Path
+from typing import Any
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-WEIGHTS = os.path.join(
-    HERE, "..", "cartpole", "webapp", "public", "ddpg_weights_q88.json"
-)
+HERE = Path(__file__).resolve().parent
+WEIGHTS = (
+    HERE / ".." / "cartpole" / "webapp" / "public" / "ddpg_weights_q88.json"
+).resolve()
 
 SCALE = 256
 TH_BND = int(0.2094 * SCALE)   # 53 -> 12 graus, o limite de "pendulo em pe"
@@ -64,9 +68,45 @@ def vconst(v: int) -> str:
     return f"32'sd{v}" if v >= 0 else f"(-32'sd{-v})"
 
 
-def emit(bits: int) -> str:
-    with open(WEIGHTS) as fh:
+def load_weights(path: Path) -> dict[str, Any]:
+    """Carrega o ator e rejeita formatos que gerariam Verilog incorreto."""
+    with path.open(encoding="utf-8") as fh:
         w = json.load(fh)
+
+    required = {"w1", "b1", "w2", "b2", "w_out", "b_out"}
+    missing = sorted(required - w.keys()) if isinstance(w, dict) else sorted(required)
+    if missing:
+        raise ValueError(f"pesos sem os campos obrigatorios: {', '.join(missing)}")
+
+    w1, b1, w2, b2 = w["w1"], w["b1"], w["w2"], w["b2"]
+    w_out, b_out = w["w_out"], w["b_out"]
+    matrices = (w1, w2, w_out)
+    vectors = (b1, b2, b_out)
+    if (not all(isinstance(value, list) for value in matrices + vectors)
+            or not all(all(isinstance(row, list) for row in matrix)
+                       for matrix in matrices)):
+        raise ValueError("matrizes e vetores de pesos devem ser listas JSON")
+    if not b1 or not b2:
+        raise ValueError("as duas camadas ocultas precisam ser nao vazias")
+    if len(w1) != len(b1) or any(len(row) != 4 for row in w1):
+        raise ValueError("w1 deve ter uma linha de 4 pesos para cada item de b1")
+    if len(w2) != len(b2) or any(len(row) != len(b1) for row in w2):
+        raise ValueError("w2 deve ter uma linha de len(b1) pesos para cada item de b2")
+    if len(w_out) != 1 or len(w_out[0]) != len(b2) or len(b_out) != 1:
+        raise ValueError("a camada de saida deve ter formato 1 x len(b2), com um bias")
+
+    def all_ints(value: Any) -> bool:
+        if isinstance(value, list):
+            return all(all_ints(item) for item in value)
+        return isinstance(value, int) and not isinstance(value, bool)
+
+    if not all(all_ints(w[key]) for key in required):
+        raise ValueError("todos os pesos e biases devem ser inteiros Q8.8")
+    return w
+
+
+def emit(bits: int, weights: Path = WEIGHTS) -> str:
+    w = load_weights(weights)
     w1, b1 = w["w1"], w["b1"]
     w2, b2 = w["w2"], w["b2"]
     w_out, b_out = w["w_out"][0], w["b_out"][0]
@@ -166,11 +206,17 @@ def main():
     p.add_argument("--bits", type=int, default=32, choices=[16, 32],
                    help="largura das variaveis de estado (32 = fiel ao int do C)")
     p.add_argument("-o", "--out", required=True)
+    p.add_argument("--weights", type=Path, default=WEIGHTS,
+                   help=f"JSON Q8.8 do ator (padrao: {WEIGHTS})")
     a = p.parse_args()
-    src = emit(a.bits)
-    with open(a.out, "w") as fh:
-        fh.write(src)
-    print(f"{a.out}: {len(src.splitlines())} linhas, estado {a.bits} bits "
+    try:
+        src = emit(a.bits, a.weights.resolve())
+        out = Path(a.out)
+        with out.open("w", encoding="utf-8", newline="\n") as fh:
+            fh.write(src)
+    except (OSError, ValueError) as exc:
+        p.error(str(exc))
+    print(f"{out}: {len(src.splitlines())} linhas, estado {a.bits} bits "
           f"({4*a.bits + 1} flops)")
 
 

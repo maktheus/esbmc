@@ -18,10 +18,13 @@ Uso:
     python verify_ddpg_closed_loop.py
 """
 
-import subprocess, re, os, sys, json, math
+import re, os, sys, json, math, tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from ddpg_weight_extractor import extract_ddpg_weights
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from core_verify.esbmc_caller import (
+    SAFE, UNSAFE, run_esbmc as run_esbmc_canonical,
+)
 from verify_ddpg_dead_neurons import (
     interval_propagate_layer, relu_bounds, q, c_div,
     X_BND, XD_BND, TH_BND, THD_BND, SCALE, ESBMC, PTH,
@@ -308,38 +311,34 @@ int main(void) {{
 # ─── Runner ──────────────────────────────────────────────────────────────────
 
 def run_esbmc(c_file, timeout=TIMEOUT):
-    try:
-        r = subprocess.run(
-            [ESBMC, c_file, "--no-unwinding-assertions", "--boolector"],
-            capture_output=True, text=True, timeout=timeout,
-        )
-        out = r.stdout + r.stderr
+    result = run_esbmc_canonical(
+        c_file, timeout=timeout, no_unwinding_assertions=True, z3=True)
+    out = result.output
 
-        if "VERIFICATION SUCCESSFUL" in out:
-            return True, "", out
-        elif "VERIFICATION FAILED" in out:
-            ce_parts = []
-            for name, label in [("x", "x"), ("xd", "xd"), ("th", "th"), ("thd", "thd")]:
-                m = re.search(rf'\b{name}\s*=\s*(-?\d+)', out)
-                if m:
-                    val = int(m.group(1))
-                    ce_parts.append(f"{label}={val / SCALE:.4f}")
-            m_z = re.search(r'\bz\s*=\s*(-?\d+)', out)
-            if m_z:
-                ce_parts.append(f"z={m_z.group(1)}")
-            m_f = re.search(r'\bF_Q\s*=\s*(-?\d+)', out)
-            if m_f:
-                ce_parts.append(f"F_Q={int(m_f.group(1)) / SCALE:.2f}N")
-            return False, "  ".join(ce_parts) if ce_parts else "(ver saída ESBMC)", out
-        else:
-            return None, "resultado desconhecido", out
-    except subprocess.TimeoutExpired:
-        return None, "TIMEOUT", ""
+    if result.status == SAFE:
+        return True, "", out
+    if result.status == UNSAFE:
+        ce_parts = []
+        for name, label in [("x", "x"), ("xd", "xd"), ("th", "th"), ("thd", "thd")]:
+            m = re.search(rf'\b{name}\s*=\s*(-?\d+)', out)
+            if m:
+                val = int(m.group(1))
+                ce_parts.append(f"{label}={val / SCALE:.4f}")
+        m_z = re.search(r'\bz\s*=\s*(-?\d+)', out)
+        if m_z:
+            ce_parts.append(f"z={m_z.group(1)}")
+        m_f = re.search(r'\bF_Q\s*=\s*(-?\d+)', out)
+        if m_f:
+            ce_parts.append(f"F_Q={int(m_f.group(1)) / SCALE:.2f}N")
+        return False, "  ".join(ce_parts) if ce_parts else "(ver saída ESBMC)", out
+    return None, result.status, out
 
 
 # ─── Main ────────────────────────────────────────────────────────────────────
 
 def main():
+    from ddpg_weight_extractor import extract_ddpg_weights
+
     print("=" * 65)
     print("Verificação em Malha Fechada — DDPG Actor")
     print(f"Domínio Q8.8 (scale={SCALE}): x∈[±{X_BND}] xd∈[±{XD_BND}]"
@@ -386,7 +385,7 @@ def main():
         print(f"{desc}")
         print(f"{'─' * 65}")
 
-        c_file = f"/tmp/ddpg_cl_{key}.c"
+        c_file = os.path.join(tempfile.gettempdir(), f"ddpg_cl_{key}.c")
         with open(c_file, "w") as f:
             f.write(src)
         print(f"Harness: {c_file}")

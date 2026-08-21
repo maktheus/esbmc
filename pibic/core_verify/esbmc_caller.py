@@ -8,12 +8,16 @@ inexistente colapsavam todos em `is_safe=False` — exatamente o valor que
 significa "a propriedade foi violada". Como toda a suíte assertava
 `assert not result.is_safe`, ela ficava verde sem nunca ter verificado nada.
 
-Códigos de retorno do ESBMC, medidos no binário 6.8.0 deste repositório:
+Códigos de retorno do ESBMC, medidos no binário Linux 6.8.0 deste repositório:
 
     rc=0    VERIFICATION SUCCESSFUL
     rc=1    VERIFICATION FAILED
     rc=6    falha de front-end (erro de parsing OU arquivo inexistente)
     rc=64   flag não reconhecida
+
+No build Windows 6.8.0, flag não reconhecida retorna rc=1, o mesmo código de
+uma violação. Por isso a classificação também exige o marcador textual e nunca
+interpreta rc=1 isoladamente como UNSAFE.
 
 O status é derivado do código de retorno **cruzado** com o marcador na saída.
 Se os dois discordarem, o resultado é UNKNOWN em vez de um palpite — divergência
@@ -30,14 +34,18 @@ import time
 
 SAFE = "SAFE"                  # propriedade provada
 UNSAFE = "UNSAFE"              # contraexemplo encontrado
+ERROR = "ERROR"                # categoria publica para falhas de execucao
 PARSE_ERROR = "PARSE_ERROR"    # nao compilou / arquivo ausente
 USAGE_ERROR = "USAGE_ERROR"    # flag invalida — o ESBMC nem rodou
+EXEC_ERROR = "EXEC_ERROR"      # binario existe, mas nao pode ser iniciado
 TIMEOUT = "TIMEOUT"            # estourou o tempo; indeciso
 UNKNOWN = "UNKNOWN"            # rc e saida discordam, ou rc inesperado
 
+ERROR_STATUSES = (PARSE_ERROR, USAGE_ERROR, EXEC_ERROR, UNKNOWN)
+
 #: Status em que NENHUMA verificação ocorreu. Tratar qualquer um deles como
 #: resultado de verificação é erro de interpretação.
-NAO_VERIFICOU = (PARSE_ERROR, USAGE_ERROR, TIMEOUT, UNKNOWN)
+NAO_VERIFICOU = (PARSE_ERROR, USAGE_ERROR, EXEC_ERROR, TIMEOUT, UNKNOWN)
 
 
 # ─── localização do binário ──────────────────────────────────────────────────
@@ -51,11 +59,16 @@ def _find_esbmc():
     if found:
         return found
     here = os.path.dirname(os.path.abspath(__file__))
-    for rel in (("..", "..", "build", "src", "esbmc", "esbmc"),
-                ("..", "QNNVerifier", "esbmc-6.8.0", "esbmc")):
-        cand = os.path.abspath(os.path.join(here, *rel))
-        if os.path.isfile(cand) and os.access(cand, os.X_OK):
-            return cand
+    roots = (("..", "..", "build", "src", "esbmc"),
+             ("..", "QNNVerifier", "esbmc-6.8.0"))
+    # O repo contem ambos: esbmc (ELF) e esbmc.exe (PE). No Windows, testar o
+    # nome sem extensao primeiro selecionava o ELF e terminava em WinError 193.
+    names = ("esbmc.exe", "esbmc") if os.name == "nt" else ("esbmc", "esbmc.exe")
+    for root in roots:
+        for name in names:
+            cand = os.path.abspath(os.path.join(here, *root, name))
+            if os.path.isfile(cand) and os.access(cand, os.X_OK):
+                return cand
     return None
 
 
@@ -90,6 +103,20 @@ class VerificationResult:
     def verificou(self):
         """True somente se o ESBMC chegou a emitir um veredito."""
         return self.status in (SAFE, UNSAFE)
+
+    @property
+    def outcome(self):
+        """Categoria estável: SAFE, UNSAFE, TIMEOUT ou ERROR.
+
+        ``status`` preserva a causa detalhada do erro para diagnóstico, enquanto
+        esta propriedade impede consumidores de precisarem tratar parse/uso/
+        inicialização como se fossem novos vereditos formais.
+        """
+        return ERROR if self.status in ERROR_STATUSES else self.status
+
+    @property
+    def is_error(self):
+        return self.outcome == ERROR
 
     def raise_if_nao_verificou(self):
         if not self.verificou:
@@ -157,10 +184,16 @@ def _classify(returncode, out):
     """
     ok = "VERIFICATION SUCCESSFUL" in out
     failed = "VERIFICATION FAILED" in out
+    usage_error = any(marker in out.lower() for marker in (
+        "unrecognised option", "unrecognized option", "unknown option",
+        "solver has not been built",
+    ))
     if returncode == 0 and ok:
         return SAFE
     if returncode == 1 and failed:
         return UNSAFE
+    if usage_error and returncode != 0:
+        return USAGE_ERROR
     if returncode in (6, 7):
         return PARSE_ERROR
     if returncode == 64:
@@ -168,35 +201,68 @@ def _classify(returncode, out):
     return UNKNOWN
 
 
+def _terminate_process_tree(proc, platform=None):
+    """Interrompe ESBMC e solvers filhos sem assumir APIs POSIX no Windows."""
+    platform = platform or os.name
+    if platform == "nt":
+        try:
+            completed = subprocess.run(
+                ["taskkill.exe", "/PID", str(proc.pid), "/T", "/F"],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                check=False,
+            )
+        except OSError:
+            proc.kill()
+        else:
+            if completed.returncode != 0:
+                proc.kill()
+        return
+
+    try:
+        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+    except (AttributeError, ProcessLookupError, PermissionError, OSError):
+        proc.kill()
+
+
 def run_esbmc(filepath, timeout=60, **kwargs):
     """Roda o ESBMC e devolve um VerificationResult com status tri-estado."""
+    start = time.time()
     if ESBMC_BIN is None:
-        raise FileNotFoundError(
+        message = (
             "Binário do ESBMC não encontrado. Defina $ESBMC_BIN, coloque `esbmc` "
             "no PATH, compile em build/src/esbmc/, ou use o binário embarcado em "
             "pibic/QNNVerifier/esbmc-6.8.0/esbmc."
         )
+        return VerificationResult(EXEC_ERROR, "", message,
+                                  time.time() - start, None, [])
 
-    cmd = build_esbmc_cmd(filepath, **kwargs)
-    start = time.time()
+    try:
+        cmd = build_esbmc_cmd(filepath, **kwargs)
+    except (OSError, TypeError, ValueError) as exc:
+        return VerificationResult(EXEC_ERROR, "", str(exc),
+                                  time.time() - start, None, [])
 
     # start_new_session: o ESBMC faz fork em --k-induction-parallel; sem grupo
     # de processos o timeout mata só o pai e deixa os filhos rodando solvers.
-    proc = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        text=True, encoding="utf-8", errors="replace",  # traces nao sao UTF-8 puro
-        start_new_session=True,
-    )
+    popen_kwargs = {"start_new_session": True}
+    if os.name == "nt":
+        popen_kwargs = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+    try:
+        proc = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            text=True, encoding="utf-8", errors="replace",  # traces nao sao UTF-8 puro
+            **popen_kwargs,
+        )
+    except OSError as exc:
+        return VerificationResult(EXEC_ERROR, "", str(exc),
+                                  time.time() - start, None, cmd)
     try:
         out, err = proc.communicate(timeout=timeout)
         elapsed = time.time() - start
         return VerificationResult(_classify(proc.returncode, out + err),
                                   out, err, elapsed, proc.returncode, cmd)
     except subprocess.TimeoutExpired:
-        try:
-            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-        except (ProcessLookupError, PermissionError):
-            proc.kill()
+        _terminate_process_tree(proc)
         out, err = proc.communicate()
         return VerificationResult(TIMEOUT, out or "", err or "",
                                   time.time() - start, None, cmd)

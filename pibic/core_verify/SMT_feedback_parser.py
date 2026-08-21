@@ -10,11 +10,17 @@ class FeedbackTrace:
     PATTERNS = {
         "array out of bounds": r"(?i)array bounds violated|array out of bounds",
         "arithmetic overflow": r"(?i)arithmetic overflow",
-        "memory leak": r"(?i)memory leak|dereference failure",
+        # ESBMC 6.8 descreve leak como "dereference failure: forgotten
+        # memory". Nem toda dereference failure e leak; acesso invalido fica
+        # na categoria de ponteiro abaixo.
+        "memory leak": r"(?i)memory leak|dereference failure:\s*forgotten memory",
         "division by zero": r"(?i)division by zero",
-        "pointer dereference": r"(?i)pointer dereference|invalid pointer",
+        "pointer dereference": (
+            r"(?i)pointer dereference|invalid pointer|"
+            r"dereference failure:(?!\s*forgotten memory)"
+        ),
         "assertion failure": r"(?i)assertion.*failed|violated property",
-        "nan/inf float detection": r"(?i)NaN or Inf",
+        "nan/inf float detection": r"(?i)NaN(?: or Inf)?\s+on\b|infinity\s+on\b",
         "loop unwinding failure": r"(?i)unwinding assertion",
         "solver abort": r"(?i)aborted|solver abort",
         "uninitialized variable reading": r"(?i)uninitialized",
@@ -34,7 +40,13 @@ class FeedbackTrace:
         if self.is_timeout:
             self.violations.append("target timeout")
             return
-            
+
+        # Linhas "PASSED: arithmetic overflow ..." sao uma lista de checks
+        # habilitados, nao falhas. So um trace com o marcador final de falha
+        # pode alimentar categorias de contraexemplo.
+        if "VERIFICATION FAILED" not in self.raw_output:
+            return
+
         for name, pattern in self.PATTERNS.items():
             if re.search(pattern, self.raw_output):
                 self.violations.append(name)
@@ -48,7 +60,10 @@ class FeedbackTrace:
             return "[TIMEOUT DE DETECÇÃO] - O Solver não convergiu no tempo adequado. O loop de análise pode ser infinito ou os bounds do FloatBV/FixedBV excederam limite de cálculo."
 
         if not self.violations:
-            return "ESBMC Failed, mas nenhuma falha estrutural matemática mapeada foi identificada (Generic Error).\n" + "\n".join(self.raw_output.splitlines()[-20:])
+            verdict = ("ESBMC falhou, mas nenhuma categoria mapeada foi "
+                       "identificada" if "VERIFICATION FAILED" in self.raw_output
+                       else "ESBMC não emitiu um contraexemplo")
+            return verdict + ".\n" + "\n".join(self.raw_output.splitlines()[-20:])
             
         snippet = []
         capture = False

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-validate_forward.py — Prova que o forward em Verilog gerado por
-gen_transition_system.py computa exatamente o mesmo z que a aritmética Q8.8 do
-harness verificado (`cartpole/verify_ddpg_closed_loop.py:35-65`).
+validate_forward.py — Testa diferencialmente se o forward em Verilog gerado por
+gen_transition_system.py produz o mesmo z que a aritmética Q8.8 de referência
+(`cartpole/verify_ddpg_closed_loop.py:35-65`) nos estados selecionados.
 
-Sem isso, o resultado do IC3 seria sobre um controlador diferente do verificado,
-e portanto não diria nada sobre o sistema real.
+Uma divergência demonstra que os modelos são diferentes. Concordância em uma
+amostra aumenta a confiança e detecta regressões, mas não é prova universal de
+equivalência para todos os valores de 32 bits.
 
 Método: emite um módulo puramente combinacional (sem registradores) com os
 mesmos pesos, sintetiza com yosys, e usa `yosys eval` para avaliar z em estados
@@ -17,16 +18,18 @@ Uso:
 """
 
 import argparse
-import json
 import os
+from pathlib import Path
 import random
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
-from gen_transition_system import WEIGHTS, vconst, SCALE  # noqa: E402
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+from gen_transition_system import WEIGHTS, load_weights, vconst, SCALE  # noqa: E402
 
 X_BND, XD_BND, TH_BND, THD_BND = 614, 1280, 53, 1280
 
@@ -89,18 +92,74 @@ def from_bits(s: str, n: int = 32) -> int:
     return u - (1 << n) if u >> (n - 1) else u
 
 
+def min_five(value: str) -> int:
+    parsed = int(value)
+    if parsed < 5:
+        raise argparse.ArgumentTypeError("deve ser pelo menos 5 (cinco casos-limite fixos)")
+    return parsed
+
+
+def yosys_path(value: str) -> str:
+    resolved = shutil.which(value)
+    if resolved is None:
+        raise argparse.ArgumentTypeError(
+            f"executavel '{value}' nao encontrado; instale Yosys ou use --yosys CAMINHO"
+        )
+    return resolved
+
+
+def yosys_quote(path: Path) -> str:
+    """Aspas aceitas pelo parser de comandos do Yosys, inclusive no Windows."""
+    return '"' + path.resolve().as_posix().replace('"', '\\"') + '"'
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("-n", type=int, default=12, help="numero de estados a testar")
+    ap.add_argument("-n", type=min_five, default=12,
+                    help="numero de estados a testar (minimo: 5)")
     ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--weights", type=Path, default=WEIGHTS,
+                    help=f"JSON Q8.8 do ator (padrao: {WEIGHTS})")
+    ap.add_argument("--yosys", type=yosys_path, default=None,
+                    help="executavel do Yosys (ou defina YOSYS no ambiente)")
+    ap.add_argument("--timeout", type=float, default=120.0,
+                    help="limite, em segundos, para a validacao completa")
+    ap.add_argument("--keep-verilog", type=Path,
+                    help="preserva o modulo combinacional neste caminho")
     a = ap.parse_args()
+    if a.timeout <= 0:
+        ap.error("--timeout deve ser positivo")
 
-    with open(WEIGHTS) as fh:
-        W = json.load(fh)
+    yosys = a.yosys
+    if yosys is None:
+        configured = os.environ.get("YOSYS", "yosys")
+        resolved = shutil.which(configured)
+        if resolved is None:
+            print("DEPENDENCIA AUSENTE: Yosys nao encontrado.", file=sys.stderr)
+            print("Instale Yosys, defina YOSYS ou use --yosys CAMINHO.", file=sys.stderr)
+            return 2
+        yosys = resolved
 
-    comb = os.path.join(HERE, "_fwd_check.v")
-    with open(comb, "w") as fh:
-        fh.write(emit_comb(W))
+    try:
+        W = load_weights(a.weights.resolve())
+    except (OSError, ValueError) as exc:
+        print(f"FALHA ao carregar pesos: {exc}", file=sys.stderr)
+        return 2
+
+    temp_dir = None
+    if a.keep_verilog:
+        comb = a.keep_verilog.resolve()
+    else:
+        temp_dir = tempfile.TemporaryDirectory(prefix="ic3-fwd-")
+        comb = Path(temp_dir.name) / "fwd_check.v"
+    try:
+        with comb.open("w", encoding="utf-8", newline="\n") as fh:
+            fh.write(emit_comb(W))
+    except OSError as exc:
+        if temp_dir:
+            temp_dir.cleanup()
+        print(f"FALHA ao escrever Verilog temporario: {exc}", file=sys.stderr)
+        return 2
 
     random.seed(a.seed)
     states = [(0, 0, 0, 0), (5, 5, 5, 5), (-5, -5, -5, -5),
@@ -114,22 +173,35 @@ def main():
     states = states[:max(a.n, 5)]
 
     # um unico invocacao do yosys avalia todos os estados
-    cmds = [f"read_verilog -sv {comb}", "prep -top fwd -flatten",
+    cmds = [f"read_verilog -sv {yosys_quote(comb)}", "prep -top fwd -flatten",
             "memory_map", "techmap", "opt -fast"]
     for (x, xd, th, thd) in states:
         cmds.append(
             f"eval -set X {vlit(x)} -set XD {vlit(xd)} "
             f"-set TH {vlit(th)} -set THD {vlit(thd)} -show z"
         )
-    r = subprocess.run(["yosys", "-p", "; ".join(cmds)],
-                       capture_output=True, text=True, errors="replace")
+    try:
+        r = subprocess.run([yosys, "-p", "; ".join(cmds)],
+                           capture_output=True, text=True, errors="replace",
+                           timeout=a.timeout)
+    except subprocess.TimeoutExpired:
+        print(f"FALHA: Yosys excedeu o limite de {a.timeout:g} s.", file=sys.stderr)
+        return_code = 2
+        r = None
+    finally:
+        if temp_dir:
+            temp_dir.cleanup()
+    if r is None:
+        return return_code
+    if r.returncode != 0:
+        print(f"FALHA: Yosys terminou com codigo {r.returncode}.", file=sys.stderr)
+        print((r.stderr or r.stdout)[-1500:], file=sys.stderr)
+        return 2
     # yosys imprime "Eval result: \z = 19082965." ou "... = 32'1111...0110."
     got = []
     for tok in re.findall(r"Eval result: \\z = ([^.\s]+)\.", r.stdout):
         m = re.fullmatch(r"(\d+)'([01]+)", tok)
         got.append(from_bits(m.group(2), len(m.group(2))) if m else int(tok))
-
-    os.remove(comb)
 
     if len(got) != len(states):
         print("FALHA: yosys nao retornou um z por estado.")
@@ -151,8 +223,8 @@ def main():
         print(f"DIVERGENCIA em {bad}/{len(states)} estados — "
               f"o Verilog NAO reproduz a aritmetica verificada.")
         return 1
-    print(f"OK — {len(states)}/{len(states)} estados batem exatamente. "
-          f"O modelo IC3 usa o mesmo controlador que o harness ESBMC.")
+    print(f"OK — {len(states)}/{len(states)} estados da amostra batem exatamente.")
+    print("AVISO — teste diferencial por amostragem nao prova equivalencia universal.")
     return 0
 
 
