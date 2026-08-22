@@ -3,8 +3,24 @@
 
 Esta pesquisa investigou a aplicabilidade do verificador de modelos ESBMC como ferramenta de verificação formal para sistemas de Inteligência Artificial Generativa, abrangendo quatro níveis distintos do ecossistema: modelos em Python, kernels de inferência em C++, loops de geração de código por agentes LLM e sistemas de controle sob injeção de falhas.
 
-Os resultados parciais obtidos demonstram que o ESBMC é uma ferramenta \textbf{versátil e eficaz} para garantir propriedades de segurança e corretude em componentes de GenAI, com graus de maturidade e retorno variados conforme o domínio de aplicação. Para a infraestrutura de kernels de inferência em C++ (Caso 2), a ferramenta mostra alta maturidade industrial, sendo capaz de detectar \textit{buffer overflows} e vazamentos de memória de maneira formal e exaustiva dentro dos limites definidos. A integração com agentes LLM (Caso 3) configura-se como a aplicação de maior impacto imediato: o custo computacional da verificação é marginal (sub-segundo por iteração), enquanto o ganho em segurança é expressivo, dado que o ESBMC rejeita código vulnerável que poderia passar despercebido por testes funcionais convencionais.
+Os resultados parciais mostram que o ESBMC consegue verificar propriedades
+especificas em harnesses de IA, desde que modelo, dominio, flags e limite temporal
+sejam explicitados. Para kernels de inferência em C++ (Caso 2), o verificador
+detectou falhas de memoria e provou instancias reduzidas dentro dos limites
+definidos. O Caso 3 é uma demonstracao controlada com \textbf{mock deterministico},
+nao uma avaliacao de agente LLM real: em duas iteracoes, o protocolo rejeitou o
+codigo vulneravel e aceitou a correcao, com custo do solver abaixo de um segundo.
 
-Para sistemas de controle (Caso 4) e Redes de Aprendizado por Reforço (Caso 6), a abordagem de \textit{Engenharia do Caos} acoplada ao \textit{Safety Shield} formal revelou-se eficaz em blindar saídas não estruturadas de ultrapassar limites físicos robóticos. Contudo, evidenciou-se a principal barreira metodológica: apesar de a arquitetura proposta isolar brilhantemente o uso industrial do ESBMC sob uma API fluida em Python (\texttt{core\_verify}), a necessidade de modificação profunda na montagem da \textit{Abstract Syntax Tree (AST)} de \textit{GOTO-Programs} ou de gerir dinamicamente a \textit{k-induction} pelo Solver SMT exige, impreterivelmente, a reengenharia no \textit{core} nativo C++ da ferramenta. 
+No controle PID (Caso 4), foi provada seguranca limitada a dez passos e cinco
+perfis simulados apresentaram convergencia observada, sem prova de estabilidade
+assintotica. Em RL (Caso 6), o resultado foi \textbf{UNSAFE}: o contraexemplo mostra
+que a acao pode ultrapassar o limite, de modo que o \textit{Safety Shield} ainda
+nao foi validado como bloqueio eficaz. A API \texttt{core\_verify} melhora a
+integracao e a classificacao dos resultados, mas nao elimina os limites de
+escalabilidade nem a necessidade de modelagem cuidadosa.
 
-Os próximos passos da pesquisa, portanto, apontam para a internacionalização deste estudo integrando \textit{hooks} intrínsecos de controle Python-C++ dentro do binário ESBMC e na exploração do \textit{Ralph Loop} neuro-simbólico em nuvem com instâncias LLM reais. Ao combinar a inventividade estocástica do \textit{Machine Learning} moderno com a imutabilidade matemática de Solvers SMT, os resultados aqui consolidados pavimentam o caminho para a certificação industrial contínua de IAs aplicadas a domínios críticos de risco à vida.
+Os próximos passos incluem reproduzir o Ralph Loop com agentes reais, validar o
+frontend Python, comparar BMC e PDR de forma controlada e explorar representacoes
+word-level. Os resultados sustentam um pipeline experimental de verificacao por
+propriedade e por harness; certificacao ou deploy em dominio critico exigem ainda
+evidencia adicional, revisao independente e cobertura dos pressupostos de ambiente.

@@ -1,4 +1,5 @@
 import json
+import os
 
 tasks = []
 tid = 1
@@ -91,7 +92,8 @@ prd = {
     "tasks": tasks
 }
 
-with open('pibic/prd.json', 'w') as f:
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'prd.json')
+with open(OUT, 'w') as f:
     json.dump(prd, f, indent=4)
 
-print(f"Generated {len(tasks)} tasks successfully.")
+print(f"Generated {len(tasks)} tasks in {OUT}")

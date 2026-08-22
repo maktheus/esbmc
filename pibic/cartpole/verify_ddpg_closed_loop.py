@@ -18,10 +18,13 @@ Uso:
     python verify_ddpg_closed_loop.py
 """
 
-import subprocess, re, os, sys, json, math
+import re, os, sys, json, math, tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from ddpg_weight_extractor import extract_ddpg_weights
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from core_verify.esbmc_caller import (
+    SAFE, UNSAFE, run_esbmc as run_esbmc_canonical,
+)
 from verify_ddpg_dead_neurons import (
     interval_propagate_layer, relu_bounds, q, c_div,
     X_BND, XD_BND, TH_BND, THD_BND, SCALE, ESBMC, PTH,
@@ -151,16 +154,25 @@ int main(void) {{
 def harness_prop_b(ctrl_body):
     return f"""\
 /*
- * ddpg_prop_b_safety.c — Property B: segurança em 1 passo (dinâmica linearizada)
+ * ddpg_prop_b_safety.c — Property B: segurança em DOIS passos.
  *
- * Usa aproximação linear de tanh (MESMA do browser) para computar F.
- * Dinâmica linearizada: sin(θ)≈θ, cos(θ)≈1.
+ * POR QUE DOIS PASSOS. A versão anterior asseria sobre `th_new` após UM passo:
  *
- * th_acc = (4040 * th - 375 * F_Q) / 256
- * th_new = th + (5 * thd) / 256
- * thd_new = thd + (5 * th_acc) / 256
+ *     th_acc  = (4040*th - 375*F_Q) / 256;   // usa F_Q
+ *     th_new  = th  + (5*thd) / 256;         // NAO usa F_Q
+ *     thd_new = thd + (5*th_acc) / 256;      // usa F_Q, nunca asserido
+ *     assert(th_new dentro da regiao segura);
  *
- * ESBMC FAILED = sistema sai da região segura em 1 passo
+ * O valor asserido dependia apenas de `th` e `thd`, ambas entradas livres --
+ * `F_Q` nao aparecia nele. Toda a rede (745 pesos, 48 ReLUs) era CODIGO MORTO
+ * para esta propriedade. Verificado: rodando o mesmo assert sem rede alguma e
+ * com `F_Q` arbitrario, o veredito nao muda (FAILED em 0,16 s, contraexemplo
+ * th=53 thd=64 -> th_new=54). Ver KB-C01.
+ *
+ * A forca so alcanca theta no passo SEGUINTE, via thd. Asserir apos dois passos
+ * torna a propriedade genuinamente dependente do controlador.
+ *
+ * ESBMC FAILED = o sistema sai da regiao segura em dois passos
  */
 void __ESBMC_assume(_Bool c);
 void __ESBMC_assert(_Bool c, const char *m);
@@ -181,13 +193,17 @@ int main(void) {{
 
 {TANH_APPROX_C}
 
-    /* Dinâmica linearizada Q8.8 */
+    /* Passo 1 — dinamica linearizada Q8.8 */
     int th_acc  = (4040 * th - 375 * F_Q) / 256;
     int th_new  = th  + (5 * thd) / 256;
     int thd_new = thd + (5 * th_acc) / 256;
 
-    __ESBMC_assert(th_new >= -{TH_BND} && th_new <= {TH_BND},
-                   "PropB: theta sai da regiao segura apos 1 passo!");
+    /* Passo 2 — aqui F_Q finalmente alcanca theta, atraves de thd_new.
+       E este o valor cuja seguranca a propriedade afirma. */
+    int th_2 = th_new + (5 * thd_new) / 256;
+
+    __ESBMC_assert(th_2 >= -{TH_BND} && th_2 <= {TH_BND},
+                   "PropB: theta sai da regiao segura apos 2 passos!");
     return 0;
 }}
 """
@@ -198,10 +214,21 @@ int main(void) {{
 def harness_prop_c(ctrl_body):
     return f"""\
 /*
- * ddpg_prop_c_bounds.c — Property C: |F| ≤ 10 N sempre
+ * ddpg_prop_c_bounds.c — Property C: SANIDADE DA QUANTIZACAO, nao prova
+ *                        sobre o controlador.
  *
- * Verifica que a saída quantizada nunca excede os limites de força.
- * Deve ser SUCCESSFUL (tanh garante |output| ≤ 1 → |F| ≤ 10).
+ * O QUE ESTA PROPRIEDADE REALMENTE DIZ. `|F_Q| <= 2560` vale por CONSTRUCAO da
+ * aproximacao de tanh: `tanh_abs` satura em 255 nos cinco ramos, logo
+ * `F_Q = 255*10 = 2550 < 2560` para QUALQUER `z`, independente dos pesos.
+ * Verificado: substituindo a rede inteira por `z = nondet_int()` livre, a
+ * prova passa igual, em 0,72 s. Ver KB-C02.
+ *
+ * Ela continua util -- valida que a implementacao Q8.8 do tanh satura como
+ * deveria, o que pegaria um erro de LUT ou de escala. Mas NAO e resultado
+ * sobre o Actor DDPG, e rotula-la como "|F| <= 10 N provado formalmente" num
+ * painel de resultados induz a erro.
+ *
+ * A propriedade que depende dos pesos e a Property D abaixo.
  */
 void __ESBMC_assume(_Bool c);
 void __ESBMC_assert(_Bool c, const char *m);
@@ -224,7 +251,58 @@ int main(void) {{
 
     /* F_Q em Q8.8: 10N = 2560, -10N = -2560 */
     __ESBMC_assert(F_Q >= -2560 && F_Q <= 2560,
-                   "PropC: forca excede limites [-10, +10] N!");
+                   "PropC (sanidade da quantizacao): saturacao do tanh Q8.8");
+    return 0;
+}}
+"""
+
+
+# ─── Property D ──────────────────────────────────────────────────────────────
+
+def harness_prop_d(ctrl_body):
+    """Nao-trivialidade: o controlador nao pode ser inerte na zona de perigo.
+
+    Property C nao depende dos pesos (KB-C02). Esta depende: ela e FALSA para um
+    controlador que devolve forca nula, e so pode ser decidida percorrendo os
+    745 pesos. E o teste que um `tanh` bem implementado sobre uma rede morta
+    passaria em C e falharia aqui.
+
+    Espera-se FAILED se existir algum estado de perigo em que a rede produz
+    |F| abaixo do minimo util -- e esse contraexemplo e informacao real sobre o
+    controlador, nao sobre a aritmetica.
+    """
+    return f"""\
+/*
+ * ddpg_prop_d_nao_trivial.c — Property D: forca util na zona de perigo.
+ *
+ * Com o pendulo claramente inclinado (|th| > threshold), o controlador precisa
+ * aplicar forca de magnitude minima. Ao contrario da Property C, esta NAO vale
+ * por construcao: um controlador que sempre devolvesse F = 0 a violaria.
+ */
+void __ESBMC_assume(_Bool c);
+void __ESBMC_assert(_Bool c, const char *m);
+int nondet_int(void);
+
+#define F_MIN 128   /* 0,5 N em Q8.8 -- abaixo disso a acao e desprezivel */
+
+int main(void) {{
+    int x   = nondet_int();
+    int xd  = nondet_int();
+    int th  = nondet_int();
+    int thd = nondet_int();
+
+    __ESBMC_assume(x   >= -{X_BND}  && x   <= {X_BND});
+    __ESBMC_assume(xd  >= -{XD_BND} && xd  <= {XD_BND});
+    __ESBMC_assume(th  >  {DANGER_TH} && th  <= {TH_BND});   /* zona de perigo */
+    __ESBMC_assume(thd >= 0           && thd <= {THD_BND});
+
+{ctrl_body}
+
+{TANH_APPROX_C}
+
+    int F_abs = F_Q >= 0 ? F_Q : -F_Q;
+    __ESBMC_assert(F_abs >= F_MIN,
+                   "PropD: controlador aplica forca desprezivel na zona de perigo!");
     return 0;
 }}
 """
@@ -233,38 +311,34 @@ int main(void) {{
 # ─── Runner ──────────────────────────────────────────────────────────────────
 
 def run_esbmc(c_file, timeout=TIMEOUT):
-    try:
-        r = subprocess.run(
-            [ESBMC, c_file, "--no-unwinding-assertions", "--boolector"],
-            capture_output=True, text=True, timeout=timeout,
-        )
-        out = r.stdout + r.stderr
+    result = run_esbmc_canonical(
+        c_file, timeout=timeout, no_unwinding_assertions=True, z3=True)
+    out = result.output
 
-        if "VERIFICATION SUCCESSFUL" in out:
-            return True, "", out
-        elif "VERIFICATION FAILED" in out:
-            ce_parts = []
-            for name, label in [("x", "x"), ("xd", "xd"), ("th", "th"), ("thd", "thd")]:
-                m = re.search(rf'\b{name}\s*=\s*(-?\d+)', out)
-                if m:
-                    val = int(m.group(1))
-                    ce_parts.append(f"{label}={val / SCALE:.4f}")
-            m_z = re.search(r'\bz\s*=\s*(-?\d+)', out)
-            if m_z:
-                ce_parts.append(f"z={m_z.group(1)}")
-            m_f = re.search(r'\bF_Q\s*=\s*(-?\d+)', out)
-            if m_f:
-                ce_parts.append(f"F_Q={int(m_f.group(1)) / SCALE:.2f}N")
-            return False, "  ".join(ce_parts) if ce_parts else "(ver saída ESBMC)", out
-        else:
-            return None, "resultado desconhecido", out
-    except subprocess.TimeoutExpired:
-        return None, "TIMEOUT", ""
+    if result.status == SAFE:
+        return True, "", out
+    if result.status == UNSAFE:
+        ce_parts = []
+        for name, label in [("x", "x"), ("xd", "xd"), ("th", "th"), ("thd", "thd")]:
+            m = re.search(rf'\b{name}\s*=\s*(-?\d+)', out)
+            if m:
+                val = int(m.group(1))
+                ce_parts.append(f"{label}={val / SCALE:.4f}")
+        m_z = re.search(r'\bz\s*=\s*(-?\d+)', out)
+        if m_z:
+            ce_parts.append(f"z={m_z.group(1)}")
+        m_f = re.search(r'\bF_Q\s*=\s*(-?\d+)', out)
+        if m_f:
+            ce_parts.append(f"F_Q={int(m_f.group(1)) / SCALE:.2f}N")
+        return False, "  ".join(ce_parts) if ce_parts else "(ver saída ESBMC)", out
+    return None, result.status, out
 
 
 # ─── Main ────────────────────────────────────────────────────────────────────
 
 def main():
+    from ddpg_weight_extractor import extract_ddpg_weights
+
     print("=" * 65)
     print("Verificação em Malha Fechada — DDPG Actor")
     print(f"Domínio Q8.8 (scale={SCALE}): x∈[±{X_BND}] xd∈[±{XD_BND}]"
@@ -298,6 +372,8 @@ def main():
          harness_prop_a_right(ctrl_body)),
         ("property_a_left", "Property A — θ < -threshold → F < 0",
          harness_prop_a_left(ctrl_body)),
+        ("property_d_nao_trivial", "Property D — força útil na zona de perigo",
+         harness_prop_d(ctrl_body)),
         ("property_b_safety", "Property B — Segurança 1-step",
          harness_prop_b(ctrl_body)),
         ("property_c_bounds", "Property C — |F| ≤ 10 N",
@@ -309,7 +385,7 @@ def main():
         print(f"{desc}")
         print(f"{'─' * 65}")
 
-        c_file = f"/tmp/ddpg_cl_{key}.c"
+        c_file = os.path.join(tempfile.gettempdir(), f"ddpg_cl_{key}.c")
         with open(c_file, "w") as f:
             f.write(src)
         print(f"Harness: {c_file}")

@@ -1,0 +1,359 @@
+$ esbmc verification/property_check.c --floatbv --no-unwinding-assertions
+# ESBMC version 6.8.0 64-bit x86_64 linux
+# status=UNSAFE rc=1 tempo=197.82s
+
+ESBMC version 6.8.0 64-bit x86_64 linux
+file /home/user/esbmc/pibic/verification/property_check.c: Parsing
+Converting
+Generating GOTO Program
+GOTO program creation time: 0.103s
+GOTO program processing time: 0.002s
+Starting Bounded Model Checking
+Unwinding loop 7  iteration  1   file property_check.c line 12 function main
+Unwinding loop 7  iteration  2   file property_check.c line 12 function main
+Unwinding loop 7  iteration  3   file property_check.c line 12 function main
+Unwinding loop 7  iteration  4   file property_check.c line 12 function main
+Unwinding loop 3  iteration  1   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  2   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  3   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  4   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 4  iteration  1   file nn_forward_pass.c line 18 function run_network
+Unwinding loop 3  iteration  1   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  2   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  3   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  4   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 4  iteration  2   file nn_forward_pass.c line 18 function run_network
+Unwinding loop 3  iteration  1   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  2   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  3   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  4   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 4  iteration  3   file nn_forward_pass.c line 18 function run_network
+Unwinding loop 3  iteration  1   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  2   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  3   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  4   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 4  iteration  4   file nn_forward_pass.c line 18 function run_network
+Unwinding loop 3  iteration  1   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  2   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  3   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  4   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 4  iteration  5   file nn_forward_pass.c line 18 function run_network
+Unwinding loop 3  iteration  1   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  2   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  3   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  4   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 4  iteration  6   file nn_forward_pass.c line 18 function run_network
+Unwinding loop 3  iteration  1   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  2   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  3   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  4   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 4  iteration  7   file nn_forward_pass.c line 18 function run_network
+Unwinding loop 3  iteration  1   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  2   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  3   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 3  iteration  4   file nn_forward_pass.c line 20 function run_network
+Unwinding loop 4  iteration  8   file nn_forward_pass.c line 18 function run_network
+Unwinding loop 5  iteration  1   file nn_forward_pass.c line 29 function run_network
+Unwinding loop 5  iteration  2   file nn_forward_pass.c line 29 function run_network
+Unwinding loop 5  iteration  3   file nn_forward_pass.c line 29 function run_network
+Unwinding loop 5  iteration  4   file nn_forward_pass.c line 29 function run_network
+Unwinding loop 5  iteration  5   file nn_forward_pass.c line 29 function run_network
+Unwinding loop 5  iteration  6   file nn_forward_pass.c line 29 function run_network
+Unwinding loop 5  iteration  7   file nn_forward_pass.c line 29 function run_network
+Unwinding loop 5  iteration  8   file nn_forward_pass.c line 29 function run_network
+Unwinding loop 6  iteration  1   file nn_forward_pass.c line 27 function run_network
+Unwinding loop 5  iteration  1   file nn_forward_pass.c line 29 function run_network
+Unwinding loop 5  iteration  2   file nn_forward_pass.c line 29 function run_network
+Unwinding loop 5  iteration  3   file nn_forward_pass.c line 29 function run_network
+Unwinding loop 5  iteration  4   file nn_forward_pass.c line 29 function run_network
+Unwinding loop 5  iteration  5   file nn_forward_pass.c line 29 function run_network
+Unwinding loop 5  iteration  6   file nn_forward_pass.c line 29 function run_network
+Unwinding loop 5  iteration  7   file nn_forward_pass.c line 29 function run_network
+Unwinding loop 5  iteration  8   file nn_forward_pass.c line 29 function run_network
+Unwinding loop 6  iteration  2   file nn_forward_pass.c line 27 function run_network
+Symex completed in: 0.009s (174 assignments)
+Slicing time: 0.001s (removed 89 assignments)
+Generated 317 VCC(s), 1 remaining after simplification (85 assignments)
+No solver specified; defaulting to Boolector
+Encoding remaining VCC(s) using bit-vector/floating-point arithmetic
+Encoding to solver time: 0.051s
+Solving with solver Boolector 3.2.0
+Encoding to solver time: 0.051s
+Runtime decision procedure: 197.540s
+Building error trace
+
+Counterexample:
+
+State 1 file nn_weights.h line 8 thread 0
+----------------------------------------------------
+  w1 = { { 5.398900e-2f, -8.688700e-1f, -9.666530e-1f, 9.578020e-1f }, 
+    { 1.598650e-1f, 6.162120e-1f, -2.510430e-1f, 4.045680e-1f }, 
+    { -1.617810e-1f, 6.267200e-2f, -4.868320e-1f, 6.551290e-1f }, 
+    { -9.515160e-1f, 7.858750e-1f, -8.122100e-2f, -5.970630e-1f }, 
+    { -2.037960e-1f, 1.192420e-1f, -3.709680e-1f, 9.865040e-1f }, 
+    { 5.660720e-1f, 2.622410e-1f, 5.521630e-1f, -2.732300e-2f }, 
+    { 6.549540e-1f, -4.004440e-1f, -9.847000e-2f, -4.130600e-2f }, 
+    { -5.379550e-1f, 2.225230e-1f, -8.865650e-1f, -3.055560e-1f } }
+
+State 2 file nn_weights.h line 21 thread 0
+----------------------------------------------------
+  w2 = { { 4.018200e-2f, -8.143450e-1f, -6.920790e-1f, 8.612690e-1f, 4.574000e-1f, -6.870760e-1f, -8.617070e-1f, -3.337080e-1f }, 
+    { 3.936550e-1f, 7.179150e-1f, 7.101670e-1f, 4.428900e-2f, 7.610980e-1f, -3.002790e-1f, -9.135240e-1f, 3.056850e-1f } }
+
+State 3 file property_check.c line 13 function main thread 0
+----------------------------------------------------
+  input[0] = 6.068170e-7f (00110101 00100010 11100100 00100110)
+
+State 5 file property_check.c line 13 function main thread 0
+----------------------------------------------------
+  input[1] = 1.025196e-38f (00000000 01101111 10100010 01001011)
+
+State 7 file property_check.c line 13 function main thread 0
+----------------------------------------------------
+  input[2] = 0.000000f (00000000 00000000 00000000 00000000)
+
+State 9 file property_check.c line 13 function main thread 0
+----------------------------------------------------
+  input[3] = 3.397363e-28f (00010001 11010111 01010101 01011111)
+
+State 11 file nn_forward_pass.c line 19 function run_network thread 0
+----------------------------------------------------
+  hidden[0] = -1.820900e-2f (10111100 10010101 00101011 00001010)
+
+State 12 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[0] = -1.820897e-2f (10111100 10010101 00101010 11111000)
+
+State 13 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[0] = 1.851218e-1f (00111110 00111101 10010000 10010101)
+
+State 14 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[0] = 1.851218e-1f (00111110 00111101 10010000 10010101)
+
+State 15 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[0] = 1.851218e-1f (00111110 00111101 10010000 10010101)
+
+State 16 file nn_forward_pass.c line 19 function run_network thread 0
+----------------------------------------------------
+  hidden[1] = 7.161400e-2f (00111101 10010010 10101010 01011100)
+
+State 17 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[1] = 7.161409e-2f (00111101 10010010 10101010 01101001)
+
+State 18 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[1] = -7.259033e-2f (10111101 10010100 10101010 00111101)
+
+State 19 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[1] = -7.259033e-2f (10111101 10010100 10101010 00111101)
+
+State 20 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[1] = -7.259033e-2f (10111101 10010100 10101010 00111101)
+
+State 21 file nn_forward_pass.c line 19 function run_network thread 0
+----------------------------------------------------
+  hidden[2] = -1.318200e-2f (10111100 01010111 11111001 01010001)
+
+State 22 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[2] = -1.318210e-2f (10111100 01010111 11111001 10111010)
+
+State 23 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[2] = -2.784844e-2f (10111100 11100100 00100010 01101100)
+
+State 24 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[2] = -2.784844e-2f (10111100 11100100 00100010 01101100)
+
+State 25 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[2] = -2.784844e-2f (10111100 11100100 00100010 01101100)
+
+State 26 file nn_forward_pass.c line 19 function run_network thread 0
+----------------------------------------------------
+  hidden[3] = -5.137200e-2f (10111101 01010010 01101011 01110010)
+
+State 27 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[3] = -5.137258e-2f (10111101 01010010 01101100 00001101)
+
+State 28 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[3] = -2.352811e-1f (10111110 01110000 11101101 10001000)
+
+State 29 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[3] = -2.352811e-1f (10111110 01110000 11101101 10001000)
+
+State 30 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[3] = -2.352811e-1f (10111110 01110000 11101101 10001000)
+
+State 31 file nn_forward_pass.c line 19 function run_network thread 0
+----------------------------------------------------
+  hidden[4] = 3.558200e-2f (00111101 00010001 10111110 01101110)
+
+State 32 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[4] = 3.558188e-2f (00111101 00010001 10111110 01001101)
+
+State 33 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[4] = 7.677156e-3f (00111011 11111011 10010000 10101000)
+
+State 34 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[4] = 7.677156e-3f (00111011 11111011 10010000 10101000)
+
+State 35 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[4] = 7.677156e-3f (00111011 11111011 10010000 10101000)
+
+State 36 file nn_forward_pass.c line 19 function run_network thread 0
+----------------------------------------------------
+  hidden[5] = -8.624000e-3f (10111100 00001101 01001011 10101101)
+
+State 37 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[5] = -8.623656e-3f (10111100 00001101 01001010 00111100)
+
+State 38 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[5] = -6.999265e-2f (10111101 10001111 01011000 01001110)
+
+State 39 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[5] = -6.999265e-2f (10111101 10001111 01011000 01001110)
+
+State 40 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[5] = -6.999265e-2f (10111101 10001111 01011000 01001110)
+
+State 41 file nn_forward_pass.c line 19 function run_network thread 0
+----------------------------------------------------
+  hidden[6] = 3.891000e-3f (00111011 01111111 00000000 00100110)
+
+State 42 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[6] = 3.891398e-3f (00111011 01111111 00000110 11010001)
+
+State 43 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[6] = 9.760232e-2f (00111101 11000111 11100011 10111010)
+
+State 44 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[6] = 9.760232e-2f (00111101 11000111 11100011 10111010)
+
+State 45 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[6] = 9.760232e-2f (00111101 11000111 11100011 10111010)
+
+State 46 file nn_forward_pass.c line 19 function run_network thread 0
+----------------------------------------------------
+  hidden[7] = -2.707800e-2f (10111100 11011101 11010010 10101111)
+
+State 47 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[7] = -2.707833e-2f (10111100 11011101 11010011 01011110)
+
+State 48 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[7] = -7.915261e-2f (10111101 10100010 00011010 11000100)
+
+State 49 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[7] = -7.915261e-2f (10111101 10100010 00011010 11000100)
+
+State 50 file nn_forward_pass.c line 21 function run_network thread 0
+----------------------------------------------------
+  hidden[7] = -7.915261e-2f (10111101 10100010 00011010 11000100)
+
+State 51 file nn_forward_pass.c line 28 function run_network thread 0
+----------------------------------------------------
+  output[0] = -1.869500e-2f (10111100 10011001 00100110 01000010)
+
+State 52 file nn_forward_pass.c line 30 function run_network thread 0
+----------------------------------------------------
+  output[0] = -1.125643e-2f (10111100 00111000 01101100 11101001)
+
+State 53 file nn_forward_pass.c line 30 function run_network thread 0
+----------------------------------------------------
+  output[0] = -1.125643e-2f (10111100 00111000 01101100 11101001)
+
+State 54 file nn_forward_pass.c line 30 function run_network thread 0
+----------------------------------------------------
+  output[0] = -1.125643e-2f (10111100 00111000 01101100 11101001)
+
+State 55 file nn_forward_pass.c line 30 function run_network thread 0
+----------------------------------------------------
+  output[0] = -1.125643e-2f (10111100 00111000 01101100 11101001)
+
+State 56 file nn_forward_pass.c line 30 function run_network thread 0
+----------------------------------------------------
+  output[0] = -7.744904e-3f (10111011 11111101 11001000 11110110)
+
+State 57 file nn_forward_pass.c line 30 function run_network thread 0
+----------------------------------------------------
+  output[0] = -7.744904e-3f (10111011 11111101 11001000 11110110)
+
+State 58 file nn_forward_pass.c line 30 function run_network thread 0
+----------------------------------------------------
+  output[0] = -9.184951e-2f (10111101 10111100 00011011 10011000)
+
+State 59 file nn_forward_pass.c line 30 function run_network thread 0
+----------------------------------------------------
+  output[0] = -9.184951e-2f (10111101 10111100 00011011 10011000)
+
+State 60 file nn_forward_pass.c line 28 function run_network thread 0
+----------------------------------------------------
+  output[1] = -6.506200e-2f (10111101 10000101 00111111 00111010)
+
+State 61 file nn_forward_pass.c line 30 function run_network thread 0
+----------------------------------------------------
+  output[1] = 7.812142e-3f (00111011 11111111 11111101 00000000)
+
+State 62 file nn_forward_pass.c line 30 function run_network thread 0
+----------------------------------------------------
+  output[1] = 7.812142e-3f (00111011 11111111 11111101 00000000)
+
+State 63 file nn_forward_pass.c line 30 function run_network thread 0
+----------------------------------------------------
+  output[1] = 7.812142e-3f (00111011 11111111 11111101 00000000)
+
+State 64 file nn_forward_pass.c line 30 function run_network thread 0
+----------------------------------------------------
+  output[1] = 7.812142e-3f (00111011 11111111 11111101 00000000)
+
+State 65 file nn_forward_pass.c line 30 function run_network thread 0
+----------------------------------------------------
+  output[1] = 1.365521e-2f (00111100 01011111 10111010 00011011)
+
+State 66 file nn_forward_pass.c line 30 function run_network thread 0
+----------------------------------------------------
+  output[1] = 1.365521e-2f (00111100 01011111 10111010 00011011)
+
+State 67 file nn_forward_pass.c line 30 function run_network thread 0
+----------------------------------------------------
+  output[1] = -7.550685e-2f (10111101 10011010 10100011 01010110)
+
+State 68 file nn_forward_pass.c line 30 function run_network thread 0
+----------------------------------------------------
+  output[1] = -7.550685e-2f (10111101 10011010 10100011 01010110)
+
+State 69 file property_check.c line 29 function main thread 0
+----------------------------------------------------
+Violated property:
+  file property_check.c line 29 function main
+  Output 0 should be greater than 0.0
+  (_Bool)(output[0] > 0.000000f)
+
+
+VERIFICATION FAILED

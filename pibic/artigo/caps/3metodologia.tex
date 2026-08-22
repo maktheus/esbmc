@@ -85,7 +85,7 @@ if not (h1 >= 0 and h1 <= 153):
     node distance=1.8cm,
     >=latex,
     box/.style={draw, thick, rectangle, rounded corners, fill=blue!10, draw=blue!50!black, text centered, minimum height=1cm, minimum width=2.5cm},
-    decision/.style={draw, thick, diamond, fill=yellow!20, draw=orange, text centered, aspect=2, inner sep=2pt},
+    decision/.style={draw, thick, diamond, fill=yellow!20, draw=orange, text centered, /pgf/shape aspect=2, inner sep=2pt},
     action/.style={draw, thick, rectangle, fill=red!10, draw=red!50!black, text centered, minimum height=0.8cm, rounded corners},
     arrow/.style={thick, ->}
 ]
@@ -127,7 +127,7 @@ O verificador formal Python foi invocado com desenrolar de lógicas padrão indu
 O processo engloba o roteamento nativo C++ absorvendo sintaxes complexas de modeladores modernos de IA mantidos num ambiente orquestrador acessível em Python. A Figura~\ref{fig:python_to_smt} demonstra visualmente a conversão de dependências pelo módulo \texttt{ast2json}.
 
 \begin{figure}[htb]
-    \caption{\label{fig:python_to_smt}Pipeline de Transpilacao via ast2json sugerida pelo Subagente Metodol\'ogico.}
+    \caption{\label{fig:python_to_smt}Pipeline de Transpilacao via ast2json.}
     \begin{center}
         \includegraphics[width=0.98\textwidth]{plot_python_to_smt.png}
     \end{center}
@@ -257,27 +257,27 @@ No \textbf{Caso 6}, estressamos o arcabouço através da simulação física for
 
 \section{Fluxo de Desenvolvimento e Integração Contínua}
 
-Para garantir a confiabilidade das propriedades analisadas, o fluxo de desenvolvimento incorpora Integração Contínua (CI). A cada submissão, automações (via \textit{GitHub Actions}) provisionam as versões canônicas do ESBMC, resolvendo \textit{pipelines} de testes que cruzam \textit{scripts} em Python e os programas fontes da verificação:
+Para garantir a confiabilidade das propriedades analisadas, o fluxo de desenvolvimento incorpora Integração Contínua (CI) via \textit{GitHub Actions}, executando a suíte de verificação a cada submissão.
 
 \begin{lstlisting}[language=bash, numbers=none]
+on:
+  push:        { branches: [ master, main ] }
+  pull_request: { branches: [ master, main ] }
 jobs:
   formal-verification:
-    runs-on: ubuntu-latest
     steps:
-    - name: Install ESBMC Binary
+    - name: Localizar o binario do ESBMC
       run: |
-        wget https://github.../v8.0.0/esbmc-linux.zip
-        unzip esbmc-linux.zip -d bin/
-        export PATH=$PATH:$(pwd)/bin/
-        
-    - name: Run Pytest Formal Verification
-      run: |
-        cd pibic
-        pytest tests/ -v
+        echo "ESBMC_BIN=$(pwd)/pibic/QNNVerifier/esbmc-6.8.0/esbmc" \
+          >> $GITHUB_ENV
+    - name: Suite de verificacao formal
+      run: cd pibic && pytest tests/ -v
 \end{lstlisting}
+
+Duas decisões de projeto merecem registro, por decorrerem de falhas observadas na primeira versão deste fluxo. Primeiro, o binário do ESBMC é \textbf{versionado junto ao repositório} em vez de baixado a cada execução: isso elimina a divergência de versão entre o ambiente local e o de CI, que foi fonte de resultados não reproduzíveis. Segundo, o caminho e propagado por \texttt{\$GITHUB\_ENV}, e nao por \texttt{export PATH} --- variaveis exportadas em um \textit{step} nao persistem para o seguinte no \textit{GitHub Actions}, defeito que mantinha a etapa de verificacao inoperante sem emitir erro.
 
 Internamente, grande parte das avaliações do controlador neural lidou-se localmente providenciando as execuções de compilação simbólica baseadas em comandos chave do ESBMC. A validação de precisão matemática exige pragmas restritivas, por exemplo, determinando o tamanho das palavras flutuantes e verificações robustas:
 \begin{alineas}
     \item \texttt{esbmc pid\_template.c -{}-floatbv -{}-k-induction}: Realiza a prova de malha de controle através de análise de indução-$k$, crucial para atestar a convergência segura frente aos laços da temporalidade dos modelos interativos.
-    \item \texttt{esbmc attention\_kernel.cpp -{}-multi-property -{}-memory-leak-check}: Aborda violações ortogonais de integridade em código C++, identificando desvios na alocação da pilha (\textit{stack}) em tensores das arquiteturas \textit{Transformers}.
+    \item \texttt{esbmc attention\_kernel.c -{}-multi-property -{}-memory-leak-check}: Aborda violações ortogonais de integridade em código C++, identificando desvios na alocação da pilha (\textit{stack}) em tensores das arquiteturas \textit{Transformers}.
 \end{alineas}

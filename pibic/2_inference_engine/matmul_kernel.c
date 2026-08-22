@@ -1,5 +1,15 @@
 #include <stdlib.h>
 
+/* Dimensao da matriz, definida pelo benchmark via -DDIM_LIMIT=N.
+ *
+ * ATENCAO — DEFEITO CORRIGIDO: o run_benchmark.py sempre passou
+ * -DDIM_LIMIT=<n>, mas este arquivo NUNCA usava o macro; M, N e K eram 2
+ * fixos. Todos os "tamanhos" verificavam a MESMA matriz 2x2, entao a curva de
+ * escalabilidade do Caso 2 nao media escala nenhuma. */
+#ifndef DIM_LIMIT
+#define DIM_LIMIT 2
+#endif
+
 void matmul_tiled(float* A, float* B, float* C, int M, int N, int K, int TILE) {
     for (int i = 0; i < M; i += TILE) {
         for (int j = 0; j < N; j += TILE) {
@@ -18,7 +28,8 @@ void matmul_tiled(float* A, float* B, float* C, int M, int N, int K, int TILE) {
 }
 
 void verify_kernel() {
-    int M = 2; int N = 2; int K = 2; int TILE = 2; // Exact multiples for faster ESBMC resolution
+    int M = DIM_LIMIT; int N = DIM_LIMIT; int K = DIM_LIMIT;
+    int TILE = DIM_LIMIT;   /* um unico tile: isola o custo da multiplicacao */
     float* A = (float*)calloc(M * K, sizeof(float));
     float* B = (float*)calloc(K * N, sizeof(float));
     float* C = (float*)calloc(M * N, sizeof(float));

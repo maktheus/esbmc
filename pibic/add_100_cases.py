@@ -1,7 +1,7 @@
 import json
 import os
 
-filepath = "/home/uchoa/esbmc/pibic/prd.json"
+filepath = "prd.json"
 
 if not os.path.exists(filepath):
     print("Error: prd.json not found at", filepath)

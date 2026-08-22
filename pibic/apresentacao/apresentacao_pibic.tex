@@ -531,7 +531,7 @@ int main(void) {
       \item \textbf{Boolector} em vez de Z3
     \end{enumerate}
     \begin{exampleblock}{}
-      \centering \textbf{18--27$\times$ mais rápido}
+      \centering \textbf{Speedup histórico de 18--27$\times$; não remedido}
     \end{exampleblock}
 
     \column{0.48\textwidth}
@@ -573,7 +573,7 @@ __ESBMC_assert(
 
   \vspace{0.6em}
   \begin{center}
-    \textbf{Método 2} --- QNNVerifier (ativação exata via intervalo abstrato)
+    \textbf{Método 2} --- QNNVerifier (sobreaproximação intervalar)
     \vspace{0.2em}
 
     \small
@@ -581,10 +581,10 @@ __ESBMC_assert(
       \toprule
       \textbf{Harness} & \textbf{Dims} & \textbf{Ativação} & \textbf{Antes} & \textbf{Depois} \\
       \midrule
-      \texttt{gpt2\_2x4\_qnn.c}     & 2$\times$4$\times$2  & GeLU & ---        & \textcolor{okgreen}{0.30\,s} \\
-      \texttt{gpt2\_4x8\_qnn.c}     & 4$\times$8$\times$4  & GeLU & 94--115\,s & \textcolor{okgreen}{5.3\,s} \\
-      \texttt{llama-7b\_4x8\_qnn.c} & 4$\times$8$\times$4  & SiLU & 115\,s     & \textcolor{okgreen}{4.3\,s} \\
-      \texttt{gpt2\_4x16\_qnn.c}    & 4$\times$16$\times$4 & GeLU & timeout    & \textcolor{okgreen}{27\,s} \\
+      \texttt{gpt2\_2x4\_qnn.c}     & 2$\times$4$\times$2  & intervalo GeLU & histórico & \textcolor{okgreen}{0.24\,s} \\
+      \texttt{gpt2\_4x8\_qnn.c}     & 4$\times$8$\times$4  & intervalo GeLU & histórico & \textcolor{okgreen}{4.24\,s} \\
+      \texttt{llama-7b\_4x8\_qnn.c} & 4$\times$8$\times$4  & intervalo SiLU & histórico & \textcolor{okgreen}{3.46\,s} \\
+      \texttt{gpt2\_4x16\_qnn.c}    & 4$\times$16$\times$4 & intervalo GeLU & histórico & \textcolor{okgreen}{20.10\,s} \\
       \bottomrule
     \end{tabular}
   \end{center}
@@ -622,7 +622,7 @@ __ESBMC_assert(
 
     \vspace{0.3em}
     \item \textbf{Otimizações QNNVerifier (FFN/LLM)}\\
-          int32 + dead-code removal + fxp32\_mult + Boolector = \textbf{18--27$\times$ speedup}
+          int32 + dead-code removal + fxp32\_mult + Boolector; speedup de 18--27$\times$ é histórico e não foi remedido
   \end{enumerate}
 \end{frame}
 
@@ -737,7 +737,7 @@ __ESBMC_assert(h[i] == 0,
       \item \textcolor{okgreen}{\checkmark} MLP XOR treinado (PyTorch real)
       \item \textcolor{okgreen}{\checkmark} Pipeline ONNX end-to-end
       \item \textcolor{okgreen}{\checkmark} FFN GPT-2 / LLaMA verificado
-      \item \textcolor{okgreen}{\checkmark} QNNVerifier 18--27$\times$ mais rápido
+      \item \textcolor{okgreen}{\checkmark} QNNVerifier com tempos atuais medidos; speedup histórico não remedido
       \item \textcolor{okgreen}{\checkmark} Verificação de neurônios mortos
       \item \textcolor{gray}{$\square$} Propriedades de robustez ($\ell_\infty$)
       \item \textcolor{gray}{$\square$} Frama-C EVA para bounds mais justos
@@ -747,10 +747,10 @@ __ESBMC_assert(h[i] == 0,
     \column{0.48\textwidth}
     \begin{exampleblock}{Impacto}
       \begin{itemize}
-        \item Modelo verificado = \textbf{pronto para deploy seguro}
-        \item Pipeline reutilizável para qualquer MLP ONNX
+        \item As propriedades especificadas foram verificadas nos harnesses indicados
+        \item Pipeline reutilizável nas topologias MLP ONNX suportadas
         \item Base para escalar a LLMs maiores (slices)
-        \item Speedup de 18--27$\times$ vs.\ estado anterior
+        \item Speedup histórico de 18--27$\times$ requer reprodução controlada
       \end{itemize}
     \end{exampleblock}
 

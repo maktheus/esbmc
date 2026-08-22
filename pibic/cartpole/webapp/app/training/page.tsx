@@ -65,7 +65,8 @@ function TrainingChart({ history }: { history: TrainingPoint[] }) {
     ctx.beginPath();
     values.forEach((v, i) => {
       const x = toX(i), y = toY(Math.max(yMin, Math.min(yMax, v)));
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
     });
     ctx.stroke();
 

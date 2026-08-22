@@ -8,7 +8,7 @@ unsigned long millis() {
 }
 
 double nondet_double();
-void __ESBMC_assume(int condition);
+void __ESBMC_assume(bool condition);   /* bool em C++ (nao _Bool, nao int) */
 
 int main() {
     double Setpoint = 100.0;

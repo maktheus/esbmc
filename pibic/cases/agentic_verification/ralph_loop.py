@@ -1,4 +1,26 @@
+"""
+ralph_loop.py — Orquestrador do Ralph Loop.
+
+AVISO: **este arquivo NAO verifica nada.** O portao de validacao por ESBMC esta
+inteiramente comentado (ver o bloco "ESBMC Validate Gate" abaixo), e o loop
+chama `self.state.mark_completed(idx)` incondicionalmente ao final de cada
+tarefa — ou seja, marca TODA tarefa como concluida independentemente de
+qualquer resultado de verificacao.
+
+Consequencia direta: qualquer estatistica agregada produzida a partir deste
+orquestrador (por exemplo "N topologias verificadas, M seguras, K
+contra-exemplos") nao tem lastro em verificacao alguma. O caminho funcional
+para o loop agentico esta em `3_neuro_symbolic/mock_agent.py`, que de fato
+invoca o ESBMC e registra veredito por iteracao.
+
+Para tornar este arquivo real: descomentar o bloco de validacao, remover o
+`mark_completed` incondicional, e usar `run_esbmc(...).status` — nunca
+`is_safe`, que tambem e falso quando o ESBMC nao chegou a rodar.
+"""
+
 import json
+
+
 import os
 import subprocess
 from core_verify.esbmc_caller import run_esbmc

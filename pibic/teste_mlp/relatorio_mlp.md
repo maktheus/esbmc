@@ -144,7 +144,7 @@ Para alinhar o projeto com as práticas de Big Techs (TensorFlow Lite / CMSIS-NN
 **Conclusão**: O erro máximo de quantização foi de **0.0022 (0.2%)**, o que é insignificante para a lógica do XOR, validando a eficácia da ferramenta profissional em detrimento do código manual.
 
 ### Arquivos do Pipeline Ouro:
-- [`convert_to_tflite.py`](file:///home/uchoa/esbmc/pibic/teste_mlp/convert_to_tflite.py): Orquestrador de conversão e quantização.
-- [`validate_precision.py`](file:///home/uchoa/esbmc/pibic/teste_mlp/validate_precision.py): Auditor de fidelidade matemática.
-- [`mlp_model_quantized.tflite`](file:///home/uchoa/esbmc/pibic/teste_mlp/mlp_model_quantized.tflite): O artefato binário final pronto para hardware.
-- [`mlp_model_quantized.h`](file:///home/uchoa/esbmc/pibic/teste_mlp/mlp_model_quantized.h): Header C para o firmware.
+- [`convert_to_tflite.py`](convert_to_tflite.py): Orquestrador de conversão e quantização.
+- [`validate_precision.py`](validate_precision.py): Auditor de fidelidade matemática.
+- [`mlp_model_quantized.tflite`](mlp_model_quantized.tflite): O artefato binário final pronto para hardware.
+- [`mlp_model_quantized.h`](mlp_model_quantized.h): Header C para o firmware.
