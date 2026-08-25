@@ -3,6 +3,12 @@
 
 DOC = relatorio_final
 
+# Build reproduzivel: sem isto, o pdflatex carimba CreationDate/ModDate e um /ID
+# novos a cada execucao, e o PDF versionado aparece como modificado depois de
+# todo `make` -- 68 bytes de metadado, conteudo identico. Epoca fixa resolve.
+export SOURCE_DATE_EPOCH = 1767225600
+export FORCE_SOURCE_DATE = 1
+
 .PHONY: all clean distclean
 
 all: $(DOC).pdf

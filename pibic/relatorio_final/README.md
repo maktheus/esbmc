@@ -14,6 +14,12 @@ make clean      # remove intermediários
 make distclean  # remove também o PDF
 ```
 
+O `Makefile` fixa `SOURCE_DATE_EPOCH` e `FORCE_SOURCE_DATE`, de modo que dois
+builds do zero produzem PDFs **byte a byte idênticos**. Sem isso o `pdflatex`
+carimba `CreationDate`, `ModDate` e um `/ID` novos a cada execução, e o PDF
+versionado apareceria como modificado depois de todo `make` — 68 bytes de
+metadado, conteúdo igual.
+
 Dependências (Debian/Ubuntu):
 
 ```bash
