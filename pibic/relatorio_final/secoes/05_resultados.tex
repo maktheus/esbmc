@@ -1,0 +1,501 @@
+% =====================================================================
+\section{Resultados e discussão}
+\label{sec:resultados}
+
+\subsection{Consolidado das evidências}
+
+A Tabela~\ref{tab:evidencias} apresenta o resultado da execução consolidada dos doze
+\textit{harnesses} citados neste relatório. Cada linha corresponde a um arquivo de log bruto
+versionado, indexado no Apêndice~B. O ambiente é o da
+Tabela~\ref{tab:ambiente}.
+
+\begin{table}[H]
+\centering
+\caption{Vereditos medidos dos doze \textit{harnesses} reexecutáveis.}
+\label{tab:evidencias}
+\footnotesize
+\begin{tabular}{@{}llcr@{}}
+\toprule
+\textbf{Caso} & \textbf{\textit{Harness}} & \textbf{Veredito} & \textbf{Tempo} \\
+\midrule
+Caso 1 & MLP quantizada (XOR), Q8.8             & \SAFE   & 0,08\,s \\
+Caso 1 & \textit{Stub} da MLP em ponto flutuante & \SAFE   & 3,09\,s \\
+Caso 1 & Rede completa + propriedade de saída    & \UNSAFE & 197,82\,s \\
+Caso 1 & \textit{Stub} de bloco MLP \textit{gated} & \SAFE & 0,08\,s \\
+Caso 2 & \textit{Kernels} de inferência          & \UNSAFE & 0,43\,s \\
+Caso 2 & GEMM com \textit{tiling}, $N=3$         & \SAFE   & 17,51\,s \\
+Caso 4 & PID, ruído $[-5,+5]$, 10 passos         & \SAFE   & 213,47\,s \\
+Caso 6 & Política de RL, limite do atuador       & \UNSAFE & 2,58\,s \\
+Caso 5 & FFN GPT-2 $2{\times}4$, intervalo GeLU  & \SAFE   & 0,24\,s \\
+Caso 5 & FFN LLaMA-7B $4{\times}8$, intervalo SiLU & \SAFE & 3,46\,s \\
+Caso 5 & FFN GPT-2 $4{\times}8$, intervalo GeLU  & \SAFE   & 4,24\,s \\
+Caso 5 & FFN GPT-2 $4{\times}16$, intervalo GeLU & \SAFE   & 20,10\,s \\
+\midrule
+\multicolumn{4}{@{}l@{}}{\textbf{9 provados $\cdot$ 3 com contraexemplo $\cdot$ 0 indecisos}} \\
+\bottomrule
+\end{tabular}
+\legend{\small Fonte: \texttt{results/EVIDENCIAS.md}; logs brutos em \texttt{results/logs/}.}
+\end{table}
+
+Três leituras equivocadas dessa tabela precisam ser bloqueadas de antemão. Um veredito
+\SAFE{} vale para o \textit{harness}, para as hipóteses declaradas e para o horizonte de
+desenrolamento indicado, e não para o sistema implantado. Um veredito \UNSAFE{} é um
+resultado positivo do ponto de vista da verificação --- o \textit{solver} exibiu um traço
+concreto ---, e não uma falha do experimento. E a ausência de linhas indecisas nesta execução
+específica não significa que a técnica sempre decida: várias configurações estudadas neste
+projeto \textbf{não} decidem, e estão reportadas nas subseções seguintes.
+
+\subsection{Caso 1 --- redes quantizadas e \textit{stubs} de inferência}
+
+O \textit{harness} C quantizado que implementa XOR sobre as quatro entradas discretas foi
+provado em 0,08\,s, e o \textit{stub} em ponto flutuante da mesma topologia em 3,09\,s. O
+\textit{stub} de bloco MLP \textit{gated}, no estilo DeepSeek, gera 28 condições de
+verificação --- quatro remanescentes após simplificação --- e é provado em 0,08\,s.
+
+Já o \textit{harness} que impõe a propriedade de saída sobre a rede completa em ponto
+flutuante retorna \UNSAFE{} em 197,82\,s: existe entrada admissível para a qual a predição
+desquantizada excede o limite declarado. Esse resultado é informativo justamente por
+contrariar a expectativa induzida pela amostragem. A Figura~\ref{fig:case1} mostra a
+superfície de saída obtida por amostragem densa de $10^4$ pontos, em que nenhuma violação
+aparece --- um lembrete direto de que $10^4$ amostras não cobrem um domínio contínuo, e de
+que a diferença entre ``não encontrei'' e ``não existe'' é exatamente o que a verificação
+formal entrega.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.90\textwidth]{case1_plot.png}
+\caption{Superfície de saída do neurônio e distribuição amostral. A figura descreve a
+amostra e \textbf{não} constitui prova sobre o domínio contínuo.}
+\label{fig:case1}
+\legend{\small Fonte: elaborada pelo autor.}
+\end{figure}
+
+Registre-se um limite de escopo desta frente. O plano previa executar a verificação
+diretamente sobre o modelo em Python, via \texttt{esbmc modelo.py --floatbv --k-induction}. O
+binário 6.8.0 versionado no repositório não possui o \textit{frontend} Python compilado e
+rejeita arquivos \texttt{.py} com \texttt{failed to figure out type of file}; instalar as
+dependências de transpilação não contorna o problema, pois a limitação está no binário.
+Concluir esse experimento exige compilar a versão 8.0.0 com
+\texttt{-DENABLE\_PYTHON\_FRONTEND=ON}. Nenhum veredito é atribuído aqui ao modelo em Python.
+
+\subsection{Caso 2 --- \textit{kernels} de inferência e a barreira de escalabilidade}
+
+A verificação dos \textit{kernels} de inferência produziu contraexemplo em 0,43\,s,
+localizando violação de segurança de memória sob comprimento de sequência simbólico. Para o
+\textit{kernel} GEMM com \textit{tiling}, a Tabela~\ref{tab:gemm} apresenta o estudo de
+escalabilidade.
+
+\begin{table}[H]
+\centering
+\caption{Escalabilidade da verificação do \textit{kernel} GEMM em função da dimensão $N$.}
+\label{tab:gemm}
+\small
+\begin{tabular}{@{}crl@{}}
+\toprule
+\textbf{Dimensão $N$} & \textbf{Tempo} & \textbf{Veredito} \\
+\midrule
+2 & 1,97\,s   & \SAFE \\
+3 & 16,83\,s  & \SAFE \\
+4 & 300,05\,s & \INDECISO{} (indeciso) \\
+\bottomrule
+\end{tabular}
+\legend{\small Fonte: \texttt{results/case2\_ambiente.md}; Boolector, limite de 300\,s,
+\texttt{-DDIM\_LIMIT=N}.}
+\end{table}
+
+De $N{=}2$ para $N{=}3$ o tempo cresce cerca de 8,5 vezes; em $N{=}4$ o \textit{solver} não
+decide dentro do limite. A barreira observada, neste \textit{harness} e nesta máquina, está
+em $N{=}4$. Três pontos --- um deles indeciso --- não sustentam extrapolação para dimensões
+de produção nem a proposição de uma lei de crescimento, e a conclusão permanece restrita ao
+experimento medido. A abordagem continua útil para verificar a corretude lógica do algoritmo
+de \textit{tiling} em instâncias reduzidas, o que é coerente com a hipótese de escopo pequeno
+usualmente invocada nesse contexto.
+
+Cabe registrar como esse resultado foi obtido, porque o percurso é instrutivo. A versão
+anterior do experimento reportava uma curva de seis pontos, com tempos entre $<1$\,s e
+$\approx 15$\,s. O \textit{script} de execução passava a dimensão por
+\texttt{-DDIM\_LIMIT=<n>}, mas o \textit{kernel} \textbf{nunca usava esse macro}: as
+dimensões estavam fixas em $M = N = K = 2$, e todos os ``tamanhos'' mediam o mesmo problema.
+Além disso, a \textit{flag} \texttt{--smtlib} fazia o verificador \emph{emitir} a fórmula em
+vez de resolvê-la. Corrigidos o macro, a extensão do arquivo e as \textit{flags}, a curva
+suave desapareceu e a barreira em $N{=}4$ tornou-se visível.
+
+\subsection{Caso 3 --- ciclo neuro-simbólico de geração e correção}
+
+O ciclo completou-se em \textbf{duas} iterações. Na iteração~0, o ESBMC detectou o
+\textit{buffer overflow} do \texttt{strcpy} em 0,13\,s de tempo de verificador, devolvendo o
+deslocamento exato da violação; na iteração~1, o código corrigido com \texttt{strncpy}
+recebeu \veredito{verification successful} em 0,11\,s, encerrando o ciclo. As
+Figuras~\ref{fig:case3} e~\ref{fig:statemachine} apresentam a decomposição de tempo por
+iteração e a máquina de estados do protocolo.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{case3_plot.png}
+\caption{Tempo por iteração do ciclo gerar--verificar--corrigir, com decomposição entre
+atraso do gerador e tempo de verificação.}
+\label{fig:case3}
+\legend{\small Fonte: elaborada pelo autor a partir de
+\texttt{results/case3\_agent\_stats.csv}.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{plot_agent_statemachine.png}
+\caption{Máquina de estados do protocolo neuro-simbólico de geração e reparo.}
+\label{fig:statemachine}
+\legend{\small Fonte: elaborada pelo autor.}
+\end{figure}
+
+O custo do verificador ficou abaixo de 0,15\,s nas duas iterações, mas esse número só foi
+obtido após limitar o desenrolamento com \texttt{--unwind 32}: sem esse limite, o modelo de
+\texttt{strncpy} não termina; com \texttt{--no-unwinding-assertions}, o caso pode tornar-se
+vácuo. É um exemplo concreto de como um parâmetro aparentemente operacional altera o
+significado do veredito.
+
+Duas correções foram necessárias para que este caso medisse alguma coisa. A versão anterior
+afirmava cinco iterações --- inalcançáveis, já que o ciclo encerra na primeira prova
+bem-sucedida --- e usava \texttt{--smtlib}, o que fazia com que o campo de sucesso fosse
+permanentemente falso e o arquivo de estatísticas ficasse com zero byte. O experimento
+reportado aqui usa o invólucro \texttt{core\_verify} e produz o CSV de onde a
+Figura~\ref{fig:case3} é gerada.
+
+Reafirme-se a limitação de escopo: o gerador é um \textit{mock} determinístico. O experimento
+demonstra o protocolo e mede o custo do verificador dentro dele; conclusões sobre autonomia,
+qualidade de \textit{prompts} ou desempenho de agentes reais exigem outro experimento.
+
+\subsection{Caso 4 --- PID sob ruído não determinístico}
+
+O verificador provou, em \textbf{213,47\,s}, que o controlador mantém $T < 150\,^\circ$C ao
+longo dos dez passos e para \emph{qualquer} ruído de sensor em $[-5,+5]$. A
+Figura~\ref{fig:case4} apresenta a dinâmica simulada sob cinco perfis distintos de ruído e a
+Figura~\ref{fig:fase} o retrato de fase correspondente.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{case4_plot.png}
+\caption{Evolução da temperatura, do sinal de controle e do erro de rastreamento sob cinco
+perfis simulados de ruído de sensor.}
+\label{fig:case4}
+\legend{\small Fonte: elaborada pelo autor.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.80\textwidth]{plot_pid_phase_portrait.png}
+\caption{Retrato de fase do controlador PID sob perturbação.}
+\label{fig:fase}
+\legend{\small Fonte: elaborada pelo autor, com semente fixa.}
+\end{figure}
+
+O erro de rastreamento diminui nos cinco perfis simulados, mas essa observação é finita e
+\textbf{não} comprova estabilidade assintótica. A prova formal cobre exatamente
+$T < 150\,^\circ$C, por dez passos, sob ruído de sensor em $[-5,+5]$; perturbações no atuador
+não foram modeladas.
+
+Este caso produziu o episódio metodologicamente mais instrutivo do ciclo. Uma primeira
+medição, com limite de 200\,s, resultou em \textit{timeout}, e a afirmação esteve a ponto de
+ser classificada como não sustentada por evidência. Reexecutada com folga, a mesma
+propriedade foi \textbf{provada} --- pouco além do limite anterior. A lição é simétrica e vale
+para todo o relatório: ler \textit{timeout} como ``seguro'' inventa uma prova; lê-lo como
+``propriedade falsa'' descarta uma prova legítima. Nos dois casos o defeito é o mesmo, tratar
+\emph{ausência de sinal como sinal}. É por isso que a coluna de veredito do arquivo de
+evidências mantém \veredito{timeout} separado de \SAFE{} e de \UNSAFE{}, e nunca os colapsa.
+
+\subsubsection{Biblioteca de controle de terceiros}
+
+Para avaliar a aplicabilidade da abordagem a código de produção, a
+\textit{Arduino-PID-Library} foi integrada como submódulo e submetida ao mesmo modelo de
+planta e de ruído. \textbf{A verificação não foi concluída.} Foram encontrados três
+obstáculos independentes, dois deles removidos:
+
+\begin{enumerate}[leftmargin=1.4cm]
+  \item o \textit{harness} declarava \texttt{void \_\_ESBMC\_assume(int)}, em conflito com a
+  declaração \texttt{bool} dos \textit{intrinsics} do verificador, e por isso sequer era
+  analisado --- \textbf{corrigido};
+  \item a macro \texttt{ARDUINO} não era definida, fazendo o código recair em um ramo anterior
+  ao Arduino 1.0 que requer um cabeçalho inexistente --- contornável por
+  \texttt{-DARDUINO=100};
+  \item \textbf{bloqueio remanescente}: o arquivo emprega \textbf{construtor delegante},
+  recurso de C++11, e o ESBMC 6.8.0 não oferece a opção \texttt{--std}, introduzida apenas na
+  8.0.0. O \textit{harness} usa justamente o construtor de sete argumentos, que é o delegante,
+  de modo que o recurso não pode ser evitado.
+\end{enumerate}
+
+O registro relevante é que a barreira \textbf{não está} na complexidade do algoritmo de
+controle, mas na cobertura do \textit{frontend} C++ do verificador e nas convenções de
+compilação do ecossistema alvo. O mesmo defeito de declaração do primeiro item foi encontrado
+e corrigido em outros dois arquivos do projeto, entre eles o \textit{stub} de bloco MLP, que
+passou a ser verificável e figura como provado na Tabela~\ref{tab:evidencias}.
+
+\subsection{Caso 5 --- blocos \textit{feed-forward} de modelos de linguagem}
+
+A Tabela~\ref{tab:ffn} apresenta os tempos medidos do Método 2 --- ativação abstraída por
+intervalos --- sobre blocos FFN extraídos do GPT-2 e do LLaMA-7B.
+
+\begin{table}[H]
+\centering
+\caption{Verificação de blocos FFN com sobreaproximação intervalar da ativação (Método 2).}
+\label{tab:ffn}
+\small
+\begin{tabular}{@{}llcrl@{}}
+\toprule
+\textbf{\textit{Harness}} & \textbf{Dimensões} & \textbf{Ativação} & \textbf{Tempo} &
+\textbf{Veredito} \\
+\midrule
+\texttt{gpt2\_2x4\_qnn}     & $2{\times}4{\times}2$  & intervalo GeLU & 0,24\,s  & \SAFE \\
+\texttt{llama-7b\_4x8\_qnn} & $4{\times}8{\times}4$  & intervalo SiLU & 3,46\,s  & \SAFE \\
+\texttt{gpt2\_4x8\_qnn}     & $4{\times}8{\times}4$  & intervalo GeLU & 4,24\,s  & \SAFE \\
+\texttt{gpt2\_4x16\_qnn}    & $4{\times}16{\times}4$ & intervalo GeLU & 20,10\,s & \SAFE \\
+\bottomrule
+\end{tabular}
+\legend{\small Fonte: \texttt{results/EVIDENCIAS.md}; ESBMC 6.8.0 com Boolector.}
+\end{table}
+
+O crescimento entre $4{\times}8$ e $4{\times}16$ --- de 4,24\,s para 20,10\,s ao dobrar a
+dimensão oculta --- é coerente com a barreira observada no Caso 2 e delimita o alcance
+prático da técnica: a verificação é modular, aplicada a fatias representativas, e não ao
+modelo completo. Um bloco de produção com $d = 4096$ geraria da ordem de $16$ milhões de
+multiplicações simbólicas.
+
+O ponto conceitual mais importante deste caso é o compromisso entre as duas codificações. O
+Método 1, mais rápido, substitui a ativação por um \textit{proxy} ReLU e portanto verifica um
+modelo \emph{que não é o modelo implantado}. O Método 2 verifica a propriedade sobre uma
+relaxação intervalar, e a solidez do veredito para a ativação real depende inteiramente de os
+limites injetados serem conservadores. Nenhuma das duas codificações é ``a correta'': a
+codificação mais rápida não é a mais sólida, e essa tensão precisa ser declarada junto do
+resultado.
+
+Registre-se ainda que a documentação do subprojeto reporta um ganho de 18 a 27 vezes do
+Método 2 otimizado sobre uma codificação inicial que usava Z3, inteiros de 64 bits e mantinha
+código morto de pré-ativação. Essa razão \textbf{não} foi remedida neste trabalho; apenas os
+tempos da Tabela~\ref{tab:ffn} o foram, e ficaram sistematicamente abaixo dos documentados
+--- 4,24\,s contra 5,3\,s, 3,46\,s contra 4,3\,s, 20,10\,s contra 27\,s ---, diferença
+compatível com variação de máquina.
+
+\subsection{Caso 6 --- política de aprendizado por reforço}
+
+O \textit{solver} encontrou \textbf{contraexemplo} em 2,58\,s: existe estado, dentro da caixa
+analisada, para o qual a ação da política ultrapassa o intervalo $[-1,1]$ do atuador. A
+Figura~\ref{fig:shield} apresenta a avaliação da mesma expressão do \textit{harness} sobre a
+mesma caixa de estados, na qual a violação é visível --- a ação máxima atinge 1,50 contra o
+limite de 1,0, e uma fração não desprezível da grade viola o limite.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{plot_rl_shield.png}
+\caption{Distribuição das ações da política sobre a caixa de estados do \textit{harness}: a
+região que excede o limite do atuador é atingível.}
+\label{fig:shield}
+\legend{\small Fonte: elaborada pelo autor, avaliando a expressão do próprio
+\textit{harness}.}
+\end{figure}
+
+A conclusão precisa ser enunciada com cuidado, porque é fácil invertê-la. O \textit{harness}
+\textbf{detecta} a violação; ele \textbf{não} demonstra que o \textit{safety shield} a impeça.
+O escudo precisa ser corrigido e novamente verificado antes de qualquer afirmação de proteção
+pré-implantação. Reportar esse resultado negativo é preferível a apresentá-lo como validação
+do escudo.
+
+\subsection{Caso 7 --- malha fechada com controlador DDPG quantizado}
+\label{sub:cartpole}
+
+\subsubsection{Fidelidade da quantização}
+
+As três implementações da inferência --- Python, TypeScript e C --- coincidem bit a bit. A
+caracterização do erro de quantização sobre $10^4$ amostras, com escala 256 e força em
+$[-10, +10]$\,N, dá erro absoluto médio de $0{,}078$\,N e percentil 95 de $0{,}226$\,N, com
+erro absoluto máximo de $7{,}76$\,N. A cauda é relevante e está reportada: o erro típico é
+pequeno, mas o pior caso não é desprezível, e é precisamente o pior caso que a verificação
+formal explora.
+
+\subsubsection{Duas propriedades vácuas}
+
+O teste de vacuidade descrito na Seção~\ref{sub:vacuidade} revelou que duas das três
+propriedades originalmente verificadas \textbf{não dependiam do controlador}:
+
+\begin{itemize}[leftmargin=1.4cm]
+  \item a propriedade de segurança em um passo asseria sobre
+  $\theta_{\text{novo}} = \theta + 5\dot{\theta}/256$, expressão que não contém a força $F$.
+  Executando a mesma asserção sem rede alguma e com $F$ arbitrária, veredito e contraexemplo
+  se reproduzem idênticos: os 745 pesos eram \textbf{código morto} para aquela propriedade;
+  \item a propriedade de limite de força, $|F| \le 10$\,N, vale por \textbf{construção} da
+  aproximação de $\tanh$, que satura em Q8.8. Substituindo a rede inteira por uma entrada
+  livre, a prova passa em 0,72\,s.
+\end{itemize}
+
+A correção seguiu dois caminhos distintos. A primeira propriedade foi reescrita para
+\textbf{dois passos}, pois a força só alcança $\theta$ através de $\dot{\theta}$ no passo
+seguinte; a dependência foi confirmada observando que o contraexemplo muda conforme $F$ é
+livre ou nula. A segunda foi \textbf{reclassificada} como verificação de sanidade da
+quantização --- ela detecta erro de tabela ou de escala, o que é útil, mas não é prova sobre o
+ator --- e uma propriedade nova foi introduzida para cobrir o que ela não podia decidir: na
+zona de perigo, o controlador deve aplicar força de magnitude mínima, condição que um
+controlador inerte viola e cuja decisão exige percorrer os pesos. A discriminação foi
+verificada nos dois sentidos: a nova propriedade falha para um controlador nulo e é provada
+para um controlador atuante.
+
+Esta é a contribuição metodológica que o projeto considera mais transferível. Uma propriedade
+vácua não produz erro, não produz aviso e não produz número implausível: produz uma prova
+verdadeira sobre o objeto errado. O único mecanismo que a expõe é o teste explícito de
+dependência.
+
+\subsubsection{Envelope de segurança e a barreira do BMC}
+
+A Tabela~\ref{tab:envelope} caracteriza a propriedade corrigida de dois passos em função da
+velocidade angular inicial admitida.
+
+\begin{table}[H]
+\centering
+\caption{Segurança em dois passos em função do limite admitido de $|\dot{\theta}|$.}
+\label{tab:envelope}
+\small
+\begin{tabular}{@{}rrlr@{}}
+\toprule
+$|\dot{\theta}| \le$ (Q8.8) & \textbf{rad/s} & \textbf{Veredito} & \textbf{Tempo} \\
+\midrule
+1280 & 5,00 & \UNSAFE   & 25,4\,s \\
+ 640 & 2,50 & \UNSAFE   & 28,8\,s \\
+ 320 & 1,25 & Indeciso  & $>$\,300\,s \\
+ 160 & 0,62 & Indeciso  & $>$\,300\,s \\
+  80 & 0,31 & Indeciso  & $>$\,300\,s \\
+\bottomrule
+\end{tabular}
+\legend{\small Fonte: elaborada pelo autor; limite de 300\,s por instância.}
+\end{table}
+
+O resultado defensável é, portanto: a segurança de dois passos é \textbf{violada} acima de
+2,5\,rad/s e \textbf{indecisa} abaixo disso. \textbf{Não} se conclui que o controlador seja
+seguro em nenhuma faixa.
+
+O comportamento da tabela contraria a intuição e merece explicação, porque \textbf{reduzir a
+região inicial torna o problema mais difícil}. Com uma caixa ampla existe contraexemplo, e
+encontrá-lo é a direção barata do problema: basta ao \textit{solver} exibir uma testemunha.
+Nas caixas estreitas não há testemunha a exibir, e decidir exige \emph{provar} a ausência de
+violação --- a direção cara. A assimetria entre satisfatibilidade e insatisfatibilidade é,
+aqui, o fator dominante do custo.
+
+A verificação de malha fechada obtida neste trabalho é de horizonte curto. Um
+\textit{harness} de cinquenta passos chegou a ser esboçado e nunca foi concluído, e a leitura
+imediata seria falta de tempo. A medição mostra outra coisa: para a rede sintética, o custo de
+provar $K$ passos cresce de 0,3\,s e 46\,MB em $K{=}1$ para \textbf{909\,s e 383\,MB} em
+$K{=}4$. A barreira não está em cinquenta passos; está em quatro. É limite do método, não do
+esforço.
+
+\subsubsection{\textit{Model checking} indutivo como alternativa}
+
+A causa da barreira é estrutural: o BMC constrói \emph{uma} fórmula contendo $K$ cópias da
+relação de transição. O IC3/PDR nunca constrói essa fórmula, e seu resultado é um invariante
+indutivo --- ``seguro sempre'' em vez de ``seguro até $K$''.
+
+O sistema acoplado foi exportado como sistema de transição em Verilog e sintetizado pelo
+Yosys, resultando em \textbf{904.242 portas AND, 65 registradores e nível lógico 689}. A
+propriedade verificada é $|\theta| \le 53$ em Q8.8, equivalente a aproximadamente
+$12^\circ$, a partir de uma caixa inicial de estados. A validação diferencial do Verilog
+gerado contra a referência coincidiu em 12 de 12 estados amostrados --- o que detecta
+regressão de tradução, mas não prova equivalência universal. A Tabela~\ref{tab:ic3} reúne os
+resultados.
+
+\begin{table}[H]
+\centering
+\caption{\textit{Bounded model checking} contra \textit{model checking} indutivo.}
+\label{tab:ic3}
+\small
+\begin{tabular}{@{}lllrr@{}}
+\toprule
+\textbf{Método} & \textbf{Modelo} & \textbf{Veredito} & \textbf{Tempo} & \textbf{Memória} \\
+\midrule
+BMC (ESBMC) & sintético, $K{=}4$        & seguro até 4 passos           & 909\,s  & 383\,MB \\
+IC3 (ABC)   & sintético com batente     & \textbf{provado $\forall t$}  & 0,37\,s & trivial \\
+IC3 (ABC)   & ator DDPG real            & não convergiu                 & 1802\,s & 708\,MB \\
+BMC (ABC)   & ator DDPG real            & 5 \textit{frames}, sem veredito & 901\,s & 503\,MB \\
+\bottomrule
+\end{tabular}
+\legend{\small Fonte: \texttt{ic3/EVIDENCIA.md}. \textit{Timeout} é indeciso, não ``seguro''.}
+\end{table}
+
+No modelo sintético com batente mecânico, o IC3 produziu prova ilimitada em 0,37\,s, com um
+invariante de quatro cláusulas sobre \textbf{três dos 65 bits de estado}: o algoritmo
+determinou por conta própria que os bits altos de $\theta$ permanecem iguais ao sinal e que as
+mais de cem mil portas da rede são irrelevantes para a prova. Nenhuma execução de BMC produz
+esse tipo de resultado, e a diferença de três ordens de grandeza no tempo não é a parte mais
+importante: a parte mais importante é que o veredito é \emph{ilimitado}.
+
+Sobre o controlador real, contudo, \textbf{nenhum dos dois métodos decide}. O PDR foi
+interrompido em 1802\,s sem convergir e o BMC alcançou cinco \textit{frames} em 901\,s. É um
+empate técnico, e é assim que deve ser reportado --- \textit{timeout} é indeciso, e tratá-lo
+como ``seguro'' seria repetir exatamente o erro que este projeto passou o ciclo corrigindo.
+
+Registre-se uma lacuna de evidência nesta medição: a saída bruta daquela execução de PDR
+\textbf{não foi preservada}, porque o \textit{script} então filtrava a saída por
+palavras-chave antes de gravá-la. Restam tempo e pico de memória, medidos pelo invólucro. O
+defeito foi corrigido --- a saída bruta passou a ser sempre salva ---, mas a medição histórica
+permanece qualificada como tal em vez de ser apresentada como plenamente reproduzível.
+
+A semelhança entre as duas barreiras --- cinco \textit{frames} no ator real de 745 parâmetros
+e $K{=}4$ na rede sintética, cerca de oito vezes menor --- é sugestiva de um limite de
+escalabilidade, mas modelos, propriedades, representações e \textit{solvers} diferem entre as
+duas medições. Elas motivam uma hipótese; não isolam causalidade nem demonstram que o limite
+pertença ao método.
+
+A hipótese remanescente é de \textbf{representação}. A tradução para AIGER converte quatro
+palavras de estado em 65 bits isolados, dissolvendo exatamente a estrutura sobre a qual o PDR
+generaliza cláusulas: o invariante precisaria falar sobre $\theta$ \emph{como palavra}, e não
+sobre bits soltos. Atacar essa hipótese exige exportar o sistema em BTOR2, que preserva as
+palavras, e empregar um motor de nível de palavra. Essa é a continuidade direta indicada na
+Seção~\ref{sec:conclusao}, e é uma mudança de \emph{representação}, não de motor.
+
+\subsection{Síntese comparativa}
+
+A Tabela~\ref{tab:sintese} organiza os sete casos segundo o que efetivamente foi estabelecido
+e o que permanece em aberto.
+
+\begin{table}[H]
+\centering
+\caption{Síntese dos sete estudos de caso: o que foi estabelecido e sob quais condições.}
+\label{tab:sintese}
+\footnotesize
+\begin{tabular}{@{}p{1.5cm}p{4.4cm}p{4.0cm}p{3.6cm}@{}}
+\toprule
+\textbf{Caso} & \textbf{O que foi estabelecido} & \textbf{Sob quais hipóteses} &
+\textbf{Em aberto} \\
+\midrule
+1 & Rede quantizada provada; propriedade sobre a rede em ponto flutuante violada &
+Domínio discreto (XOR); intervalos por neurônio injetados &
+Verificação a partir do modelo em Python \\
+\addlinespace
+2 & Contraexemplo de memória; GEMM provado até $N{=}3$ &
+$\texttt{seq\_len} \in [1,10]$; limite de 300\,s &
+Dimensões de produção \\
+\addlinespace
+3 & Protocolo gerar--verificar--corrigir demonstrado em 2 iterações &
+Gerador \textit{mock} determinístico; \texttt{--unwind 32} &
+Agente de linguagem real \\
+\addlinespace
+4 & $T < 150\,^\circ$C provado por 10 passos &
+Ruído de sensor em $[-5,+5]$; sem perturbação de atuador &
+Estabilidade assintótica; biblioteca C++11 \\
+\addlinespace
+5 & Quatro blocos FFN provados, até $4{\times}16$ &
+Sobreaproximação intervalar da ativação &
+Solidez para a ativação real; escala $d{=}4096$ \\
+\addlinespace
+6 & Contraexemplo: a ação excede o limite do atuador &
+Caixa de estados do \textit{harness} &
+\textit{Safety shield} corrigido e verificado \\
+\addlinespace
+7 & Vacuidades corrigidas; violação acima de 2,5\,rad/s; barreira do BMC medida &
+Horizonte de dois passos; quantização Q8.8 &
+Faixas baixas indecisas; representação word-level \\
+\bottomrule
+\end{tabular}
+\legend{\small Fonte: elaborada pelo autor.}
+\end{table}
+
+Lida em conjunto, a tabela sugere uma regularidade que o projeto considera seu achado central.
+A verificação formal de componentes de IA é \textbf{praticável e informativa em escala
+modular}: blocos, \textit{kernels} e redes pequenas são decididos em segundos, e os
+contraexemplos obtidos são acionáveis. O acoplamento com a planta, por outro lado, esbarra em
+uma barreira que não é de implementação nem de esforço, e que se manifesta em horizontes de
+poucos passos. Entre esses dois regimes está o espaço em que o método rende mais: propriedades
+locais, hipóteses declaradas explicitamente e vereditos qualificados pelo horizonte.

@@ -1,0 +1,141 @@
+% =====================================================================
+\section{Fundamentação teórica}
+\label{sec:fundamentacao}
+
+\subsection{Verificação formal e \textit{model checking}}
+
+Verificação formal designa o conjunto de técnicas que estabelecem, por meio matemático, a
+conformidade de um sistema a uma especificação. A distinção operacional em relação ao teste
+convencional é de cobertura: o teste amostra o espaço de execuções, ao passo que o
+\textit{model checking} decide sobre a totalidade das execuções admitidas pelo modelo. Se a
+propriedade é violada, o procedimento devolve um contraexemplo, isto é, uma trajetória de
+execução que conduz ao estado de erro; se não é, devolve uma garantia relativa ao modelo e
+às hipóteses assumidas.
+
+Essa última qualificação é essencial e será retomada ao longo do relatório: o veredito de um
+\textit{model checker} vale para o modelo submetido, para as hipóteses declaradas e para o
+horizonte considerado. Transferi-lo automaticamente para o sistema implantado é um erro de
+inferência, não uma consequência da prova.
+
+\subsection{\textit{Bounded model checking} e o horizonte $K$}
+
+No \textit{bounded model checking}, os laços e as chamadas de função são desenrolados até um
+limite $K$, e a semântica do programa desenrolado é convertida em uma fórmula lógica
+$\varphi = I \wedge \bigwedge_{i=0}^{K-1} T(s_i, s_{i+1}) \wedge \neg P$, em que $I$ descreve
+os estados iniciais, $T$ a relação de transição e $P$ a propriedade. A satisfatibilidade de
+$\varphi$ equivale à existência de um contraexemplo de comprimento até $K$; a
+insatisfatibilidade equivale à ausência de violação \emph{dentro daquele horizonte}.
+
+Duas consequências são diretas. A primeira: a fórmula contém $K$ cópias da relação de
+transição, de modo que o custo cresce com $K$ de forma que, na prática, se torna proibitiva
+bem antes do horizonte de interesse. A segunda: um resultado negativo é sempre condicional a
+$K$, e por isso ``seguro até $K$ passos'' e ``seguro'' são afirmações distintas. A
+Seção~\ref{sec:resultados} apresenta a medição direta dessa barreira no sistema estudado.
+
+\subsection{Satisfatibilidade booleana e módulo teorias}
+
+O problema SAT busca uma atribuição de valores-verdade que satisfaça uma fórmula
+proposicional. Sua eficiência prática é notável, mas sua expressividade é baixa para
+construções de linguagens de programação: inteiros com largura fixa, ponto flutuante,
+\textit{arrays} e ponteiros teriam de ser codificados manualmente bit a bit.
+
+SMT (\textit{Satisfiability Modulo Theories}) estende o SAT acoplando ao motor booleano
+resolvedores especializados em teorias --- vetores de bits, \textit{arrays}, aritmética
+linear, ponto flutuante. Isso permite que o \textit{model checker} traduza construções da
+linguagem para a teoria correspondente e delegue a decisão. Neste trabalho foram utilizados
+os \textit{solvers} Z3 \cite{demoura2008z3} e Boolector \cite{niemetz2014boolector}; o
+Bitwuzla \cite{niemetz2023bitwuzla}, sucessor do Boolector, está disponível apenas em
+versões mais recentes do verificador.
+
+A escolha do \textit{solver} não é neutra em desempenho. Nos \textit{harnesses} de
+aritmética inteira Q8.8 deste projeto, o Boolector foi consistentemente preferido por operar
+diretamente sobre a teoria de vetores de bits; o Z3 foi empregado nos \textit{harnesses} que
+exigem \texttt{--floatbv}, isto é, semântica IEEE-754 explícita.
+
+\subsection{O verificador ESBMC}
+
+O ESBMC \cite{gadelha2018esbmc} é um \textit{model checker} limitado, baseado em SMT, com
+suporte a C, C++, Python e CUDA. Seu fluxo compreende quatro etapas: análise do código-fonte
+pelo \textit{frontend}; conversão para um \textit{GOTO-program}, isto é, um grafo de fluxo de
+controle simplificado; execução simbólica, que produz as equações de estado do programa
+desenrolado; e codificação dessas equações em uma fórmula SMT submetida ao \textit{solver}.
+
+Três primitivas estruturam a modelagem:
+
+\begin{itemize}[leftmargin=1.4cm]
+  \item \texttt{nondet\_T()} introduz um valor não determinístico do tipo \texttt{T},
+  instruindo o \textit{solver} a considerar todo o domínio daquele tipo;
+  \item \texttt{\_\_ESBMC\_assume(e)} restringe o espaço de busca, descartando os caminhos em
+  que \texttt{e} é falsa. Não é uma verificação: é uma hipótese. Toda conclusão obtida sob um
+  \texttt{assume} é condicional a ele;
+  \item \texttt{\_\_ESBMC\_assert(e, msg)} expressa a propriedade a provar. O verificador
+  busca exaustivamente uma atribuição, compatível com os \texttt{assume} ativos, que torne
+  \texttt{e} falsa.
+\end{itemize}
+
+\begin{lstlisting}[language=C,caption={Padrão de modelagem empregado nos \textit{harnesses}.},label={lst:primitivas}]
+float x = nondet_float();
+__ESBMC_assume(x >= -10.0f && x <= 10.0f);   // hipotese de ambiente
+float y = model_predict(x);
+__ESBMC_assert(y <= 1.0f, "saida excede o limite do atuador");
+\end{lstlisting}
+
+A relação entre \texttt{assume} e \texttt{assert} concentra o principal risco metodológico do
+método. Um \texttt{assume} excessivamente forte poda o espaço de busca a ponto de tornar a
+propriedade trivialmente verdadeira; no limite, um \texttt{assume} insatisfazível torna
+\emph{qualquer} \texttt{assert} provável. Verificar que os \texttt{assume} de um
+\textit{harness} são satisfazíveis --- por exemplo, inserindo \texttt{assert(0)} logo após
+eles e exigindo que a prova \textbf{falhe} --- é um teste de vacuidade barato e foi adotado
+como prática neste projeto.
+
+\subsection{Redes neurais quantizadas e aritmética Q8.8}
+
+Uma rede treinada em ponto flutuante de 32 bits é frequentemente inviável em hardware
+embarcado. A quantização converte pesos e ativações para inteiros de largura fixa: no formato
+Q8.8 empregado neste trabalho, um valor real $v$ é representado pelo inteiro
+$\hat{v} = \operatorname{round}(v \cdot 256)$, e o produto de dois valores quantizados exige
+realinhamento por deslocamento à direita, uma vez que a escala é elevada ao quadrado na
+multiplicação.
+
+Há duas razões para que a quantização favoreça a verificação. A primeira é semântica: a
+aritmética inteira é decidida na teoria de vetores de bits, muito mais tratável que a
+aritmética de ponto flutuante. A segunda é de fidelidade: o código verificado passa a ser
+aritmeticamente idêntico ao código executado no dispositivo, e não uma idealização em
+precisão infinita. O preço é que o truncamento introduz erro, e esse erro precisa ser
+medido, não presumido --- a Seção~\ref{sec:resultados} reporta a caracterização do erro de
+quantização do controlador estudado.
+
+\subsection{Verificação de redes neurais: trabalhos relacionados}
+
+A verificação de redes neurais consolidou-se a partir do Reluplex \cite{katz2017reluplex}, que
+estendeu o algoritmo simplex para lidar com a não linearidade da ReLU, e do Marabou
+\cite{katz2019marabou}, sua evolução. O Neurify \cite{wang2018neurify} explorou a direção
+complementar, baseada em propagação de intervalos e refinamento simbólico. Esses trabalhos
+operam sobre a rede em precisão real.
+
+A linha mais próxima deste projeto é a do QNNVerifier \cite{sena2021qnn,
+song2021qnnverifier}, que verifica a implementação \emph{quantizada} da rede, considerando o
+comprimento finito de palavra do dispositivo alvo. A abordagem combina tradução do modelo para
+rotinas em C, reescrita das operações em ponto fixo, inferência estática de intervalos por
+análise de valores para podar o espaço de busca, e discretização por tabelas de consulta das
+funções de ativação transcendentais. Este trabalho reaproveita essa estrutura, com uma
+diferença de ênfase: aqui, os intervalos injetados por \texttt{assume} são tratados
+explicitamente como \emph{sobreaproximação}, e a solidez do veredito é declarada como
+condicional ao conservadorismo desses limites.
+
+\subsection{\textit{Model checking} indutivo: IC3/PDR}
+
+O IC3 \cite{bradley2011ic3}, na formulação PDR de \citeonline{een2011pdr}, ataca a limitação
+estrutural do BMC. Em vez de construir uma fórmula com $K$ cópias da relação de transição, o
+algoritmo mantém uma sequência de \textit{frames} $F_0, F_1, \dots$ que sobreaproximam os
+estados alcançáveis em até $i$ passos, e refina cada um deles por consultas que envolvem
+\emph{uma única} cópia da transição. Quando dois \textit{frames} consecutivos convergem, o
+resultado é um \textbf{invariante indutivo}: uma prova válida para todo tempo, não apenas até
+um horizonte.
+
+A contrapartida é que o IC3 opera sobre sistemas de transição finitos, tipicamente circuitos
+sequenciais. Levar um programa a esse formato exige síntese: no fluxo adotado neste trabalho,
+o sistema acoplado é emitido como Verilog, sintetizado pelo Yosys \cite{wolf2016yosys} e
+verificado pelo ABC \cite{brayton2010abc}. Essa tradução tem um custo conceitual relevante,
+discutido adiante: ela \emph{bit-blasta} as palavras de estado, dissolvendo em bits isolados a
+estrutura sobre a qual o PDR generaliza cláusulas.

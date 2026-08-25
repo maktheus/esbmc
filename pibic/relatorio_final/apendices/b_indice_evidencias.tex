@@ -1,0 +1,90 @@
+% =====================================================================
+\clearpage
+\phantomsection
+\section*{APÊNDICE B --- ÍNDICE DE EVIDÊNCIAS}
+\label{ap:evidencias}
+\addcontentsline{toc}{section}{APÊNDICE B -- ÍNDICE DE EVIDÊNCIAS}
+
+A Tabela~\ref{tab:indice} liga cada veredito citado neste relatório ao comando que o produziu
+e ao arquivo de saída bruta correspondente, todos sob \texttt{results/logs/}.
+
+\begin{table}[H]
+\centering
+\caption{Veredito, comando e log bruto de cada \textit{harness}.}
+\label{tab:indice}
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}p{3.2cm}p{6.9cm}cp{3.0cm}@{}}
+\toprule
+\textbf{\textit{Harness}} & \textbf{Opções de verificação} & \textbf{Veredito} &
+\textbf{Log} \\
+\midrule
+MLP quantizada (XOR) & \texttt{--no-unwinding-assertions} & \SAFE &
+\texttt{verify\_mlp\_qnn.log} \\
+\textit{Stub} da MLP & \texttt{--floatbv --no-unwinding-assertions} & \SAFE &
+\texttt{mlp\_stub.log} \\
+Rede + propriedade & \texttt{--floatbv --no-unwinding-assertions} & \UNSAFE &
+\texttt{property\_check.log} \\
+\textit{Stub} MLP \textit{gated} &
+\texttt{--floatbv --overflow-check --no-unwinding-assertions --unwind 4} & \SAFE &
+\texttt{deepseek\_mlp\_stub.log} \\
+\textit{Kernels} de inferência &
+\texttt{--memory-leak-check --overflow-check\linebreak --no-pointer-check\linebreak
+--no-unwinding-assertions --z3 --unwind 4} & \UNSAFE & \texttt{kernels\_benchmarks.log} \\
+GEMM \textit{tiling}, $N{=}3$ &
+\texttt{--memory-leak-check --overflow-check --no-unwinding-assertions --boolector
+--unwind 10 -DDIM\_LIMIT=3} & \SAFE & \texttt{matmul\_kernel.log} \\
+PID, 10 passos & \texttt{--floatbv --no-unwinding-assertions --unwind 11} & \SAFE &
+\texttt{pid\_controller.log} \\
+Política de RL & \texttt{--floatbv --z3 --unwind 1} & \UNSAFE &
+\texttt{rl\_policy.log} \\
+FFN GPT-2 $2{\times}4$ & \texttt{--boolector --no-unwinding-assertions} & \SAFE &
+\texttt{gpt2\_2x4\_qnn.log} \\
+FFN GPT-2 $4{\times}8$ & \texttt{--boolector --no-unwinding-assertions} & \SAFE &
+\texttt{gpt2\_4x8\_qnn.log} \\
+FFN LLaMA-7B $4{\times}8$ & \texttt{--boolector --no-unwinding-assertions} & \SAFE &
+\texttt{llama-7b\_4x8\_qnn.log} \\
+FFN GPT-2 $4{\times}16$ & \texttt{--boolector --no-unwinding-assertions} & \SAFE &
+\texttt{gpt2\_4x16\_qnn.log} \\
+\bottomrule
+\end{tabular}
+\legend{\small Fonte: \texttt{results/EVIDENCIAS.md}. Duração total da execução
+consolidada: 463\,s.}
+\end{table}
+
+\subsection*{B.1 Medições complementares}
+
+As medições abaixo não integram a execução consolidada e possuem procedência própria,
+declarada em cada caso.
+
+\begin{table}[H]
+\centering
+\caption{Medições complementares e sua procedência.}
+\label{tab:complementares}
+\scriptsize
+\begin{tabular}{@{}p{5.0cm}p{4.4cm}p{4.6cm}@{}}
+\toprule
+\textbf{Medição} & \textbf{Resultado} & \textbf{Procedência} \\
+\midrule
+Escalabilidade do GEMM, $N \in \{2,3,4\}$ & 1,97\,s / 16,83\,s / \INDECISO &
+\texttt{results/case2\_ambiente.md} \\
+Ciclo neuro-simbólico, 2 iterações & 0,13\,s (\UNSAFE) e 0,11\,s (\SAFE) &
+\texttt{results/case3\_agent\_stats.csv} \\
+Envelope de segurança em dois passos & violado acima de 2,5\,rad/s; indeciso abaixo &
+execução direta, limite de 300\,s \\
+BMC na rede sintética, $K{=}1$ a $K{=}4$ & 0,3\,s/46\,MB a 909\,s/383\,MB &
+execução direta \\
+IC3 na rede sintética com batente & provado $\forall t$ em 0,37\,s &
+\texttt{ic3/EVIDENCIA.md} \\
+BMC do ABC sobre o ator real & 5 \textit{frames}, 901,4\,s, 503\,MB &
+\texttt{ic3/cl\_ddpg16.bmc.out} \\
+PDR do ABC sobre o ator real & não convergiu, 1802,4\,s, 708\,MB &
+medição histórica do invólucro; \textbf{saída bruta não preservada} \\
+Síntese do sistema de transição & 904.242 portas AND, 65 registradores, nível 689 &
+\texttt{ic3/EVIDENCIA.md} \\
+Erro de quantização Q8.8 do ator & médio 0,078\,N; p95 0,226\,N; máximo 7,76\,N &
+\texttt{cartpole/quantization\_report.json} \\
+\bottomrule
+\end{tabular}
+\legend{\small Fonte: elaborada pelo autor.}
+\end{table}

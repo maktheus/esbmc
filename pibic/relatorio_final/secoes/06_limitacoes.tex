@@ -1,0 +1,101 @@
+% =====================================================================
+\section{Limitações, ameaças à validade e dificuldades encontradas}
+\label{sec:limitacoes}
+
+\subsection{Limitações do que foi provado}
+
+As garantias obtidas neste trabalho são condicionais, e a lista abaixo delimita exatamente a
+que condições:
+
+\begin{itemize}[leftmargin=1.4cm]
+  \item \textbf{Horizonte finito.} Todos os vereditos de BMC valem até o limite de
+  desenrolamento indicado. A verificação em malha fechada cobre dois passos; o
+  \textit{harness} de cinquenta passos não foi concluído e a medição mostra que o custo
+  torna-o inviável nesta máquina.
+  \item \textbf{Indecisão sob faixas estreitas.} Abaixo de 1,25\,rad/s, a propriedade de dois
+  passos permanece indecisa em 300\,s. Não há, portanto, faixa de operação em que o
+  controlador esteja provado seguro.
+  \item \textbf{Nenhum dos dois métodos decide o controlador real.} O PDR não convergiu em
+  1802\,s e o BMC alcançou cinco \textit{frames} em 901\,s.
+  \item \textbf{Sobreaproximação nas ativações.} Os quatro vereditos de blocos FFN valem para
+  a relaxação intervalar injetada. Transferi-los para GeLU e SiLU reais exige que esses
+  limites sejam conservadores, o que não foi provado --- o \textit{encoding} não representa a
+  relação funcional exata.
+  \item \textbf{Aproximação linear da sigmoide.} Onde a forma funcional foi mantida, a
+  substituição por $\operatorname{clip}(0{,}25z + 0{,}5, 0, 1)$ altera a função implantada; o
+  veredito vale para a aproximação.
+  \item \textbf{Perfis de caos com faixa contínua não decidem} sob \texttt{--floatbv}; apenas
+  o perfil discreto de impulso decide, em 27\,s.
+  \item \textbf{Verificação a partir de Python não realizada.} O binário disponível não possui
+  o \textit{frontend} Python compilado.
+  \item \textbf{Biblioteca de terceiros não verificada.} O bloqueio é a ausência de
+  \texttt{--std} na versão 6.8.0, necessária para o construtor delegante de C++11.
+\end{itemize}
+
+\subsection{Ameaças à validade}
+
+\subsubsection{Validade de construção: a propriedade vácua}
+
+A ameaça mais séria identificada no ciclo não é de desempenho, mas de significado. Uma
+propriedade que decide sem envolver o artefato produz uma prova verdadeira sobre um objeto
+que não interessa, e não emite nenhum sinal de erro. Duas das três propriedades da malha
+fechada estavam nessa condição, e foram descobertas apenas pelo teste explícito de
+dependência descrito na Seção~\ref{sub:vacuidade}. Não há razão para supor que o repositório
+esteja hoje livre de casos análogos; o que existe é um procedimento para detectá-los, e ele
+deve ser aplicado a toda propriedade nova.
+
+\subsubsection{Validade interna: fidelidade das traduções}
+
+Três traduções sustentam os resultados e nenhuma delas está provada correta. A quantização
+Q8.8 do ator coincide bit a bit entre três implementações, o que é evidência forte de
+consistência interna, mas não de fidelidade ao modelo treinado em ponto flutuante --- a
+caracterização de erro mostra pior caso de 7,76\,N. A tradução para Verilog foi validada por
+teste diferencial em doze estados: isso detecta regressão, não equivalência. E os
+\textit{stubs} de blocos de \textit{transformer} representam fatias reduzidas, não os módulos
+de produção.
+
+\subsubsection{Validade externa: escala e generalização}
+
+Os experimentos foram conduzidos em uma única máquina de quatro núcleos, com um binário
+específico do verificador. As barreiras medidas --- $N{=}4$ no GEMM, $K{=}4$ na malha fechada,
+cinco \textit{frames} no ABC --- são propriedades daquele ambiente e daqueles
+\textit{harnesses}, e não constantes do método. Extrapolá-las seria repetir o defeito que a
+auditoria do projeto encontrou e corrigiu.
+
+\subsubsection{Validade de conclusão: procedência dos números}
+
+Este relatório reporta apenas números com log bruto versionado, com uma exceção declarada: a
+execução histórica de PDR sobre o ator real, cuja saída bruta se perdeu antes da correção do
+\textit{script}. Ela é apresentada como medição histórica do invólucro, e não como resultado
+plenamente reproduzível.
+
+\subsection{Dificuldades encontradas ao longo do ciclo}
+
+Registram-se as dificuldades que mais consumiram tempo, na expectativa de que sejam úteis a
+quem retomar o trabalho:
+
+\begin{enumerate}[leftmargin=1.4cm]
+  \item \textbf{Defeitos silenciosos na instrumentação.} Vários experimentos produziam números
+  plausíveis sem medir nada: um parâmetro de dimensão que não chegava ao código compilado, uma
+  \textit{flag} que fazia o verificador emitir a fórmula em vez de resolvê-la, um portão de
+  verificação comentado em um orquestrador. Nenhum deles emitia erro. Foram encontrados apenas
+  por auditoria dirigida, e não por execução da suíte.
+  \item \textbf{Suíte de testes verde sem verificar.} A suíte chegou a passar sem exercitar o
+  verificador, porque o resultado era reduzido a um booleano que também é falso quando nada
+  executa. A reescrita do invólucro e a suíte de regressão de casos-limite foram respostas
+  diretas a isso.
+  \item \textbf{Divergência entre binário e árvore de código.} O binário versionado é a versão
+  6.8.0 e a árvore presente no repositório é a 8.0.0, não compilada. \textit{Flags} da 8.0.0
+  são rejeitadas pela 6.8.0 com código 64, facilmente confundível com propriedade violada.
+  Compilar a 8.0.0 leva de uma a quatro horas, o que tornou a alternância custosa.
+  \item \textbf{Escolha de limites de tempo.} O episódio do PID mostra o custo de um limite
+  arbitrário: 200\,s produziram \textit{timeout} para uma propriedade que é verdadeira e se
+  prova em pouco mais que isso.
+  \item \textbf{Submódulo Git inconsistente.} Um \textit{gitlink} sem entrada correspondente em
+  \texttt{.gitmodules} fazia o \textit{checkout} automatizado terminar com erro. O conteúdo foi
+  recuperado --- e não descartado --- após identificar o repositório e o \textit{commit}
+  corretos.
+  \item \textbf{Peso do repositório.} Material de terceiros vendorizado responde por
+  308\,MB dos 322\,MB do diretório do projeto, o que penaliza clonagem e integração contínua.
+  A decisão sobre o que preservar permanece em aberto.
+\end{enumerate}

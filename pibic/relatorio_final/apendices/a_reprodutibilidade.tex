@@ -1,0 +1,76 @@
+% =====================================================================
+\clearpage
+\phantomsection
+\section*{APÊNDICE A --- REPRODUTIBILIDADE}
+\label{ap:reprodutibilidade}
+\addcontentsline{toc}{section}{APÊNDICE A -- REPRODUTIBILIDADE}
+
+\subsection*{A.1 Preparação do ambiente}
+
+O binário do verificador acompanha o repositório, de modo que não há etapa obrigatória de
+compilação para reproduzir os resultados reportados na Seção~\ref{sec:resultados}.
+
+\begin{lstlisting}[language=bash]
+git clone --recurse-submodules <url-do-repositorio>
+cd esbmc/pibic
+python3 -m venv .venv && source .venv/bin/activate
+python -m pip install -e ".[test]"
+pytest tests/ -v
+\end{lstlisting}
+
+O invólucro localiza o binário nesta ordem: a variável \texttt{\$ESBMC\_BIN}; \texttt{esbmc}
+no \texttt{\$PATH}; uma compilação local em \texttt{../build/src/esbmc/esbmc}; e, por fim, o
+binário versionado. Se nenhum existir, a suíte é \textbf{pulada} com motivo explícito, em vez
+de acumular erros que seriam confundidos com falhas de propriedade.
+
+\subsection*{A.2 Reexecução das evidências}
+
+\begin{lstlisting}[language=bash]
+python scripts/gerar_evidencias.py       # reexecuta os 12 harnesses
+# saida bruta -> results/logs/*.log
+# tabela      -> results/EVIDENCIAS.md
+\end{lstlisting}
+
+\subsection*{A.3 Verificação ilimitada por IC3/PDR}
+
+\begin{lstlisting}[language=bash]
+sudo apt-get install -y yosys            # traz o ABC embutido
+cd ic3
+python3 gen_transition_system.py --bits 16 -o cl_ddpg16.v
+python3 validate_forward.py              # teste diferencial em 12 estados
+./run_pdr.sh cl_ddpg16.v 1800
+\end{lstlisting}
+
+A execução de \texttt{validate\_forward.py} não é opcional: ela compara o Verilog gerado com
+a referência em ponto fixo antes de qualquer medição. A coincidência das doze amostras detecta
+regressão de tradução; não constitui prova de equivalência universal.
+
+\subsection*{A.4 Compilação deste relatório}
+
+\begin{lstlisting}[language=bash]
+cd pibic/relatorio_final
+make                 # pdflatex -> bibtex -> pdflatex -> pdflatex
+make clean           # remove os intermediarios
+\end{lstlisting}
+
+As figuras são localizadas por \texttt{\textbackslash graphicspath} em \texttt{figuras/} e,
+subsidiariamente, em \texttt{../artigo/figs/}. São necessários os pacotes
+\texttt{texlive-latex-base}, \texttt{texlive-latex-recommended},
+\texttt{texlive-latex-extra}, \texttt{texlive-fonts-recommended},
+\texttt{texlive-lang-portuguese} e \texttt{texlive-publishers}, este último por fornecer
+\texttt{abntex2cite} e o estilo bibliográfico \texttt{abntex2-alf}.
+
+\subsection*{A.5 Advertências operacionais}
+
+\begin{itemize}[leftmargin=1.4cm]
+  \item \textbf{Nunca testar \texttt{not r.is\_safe} para concluir que um defeito foi
+  encontrado.} Esse valor também é falso quando o verificador não executou. Use
+  \texttt{r.status == UNSAFE}.
+  \item \textbf{\texttt{--bounds-check} e \texttt{--pointer-check} não existem} no ESBMC:
+  essas verificações são ativadas por padrão e a ferramenta expõe apenas as formas negativas,
+  \texttt{--no-bounds-check} e \texttt{--no-pointer-check}. Passar as formas inexistentes
+  encerra o processo com código 64.
+  \item \textbf{\texttt{TIMEOUT} é indeciso}, nunca ``seguro''.
+  \item \textbf{\texttt{--no-unwinding-assertions} só é seguro em \textit{harnesses} sem
+  laços.} Em código com laços, o uso da opção pode tornar o caso vácuo.
+\end{itemize}
