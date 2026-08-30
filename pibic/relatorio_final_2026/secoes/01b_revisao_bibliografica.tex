@@ -22,7 +22,7 @@ SMT (\textit{Satisfiability Modulo Theories}) em vez de lógica proposicional
 pura, o que permite raciocinar diretamente sobre aritmética de ponteiros,
 inteiros de largura fixa e ponto flutuante -- exatamente o tipo de código
 produzido pelos harnesses C usados neste relatório. O ESBMC evoluiu dessa
-linha de trabalho; Gadelha, Ismail e Cordeiro \cite{gadelha2018esbmc}
+linha de trabalho; Gadelha et al. \cite{gadelha2018esbmc}
 descrevem a ferramenta em sua versão 5.0 como um verificador de força
 industrial que combina múltiplos \textit{solvers} SMT, oferece suporte a
 concorrência e mantém compatibilidade com o padrão C. Para este projeto,
@@ -39,14 +39,14 @@ perturbações de entrada que alterem a classificação, discutindo garantias
 de cobertura da vizinhança de uma entrada. Esse trabalho estabeleceu que
 verificar uma rede neural exige tratar explicitamente a rede como um
 programa com estrutura conhecida (camadas, pesos e ativações), e não como
-uma caixa-preta amostrada por testes. Gopinath et al.
-\cite{gopinath2021verifying} tornaram esse problema mais próximo do
+uma caixa-preta amostrada por testes. Sena et al.
+\cite{sena2021verifying} tornaram esse problema mais próximo do
 presente relatório ao tratar redes neurais \emph{quantizadas}: os autores
 mostram que a verificação baseada em SMT precisa modelar explicitamente a
 aritmética de precisão finita -- escala, arredondamento e saturação --
 porque uma propriedade provada para a rede em ponto flutuante não se
-transfere automaticamente para sua versão quantizada. Meng et al.
-\cite{meng2022qnnverifier} consolidaram esse fluxo na ferramenta
+transfere automaticamente para sua versão quantizada. Song et al.
+\cite{song2022qnnverifier} consolidaram esse fluxo na ferramenta
 QNNVerifier, que converte um modelo treinado em um programa C anotado com
 propriedades e o submete a um \textit{model checker} baseado em SMT. O
 harness Q8.8 e o desenho da comparação Float32~$\times$~Q8.8 deste

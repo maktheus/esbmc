@@ -1,19 +1,29 @@
 % Bibliografia revisada para a versão de trabalho; entradas não citadas foram
 % mantidas apenas quando sustentam a fundamentação metodológica do relatório.
+%
+% Correção de autoria (30/08/2026): as entradas abaixo continham listas de
+% autores incorretas (misturadas com um grupo de pesquisa distinto -- Gopinath,
+% Meng, Pasareanu, Zhang -- que não é autor destes dois trabalhos). Os títulos
+% e venues estavam corretos; os autores foram conferidos diretamente nas
+% páginas do arXiv (2106.05997 e 2111.13110) e corrigidos. As chaves foram
+% renomeadas para refletir o primeiro autor correto; todos os \cite{} do
+% relatório foram atualizados para as novas chaves.
 
-@inproceedings{gopinath2021verifying,
-  author = {Gopinath, Divya and Meng, Kaiyuan and Pasareanu, Corina S. and Zhang, Youfu and Bessa, Iury and Cordeiro, Lucas C.},
+@misc{sena2021verifying,
+  author = {Sena, Luiz and Song, Xidan and Alves, Erickson and Bessa, Iury and Manino, Edoardo and Cordeiro, Lucas C. and Lima Filho, Eddie de},
   title = {Verifying Quantized Neural Networks using SMT-Based Model Checking},
-  booktitle = {Proceedings of the 2021 36th IEEE/ACM International Conference on Automated Software Engineering},
   year = {2021},
-  organization = {IEEE}
+  howpublished = {arXiv preprint arXiv:2106.05997},
+  url = {https://arxiv.org/abs/2106.05997}
 }
 
-@inproceedings{meng2022qnnverifier,
-  author = {Meng, Kaiyuan and Gopinath, Divya and Pasareanu, Corina S. and Zhang, Youfu and Bessa, Iury and Cordeiro, Lucas C.},
+@inproceedings{song2022qnnverifier,
+  author = {Song, Xidan and Manino, Edoardo and Sena, Luiz and Alves, Erickson and Lima Filho, Eddie de and Bessa, Iury and Luj{\'a}n, Mikel and Cordeiro, Lucas C.},
   title = {QNNVerifier: A Tool for Verifying Neural Networks using SMT-Based Model Checking},
-  booktitle = {Companion Proceedings of the 44th International Conference on Software Engineering},
-  year = {2022}
+  booktitle = {Proceedings of the 44th International Conference on Software Engineering: Companion Proceedings (ICSE '22 Companion)},
+  year = {2022},
+  note = {Demo track. Preprint: arXiv:2111.13110},
+  url = {https://arxiv.org/abs/2111.13110}
 }
 
 @inproceedings{huang2017robustness,
@@ -46,8 +56,11 @@
   year = {2012}
 }
 
+% Correção de autoria (30/08/2026): o primeiro nome de Gadelha estava errado
+% (Marcelo em vez de Mikhail) e faltavam três coautores reais (Monteiro,
+% Morse, Fischer, Nicole); "Ismail, H. I." não é autor deste artigo.
 @inproceedings{gadelha2018esbmc,
-  author = {Gadelha, Marcelo Y. R. and Ismail, H. I. and Cordeiro, Lucas C.},
+  author = {Gadelha, Mikhail Y. R. and Monteiro, Felipe R. and Morse, Jeremy and Cordeiro, Lucas C. and Fischer, Bernd and Nicole, Denis A.},
   title = {ESBMC 5.0: An Industrial-Strength C Model Checker},
   booktitle = {Proceedings of the 33rd ACM/IEEE International Conference on Automated Software Engineering},
   pages = {888--891},
@@ -74,32 +87,12 @@
   doi = {10.1109/TSMC.1983.6313077}
 }
 
-% Fontes dos trabalhos premiados. Usar na discussão comparativa apenas quando
-% o texto correspondente for citado; os registros abaixo não são evidência de
-% critérios internos dos jurados.
-@misc{neves2023krylov,
-  author = {Neves, Robert Batista and Silva Neto, Gustavo Cunha da},
-  title = {Análise da dinâmica de vibrações com amortecimento não-linear por meio do método de Krylov-Bogoliubov},
-  year = {2023},
-  howpublished = {Artigo derivado apresentado no COBEM 2023},
-  url = {https://www.abcm.org.br/proceedings/view/COB2023/1740},
-  note = {Publicação relacionada ao projeto premiado no XXX CONIC/UFAM em 2021}
-}
-
-@misc{carneiro2024boxbehnken,
-  author = {Carneiro, Levi dos Santos and Alves, Antonio do Nascimento Silva},
-  title = {Estudo da influência dos parâmetros de impressão 3D nas propriedades mecânicas de material compósito polimérico reforçado com fibra de carbono através do projeto de experimentos Box-Behnken},
-  year = {2024},
-  howpublished = {Anais do XXXIII CONIC},
-  url = {https://www.even3.com.br/anais/xxxiii-conic/1044490-estudo-da-influencia-dos-parametros-de-impressao-3d-nas-propriedades-mecanicas-de-material-composito-polimerico-/},
-  note = {Trabalho premiado na área de Engenharias}
-}
-
-@misc{nogueira2025visao,
-  author = {Nogueira, Robson Marchegiani Seixas},
-  title = {Desenvolvimento de um sistema de detecção de riscos em redes elétricas da UFAM através de visão computacional com foco em árvores próximas aos condutores de distribuição de energia elétrica},
-  year = {2025},
-  howpublished = {Anais do XXXIV CONIC},
-  url = {https://doity.com.br/anais/xxxivconic2425/trabalho/505922},
-  note = {Trabalho premiado na área de Engenharias}
-}
+% Removidas em 30/08/2026 (verificação de citações): neves2023krylov,
+% carneiro2024boxbehnken e nogueira2025visao (fontes dos trabalhos premiados
+% do CONIC) não são citadas em nenhum \cite{} do texto atual do relatório.
+% Uma referência bibliográfica não citada no corpo do texto não deve constar
+% na lista de Referências (norma ABNT e checklist de qualidade deste projeto).
+% Os dados completos dessas três fontes permanecem preservados em
+% docs/referencias_relatorio_ic/ANALISE_DOS_PREMIADOS.md; se uma futura
+% seção de discussão comparativa citar algum desses trabalhos no texto, a
+% entrada correspondente deve ser restaurada aqui.
