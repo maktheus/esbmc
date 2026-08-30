@@ -1,0 +1,26 @@
+{
+  "method": "ESBMC_concrete_replay",
+  "esbmc": "E:\\Uchoa\\pibic\\pibic\\cartpole\\..\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+  "weights_sha256": "f2ae9cc7ae17fc893d436f089c48377d331a75cbfac5fdfce8f00e28b1130e26",
+  "checks": {
+    "property_a_right": {
+      "status": "SUCCESSFUL",
+      "timeout_s": 20,
+      "elapsed_s": 0.609,
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\property_a_right_replay.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\property_a_right_replay.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\property_a_right_replay.stderr.log",
+      "timed_out": false
+    },
+    "property_b_safety": {
+      "status": "SUCCESSFUL",
+      "timeout_s": 20,
+      "elapsed_s": 0.313,
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\property_b_safety_replay.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\property_b_safety_replay.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\property_b_safety_replay.stderr.log",
+      "timed_out": false
+    }
+  },
+  "interpretation": "SUCCESSFUL means ESBMC proved the explicit assertion for the fixed published state; it is a replay check, not a universal proof."
+}

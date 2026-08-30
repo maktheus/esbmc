@@ -1,0 +1,241 @@
+\chapter{Resultados e Discussão}
+
+Os resultados desta seção foram separados por nível de evidência. Os números da
+rodada canônica estão em \path{evidencias/final_2026/outputs} e podem ser
+rastreados ao manifesto por hashes. Onde a execução universal não foi concluída,
+o status é apresentado como inconclusivo. Essa distinção é especialmente
+importante em verificação baseada em BMC, cuja conclusão depende do programa,
+do domínio e do solver efetivamente executados \citeonline{gopinath2021verifying}.
+
+\section{Visão geral dos experimentos}
+
+\begin{table}[H]
+\centering
+\caption{Resumo da rodada canônica e da rodada estrutural corrigida.}
+\label{tab:resumo-experimentos}
+\begin{tabularx}{\textwidth}{p{0.25\textwidth}p{0.24\textwidth}p{0.18\textwidth}Y}
+\toprule
+Experimento & Pergunta & Status & Evidência \\
+\midrule
+Quantização & Qual a diferença Float32--Q8.8 em 10.000 estados? & Confirmado & \path{quantization_canonical.json} e CSV de extremos \\
+Aproximação tanh & O erro da função usada é inferior a 3\%? & Não confirmado & Varredura encontrou máximo de 4,5749\% \\
+Reprodução A-direita & O estado publicado realmente gera \(z<0\)? & Confirmado para estado fixo & Harness C e log ESBMC \\
+Reprodução B & O estado publicado sai da faixa em um passo? & Confirmado para estado fixo & Harness C e log ESBMC \\
+Limite de força C & A força fica em \([-10,10]\,\mathrm{N}\) para todo o domínio? & Universal confirmado com Z3 & Harness simbólico, Z3 v4.8.9 \\
+A-direita universal & A direção correta vale em todo o domínio? & Inconclusivo & Z3 atingiu timeout de 12 s \\
+Atividade dos neurônios & Há contraexemplo de ativação para cada neurônio? & L1: 24/24; L2: 17/24; 7 TIMEOUT & \path{corrected_dead_neurons.json} \\
+Saturação das camadas & Há contraexemplo de pré-ativação negativa? & L1: 24/24; L2: 22/24; 2 TIMEOUT & \path{corrected_saturation.json} \\
+Saída do controlador & Os dois sinais da saída foram refutados universalmente? & Não: FAILED e TIMEOUT & \path{corrected_saturation.json} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=9mm and 9mm]
+  \node[pibitibox, text width=3.5cm] (question) {Pergunta central\\o controlador quantizado\\é verificável e confiável?};
+  \node[pibitiresult, below left=of question, text width=3.7cm] (numeric) {Fidelidade numérica\\média: 0,0778 N\\máximo: 7,7589 N\\inversão de sinal no pior estado};
+  \node[pibitiresult, below=of question, text width=3.7cm] (formal) {Propriedades formais\\força limitada: provada\\A-direita universal: timeout\\replays A e B: reproduzidos};
+  \node[pibitiresult, below right=of question, text width=3.7cm] (structure) {Estrutura da rede\\L1: 24/24 contraexemplos\\L2: timeouts parciais\\saída conjunta: inconclusiva};
+  \node[pibitiprocess, below=of formal, text width=5.4cm] (conclusion) {Conclusão equilibrada\\há evidência reprodutível de limites e falhas concretas,\\mas não há prova de segurança global do controlador};
+  \draw[pibitiarrow] (question) -- (numeric);
+  \draw[pibitiarrow] (question) -- (formal);
+  \draw[pibitiarrow] (question) -- (structure);
+  \draw[pibitiarrow] (numeric) -- (conclusion);
+  \draw[pibitiarrow] (formal) -- (conclusion);
+  \draw[pibitiarrow] (structure) -- (conclusion);
+\end{tikzpicture}
+\caption{Síntese visual dos resultados e da conclusão sustentada pelos dados.}
+\label{fig:sintese-resultados}
+\end{figure}
+
+A Figura~\ref{fig:sintese-resultados} mostra a conexão entre as análises. A
+quantização apresenta boa média, mas uma cauda de erro capaz de inverter a
+ação; a verificação formal prova o limite de força, porém não resolve a
+propriedade direcional universal; e a auditoria estrutural encontra
+contraexemplos, mas também timeouts. Em conjunto, os resultados justificam uma
+conclusão de verificabilidade parcial e reprodutível, não uma certificação de
+segurança global.
+
+\section{Fidelidade Float32 versus Q8.8}
+
+A análise foi reexecutada com \texttt{numpy.random.RandomState(42)}, quatro
+variáveis amostradas uniformemente nos intervalos declarados e 10.000 estados.
+Os pesos Float32 e Q8.8 foram lidos dos arquivos exportados; seus hashes estão
+em \path{outputs/quantization_canonical.json}. Os valores coincidem com o
+relatório histórico dentro do erro de representação decimal.
+
+\begin{table}[H]
+\centering
+\caption{Erro absoluto entre a saída Float32 e a saída Q8.8.}
+\label{tab:fidelidade}
+\begin{tabular}{lr}
+\toprule
+Métrica & Valor \\
+\midrule
+Número de estados & 10.000 \\
+Escala Q8.8 & 256 \\
+Erro médio & 0,0778007759 N \\
+Mediana & 0,0390625 N \\
+Percentil 95 & 0,2262005212 N \\
+Percentil 99 & 1,0927201962 N \\
+Erro máximo & 7,7589197857 N \\
+Máximo relativo à faixa de 10 N & 77,5892\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+O maior erro ocorreu no estado
+\[
+(-0{,}8222019265,-2{,}4912202090,0{,}0051761657,0{,}7778176171),
+\]
+para o qual a saída Float32 foi \(+6{,}4307947857\,\mathrm{N}\) e a saída Q8.8
+foi \(-1{,}328125\,\mathrm{N}\). Portanto, há inversão do sinal da ação nesse
+caso. O resultado não deve ser descrito como equivalência ou “fidelidade total”
+ao Float32. A afirmação sustentada é mais restrita: o harness C e o runtime web
+usam a mesma representação e as mesmas operações Q8.8.
+
+Uma varredura de \(z=-10000\) a \(z=10000\), documentada no arquivo JSON da
+aproximação, encontrou erro absoluto máximo de
+0,0457493, isto é, 4,5749\% do intervalo unitário da tanh, em \(z=-281\).
+Esse valor contradiz a afirmação anterior de erro inferior a 3\%. O erro relativo
+próximo de zero é mal condicionado e não é utilizado como métrica principal.
+
+\section{Propriedades formais do controlador}
+
+\subsection{Limite de força}
+
+O harness universal da propriedade C usa estados simbólicos no domínio da
+Tabela~\ref{tab:dominio-q88}, a rede inteira Q8.8 e a aproximação de tanh da
+implementação. Com Z3 v4.8.9, a asserção
+\(-2560\leq F_Q\leq2560\) terminou em \texttt{SUCCESSFUL} após 3,5 s. O
+resultado é uma prova para esse harness e para esse domínio, não uma prova sobre
+o Float32 nem sobre estados fora dos limites declarados. A propriedade também é
+esperada pela construção da saída limitada a \(\pm255\) unidades Q8.8, mas a
+execução simbólica fornece o registro operacional correspondente.
+
+O mesmo teste foi tentado com \texttt{--boolector}. O executável Windows
+disponível respondeu que o solver não foi compilado; esse caso foi registrado
+como \texttt{UNKNOWN}. Assim, não se deve atribuir a prova desta rodada ao
+Boolector.
+
+\subsection{Segurança em um passo e reprodução do contraexemplo}
+
+O estado histórico publicado para a propriedade B é
+\[
+s_0=(-0{,}7539,-3{,}9219,-0{,}1836,-1{,}5234).
+\]
+Após a quantização, ele corresponde a
+\((-193,-1004,-47,-390)\). No harness Q8.8, a força calculada é
+aproximadamente \(-9{,}9609\,\mathrm{N}\), e a atualização linearizada resulta em
+\(\theta_1=-54/256\), aproximadamente \(-12{,}09^\circ\), ultrapassando o
+limite inteiro \(-53\). O harness independente
+\path{property_b_safety_replay.c} teve veredicto \texttt{SUCCESSFUL} para a
+asserção fixa \(\theta_1<-53\), em 0,313 s.
+
+Essa execução confirma a reprodução da violação alegada para o estado fixado.
+Ela não mostra que todos os estados são inseguros e também não garante que o
+controlador falhará na dinâmica não linear completa. O que foi verificado é o
+modelo angular linearizado, em um único passo e na aritmética Q8.8.
+
+\subsection{Correção direcional e resultados inconclusivos}
+
+O estado publicado para A-direita é
+\[
+s_0=(-0{,}0117,-4{,}9219,0{,}1094,0),
+\]
+ou \((-3,-1260,28,0)\) em Q8.8. A reprodução independente verificou
+\(z<0\) para esse estado, contrariando a propriedade que exigia \(z>0\); o
+harness fixo terminou \texttt{SUCCESSFUL} em 0,609 s.
+
+Já o teste universal A-direita, sem bounds artificiais de pré-ativação, atingiu
+\texttt{TIMEOUT} de 12 s com Z3. Isso não é prova nem refutação universal. Há
+uma divergência documental: o texto de apresentação antigo classifica as duas
+direções como timeout, enquanto o JSON histórico classifica A-direita e
+A-esquerda como \texttt{FAILED}. A-direita possui estado completo e foi
+reproduzida; A-esquerda contém apenas \texttt{z=27}, sem estado completo, e não
+é considerada evidência reproduzível.
+
+\section{Análises estruturais corrigidas}
+
+As análises históricas foram refeitas com o grafo completo da rede. As cópias
+originais estão no diretório \texttt{legacy}; os resultados e logs da rodada
+corrigida estão nos diretórios \texttt{outputs} e \texttt{logs}. Em particular,
+a camada 2 é calculada a
+partir do mesmo vetor simbólico da camada 1, sem injetar ativações independentes,
+e não há bounds de pré-ativação artificialmente menores que os bounds derivados
+do grafo.
+
+\begin{table}[H]
+\centering
+\caption{Resultados da rodada estrutural corrigida com Z3.}
+\label{tab:estrutura-corrigida}
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.24\textwidth}rrr>{\raggedright\arraybackslash}X}
+\toprule
+Propriedade & \(\texttt{FAILED}\) & \(\texttt{SUCCESSFUL}\) & \(\texttt{TIMEOUT}\) & Interpretação \\
+\midrule
+Ativação -- camada 1 & 24 & 0 & 0 & Cada neurônio tem um contraexemplo ativo \\
+Ativação -- camada 2 & 17 & 0 & 7 & 7 casos permanecem inconclusivos \\
+Não saturação -- camada 1 & 24 & 0 & 0 & Cada neurônio tem um contraexemplo com \(pre<0\) \\
+Não saturação -- camada 2 & 22 & 0 & 2 & 2 casos permanecem inconclusivos \\
+Saída \(z\geq0\) & 1 & 0 & 0 & Há contraexemplo para a propriedade universal \\
+Saída \(z\leq0\) & 0 & 0 & 1 & A execução terminou por tempo \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Na verificação de atividade, \texttt{FAILED} significa que o solver encontrou
+um estado do domínio em que o neurônio está ativo; portanto, os dados sustentam
+24/24 contraexemplos na camada 1 e 17/24 na camada 2. Não sustentam, por si
+sós, que o neurônio esteja ativo em todos os estados. Na camada 2, os sete
+\texttt{TIMEOUT} não podem ser classificados como ativos ou mortos.
+
+Na verificação de saturação, a asserção foi \(pre\geq0\), isto é, saturação
+positiva em toda a região. Os 24 contraexemplos da camada 1 e os 22 da camada 2
+mostram que cada um desses casos possui pelo menos uma entrada com
+\(pre<0\). Os dois timeouts da camada 2 não autorizam conclusão. Assim, não há
+neurônio cuja saturação positiva tenha sido provada universalmente nesta rodada.
+
+Para a saída, \(z\geq0\) foi \texttt{FAILED} com o estado
+\((-2,-305,-27,-1184)\) em Q8.8, enquanto \(z\leq0\) atingiu
+\texttt{TIMEOUT} de 4 s. A combinação não permite declarar a saída
+responsiva em ambos os sinais nem provar uma saturação global; o resultado
+correto é inconclusivo para a propriedade conjunta.
+
+\section{Escalabilidade e reprodutibilidade}
+
+Os tempos confiáveis desta rodada são os dos harnesses gerados e dos logs
+correspondentes: 0,609 s e 0,313 s para as reproduções fixas, 3,5 s para a
+propriedade C universal com Z3 e 12 s até timeout para A-direita universal.
+Na rodada estrutural corrigida, cada verificação foi limitada a 8 s na análise
+de atividade e a 4 s na análise de saturação; esses limites estão registrados
+nos JSONs. Os tempos históricos de 1888, 2722, 90 e 24 não são reutilizados,
+pois o script atual não os mede nem os grava.
+
+O fluxo demonstra uma diferença relevante entre detectar uma violação concreta
+e provar uma propriedade para um domínio inteiro. A primeira pode ser reduzida a
+um harness pequeno e reproduzível; a segunda exige solver disponível, modelo
+sem restrições indevidas e tempo suficiente para explorar as combinações das
+ReLUs. Essa distinção é parte do resultado tecnológico do projeto.
+
+\section{Discussão integrada, limitações e ameaças à validade}
+
+A rodada confirma três contribuições úteis: (i) uma comparação quantitativa e
+rastreável entre Float32 e Q8.8; (ii) a reprodução independente de dois estados
+que demonstram comportamentos alegados; e (iii) uma prova simbólica do limite de
+força com Z3. Ao mesmo tempo, ela identifica limites que precisam aparecer no
+relatório: a quantização pode inverter a ação em casos extremos, a tanh
+aproximada tem erro maior que o anunciado, a propriedade de segurança tem
+horizonte de um passo e o teste direcional não escala na configuração curta.
+A rodada estrutural corrigida acrescenta contraexemplos de ativação e não
+saturação para a maior parte dos neurônios, mas mantém sete casos de atividade
+e dois de saturação como timeouts; portanto, não há base para uma afirmação
+universal sobre os 48 neurônios.
+
+Há ainda ameaças de modelagem: a dinâmica de B é linearizada, o domínio angular
+inteiro é ligeiramente menor que a imagem completa do arredondamento de 12 graus,
+e não foi realizada nesta rodada uma reprodução da trajetória não linear completa.
+Por fim, o histórico de treinamento contém 1.670 episódios e média final de 100
+episódios igual a 472,19, enquanto o gerador web histórico grava 500 e 475,0;
+esses metadados devem ser reconciliados antes de serem usados como resultado.

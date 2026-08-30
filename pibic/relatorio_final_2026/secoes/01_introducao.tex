@@ -1,0 +1,33 @@
+\chapter{Introdução}
+
+O uso de modelos de aprendizado de máquina em sistemas que tomam decisões ou acionam componentes de forma autônoma amplia a necessidade de evidências de segurança que possam ser auditadas. Em particular, um controlador neural pode apresentar comportamento adequado nas trajetórias utilizadas durante testes e, ainda assim, produzir uma ação inadequada em uma região do espaço de estados que não foi amostrada. A situação é agravada quando a inferência é realizada com aritmética de precisão reduzida, pois arredondamentos, saturações e conversões podem alterar a fronteira entre ações do controlador.
+
+Este relatório investiga o emprego do \textit{Efficient SMT-Based Context-Bounded Model Checker} (ESBMC) na análise de propriedades de controladores neurais, tendo como estudo central um controlador DDPG aplicado à planta CartPole. O recorte considera a implementação em ponto flutuante e sua representação quantizada Q8.8, além de propriedades formuladas para um domínio de estados e um horizonte de verificação declarados na metodologia. O título do projeto também contempla sistemas de Inteligência Artificial Generativa; por isso, a possibilidade de reaproveitar o fluxo em componentes gerados ou apoiados por modelos de linguagem é tratada como uma questão metodológica, condicionada à existência de artefatos executáveis e evidências reproduzíveis.
+
+O objetivo não é declarar segurança irrestrita para um sistema autônomo a partir de um único experimento. A finalidade é estabelecer quais garantias o verificador consegue produzir sob hipóteses explícitas, quais violações podem ser diagnosticadas por contraexemplos e em que situações o resultado permanece inconclusivo. Essa delimitação evita confundir uma prova limitada ao modelo com uma garantia para todas as implementações, entradas, estados ou horizontes possíveis.
+
+\section{Problema e justificativa}
+Testes de simulação e testes de regressão são indispensáveis para avaliar controladores, mas verificam apenas as execuções efetivamente selecionadas. Métodos formais baseados em satisfatibilidade podem complementar essa avaliação procurando, de maneira sistemática dentro de um limite, uma atribuição que viole uma propriedade. No caso de redes neurais quantizadas, a análise precisa representar não apenas as funções de ativação e os pesos, mas também a escala numérica, o arredondamento, a saturação e os limites de cada variável. A literatura de verificação de redes neurais com teorias SMT mostra a relevância desse problema e fornece referências para a modelagem de redes com precisão reduzida \cite{gopinath2021verifying,meng2022qnnverifier,huang2017robustness}.
+
+Do ponto de vista tecnológico, uma cadeia que associe o modelo, a propriedade, o comando de verificação, o veredicto e o contraexemplo facilita a revisão de componentes de IA antes de sua integração em aplicações maiores. Para a formação em desenvolvimento tecnológico e inovação, a contribuição esperada está na organização de um fluxo executável e rastreável, e não somente na produção de uma descrição conceitual. O estudo também é relevante para a UFAM por consolidar um procedimento que pode ser reaplicado em protótipos de controle e em componentes de software de IA, respeitando o domínio e as limitações documentados.
+
+\section{Revisão bibliográfica e estado da arte}
+A revisão será organizada em quatro eixos. O primeiro é o \textit{Bounded Model Checking}, no qual a propriedade é analisada em um número finito de passos e o resultado depende das pré-condições, do horizonte e da teoria utilizada. O segundo é a verificação de redes neurais por SMT, incluindo técnicas voltadas a redes quantizadas e ferramentas como QNNVerifier \cite{gopinath2021verifying,meng2022qnnverifier}. O terceiro eixo reúne controle por aprendizado por reforço, representação numérica e efeitos de precisão finita. O quarto trata da transferência de verificações para componentes de IA generativa, distinguindo propriedades do código produzido, propriedades do modelo neural e propriedades do sistema que integra esses componentes.
+
+Essa revisão não deve ser uma enumeração de ferramentas. Cada referência será relacionada a uma decisão metodológica do presente estudo: escolha da representação, definição do domínio, seleção das propriedades, tratamento de contraexemplos ou avaliação de escalabilidade. Referências específicas de DDPG, CartPole, ESBMC e controle seguro deverão ser acrescentadas ao arquivo bibliográfico antes da versão final.
+
+\section{Perguntas de pesquisa}
+As perguntas a seguir organizam a coleta de evidências e a discussão dos resultados:
+
+\begin{description}[leftmargin=2.4cm,style=nextline]
+  \item[PQ1 -- Fidelidade.] A representação Q8.8 preserva adequadamente o comportamento do controlador Float32 no domínio operacional definido?
+  \item[PQ2 -- Estrutura neural.] Existem neurônios mortos ou permanentemente saturados no domínio analisado, e o que essa informação implica para a interpretação do controlador?
+  \item[PQ3 -- Segurança.] Quais propriedades da malha fechada podem ser provadas ou refutadas pelo ESBMC e que informação prática os contraexemplos fornecem?
+  \item[PQ4 -- Limites.] Quais hipóteses, custos computacionais, limites de modelagem e timeouts restringem a conclusão formal?
+  \item[PQ5 -- Generalização metodológica.] Quais partes do fluxo podem ser reaproveitadas na verificação de componentes de IA generativa, considerando somente casos que tenham sido realmente executados e registrados?
+\end{description}
+
+\section{Contribuições e delimitações}
+O relatório será construído em torno de cinco entregas verificáveis: (i) uma especificação explícita do controlador, da quantização e do domínio; (ii) um protocolo de comparação entre Float32 e Q8.8; (iii) propriedades formais acompanhadas de seus veredictos; (iv) contraexemplos ou diagnósticos inconclusivos reproduzíveis; e (v) uma avaliação das condições necessárias para transferir o fluxo a outros componentes de IA. A existência, quantidade e interpretação dos resultados serão preenchidas somente após a conferência dos logs, CSVs, JSONs e scripts correspondentes.
+
+Assim, a contribuição não será medida pela quantidade de estudos de caso, mas pela relação entre pergunta, método, evidência e conclusão. Qualquer caso complementar que não possua artefato executável, comando registrado e saída verificável será explicitamente classificado como trabalho futuro ou removido da análise principal.

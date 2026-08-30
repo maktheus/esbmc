@@ -1,0 +1,1115 @@
+{
+  "method": "full_graph_symbolic_saturation",
+  "weights": "E:\\Uchoa\\pibic\\pibic\\cartpole\\webapp\\public\\ddpg_weights_q88.json",
+  "solver": "--z3",
+  "timeout_s": 4,
+  "summary": {
+    "layer_1": {
+      "total": 24,
+      "saturated_proven": [],
+      "not_saturated_counterexample": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "timeouts": [],
+      "unknown": []
+    },
+    "layer_2": {
+      "total": 24,
+      "saturated_proven": [],
+      "not_saturated_counterexample": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "timeouts": [
+        1,
+        12
+      ],
+      "unknown": []
+    },
+    "output": {
+      "always_nonnegative": "FAILED",
+      "always_nonpositive": "TIMEOUT",
+      "interpretation": "RESPONSIVE somente quando ambas as propriedades universais forem refutadas com contraexemplos validos; TIMEOUT/UNKNOWN e inconclusivo."
+    }
+  },
+  "checks": {
+    "layer_1_0": {
+      "status": "FAILED",
+      "elapsed_s": 0.422,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_0.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_0.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_0.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_0.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -2,
+        "s1": -64,
+        "s2": -8,
+        "s3": -1199
+      }
+    },
+    "layer_1_1": {
+      "status": "FAILED",
+      "elapsed_s": 0.453,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_1.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_1.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_1.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_1.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -512,
+        "s1": 0,
+        "s2": -17,
+        "s3": -428
+      }
+    },
+    "layer_1_2": {
+      "status": "FAILED",
+      "elapsed_s": 0.453,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_2.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_2.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_2.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_2.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -153,
+        "s1": -8,
+        "s2": -30,
+        "s3": -41
+      }
+    },
+    "layer_1_3": {
+      "status": "FAILED",
+      "elapsed_s": 0.453,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_3.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_3.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_3.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_3.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -1,
+        "s1": -181,
+        "s2": 0,
+        "s3": -735
+      }
+    },
+    "layer_1_4": {
+      "status": "FAILED",
+      "elapsed_s": 0.422,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_4.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_4.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_4.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_4.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -432,
+        "s1": -547,
+        "s2": -36,
+        "s3": -510
+      }
+    },
+    "layer_1_5": {
+      "status": "FAILED",
+      "elapsed_s": 0.547,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_5.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_5.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_5.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_5.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -441,
+        "s1": -298,
+        "s2": -10,
+        "s3": -519
+      }
+    },
+    "layer_1_6": {
+      "status": "FAILED",
+      "elapsed_s": 0.484,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_6.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_6.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_6.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_6.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -550,
+        "s1": 0,
+        "s2": 0,
+        "s3": 0
+      }
+    },
+    "layer_1_7": {
+      "status": "FAILED",
+      "elapsed_s": 0.422,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_7.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_7.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_7.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_7.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -3,
+        "s1": -946,
+        "s2": -4,
+        "s3": -5
+      }
+    },
+    "layer_1_8": {
+      "status": "FAILED",
+      "elapsed_s": 0.406,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_8.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_8.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_8.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_8.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -272,
+        "s1": -767,
+        "s2": -10,
+        "s3": -109
+      }
+    },
+    "layer_1_9": {
+      "status": "FAILED",
+      "elapsed_s": 0.438,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_9.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_9.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_9.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_9.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -169,
+        "s1": -64,
+        "s2": -1,
+        "s3": -1024
+      }
+    },
+    "layer_1_10": {
+      "status": "FAILED",
+      "elapsed_s": 0.469,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_10.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_10.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_10.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_10.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -1,
+        "s1": -1,
+        "s2": -18,
+        "s3": -1
+      }
+    },
+    "layer_1_11": {
+      "status": "FAILED",
+      "elapsed_s": 0.437,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_11.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_11.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_11.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_11.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -132,
+        "s1": 0,
+        "s2": -26,
+        "s3": -208
+      }
+    },
+    "layer_1_12": {
+      "status": "FAILED",
+      "elapsed_s": 0.469,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_12.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_12.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_12.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_12.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -612,
+        "s1": 0,
+        "s2": 0,
+        "s3": -1024
+      }
+    },
+    "layer_1_13": {
+      "status": "FAILED",
+      "elapsed_s": 0.437,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_13.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_13.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_13.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_13.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -610,
+        "s1": -585,
+        "s2": -45,
+        "s3": -1166
+      }
+    },
+    "layer_1_14": {
+      "status": "FAILED",
+      "elapsed_s": 0.422,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_14.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_14.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_14.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_14.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -3,
+        "s1": -6,
+        "s2": -10,
+        "s3": -669
+      }
+    },
+    "layer_1_15": {
+      "status": "FAILED",
+      "elapsed_s": 0.469,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_15.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_15.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_15.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_15.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -56,
+        "s1": -1,
+        "s2": 0,
+        "s3": 0
+      }
+    },
+    "layer_1_16": {
+      "status": "FAILED",
+      "elapsed_s": 0.453,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_16.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_16.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_16.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_16.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -32,
+        "s1": 0,
+        "s2": -52,
+        "s3": -49
+      }
+    },
+    "layer_1_17": {
+      "status": "FAILED",
+      "elapsed_s": 0.5,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_17.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_17.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_17.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_17.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -14,
+        "s1": -107,
+        "s2": -22,
+        "s3": -785
+      }
+    },
+    "layer_1_18": {
+      "status": "FAILED",
+      "elapsed_s": 0.422,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_18.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_18.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_18.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_18.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -38,
+        "s1": 0,
+        "s2": -2,
+        "s3": -224
+      }
+    },
+    "layer_1_19": {
+      "status": "FAILED",
+      "elapsed_s": 0.406,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_19.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_19.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_19.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_19.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -62,
+        "s1": -1024,
+        "s2": -16,
+        "s3": -57
+      }
+    },
+    "layer_1_20": {
+      "status": "FAILED",
+      "elapsed_s": 0.422,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_20.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_20.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_20.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_20.stderr.log",
+      "counterexample_state_q88": {
+        "s0": 0,
+        "s1": 0,
+        "s2": -3,
+        "s3": -768
+      }
+    },
+    "layer_1_21": {
+      "status": "FAILED",
+      "elapsed_s": 0.437,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_21.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_21.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_21.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_21.stderr.log",
+      "counterexample_state_q88": {
+        "s0": 0,
+        "s1": -492,
+        "s2": 0,
+        "s3": 0
+      }
+    },
+    "layer_1_22": {
+      "status": "FAILED",
+      "elapsed_s": 0.422,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_22.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_22.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_22.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_22.stderr.log",
+      "counterexample_state_q88": {
+        "s0": 0,
+        "s1": 0,
+        "s2": -48,
+        "s3": 0
+      }
+    },
+    "layer_1_23": {
+      "status": "FAILED",
+      "elapsed_s": 0.422,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_23.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L1_23.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_23.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L1_23.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -4,
+        "s1": -97,
+        "s2": -6,
+        "s3": -385
+      }
+    },
+    "layer_2_0": {
+      "status": "FAILED",
+      "elapsed_s": 0.859,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_0.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_0.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_0.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_0.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -298,
+        "s1": -110,
+        "s2": -1,
+        "s3": -179
+      }
+    },
+    "layer_2_1": {
+      "status": "TIMEOUT",
+      "elapsed_s": 4.032,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_1.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_1.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_1.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_1.stderr.log",
+      "counterexample_state_q88": {}
+    },
+    "layer_2_2": {
+      "status": "FAILED",
+      "elapsed_s": 0.89,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_2.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_2.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_2.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_2.stderr.log",
+      "counterexample_state_q88": {
+        "s0": 0,
+        "s1": 0,
+        "s2": 0,
+        "s3": 0
+      }
+    },
+    "layer_2_3": {
+      "status": "FAILED",
+      "elapsed_s": 3.891,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_3.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_3.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_3.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_3.stderr.log",
+      "counterexample_state_q88": {
+        "s0": 0,
+        "s1": -256,
+        "s2": -13,
+        "s3": 0
+      }
+    },
+    "layer_2_4": {
+      "status": "FAILED",
+      "elapsed_s": 0.844,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_4.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_4.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_4.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_4.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -130,
+        "s1": -1228,
+        "s2": -4,
+        "s3": -223
+      }
+    },
+    "layer_2_5": {
+      "status": "FAILED",
+      "elapsed_s": 1.046,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_5.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_5.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_5.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_5.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -9,
+        "s1": 0,
+        "s2": 0,
+        "s3": -1
+      }
+    },
+    "layer_2_6": {
+      "status": "FAILED",
+      "elapsed_s": 0.782,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_6.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_6.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_6.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_6.stderr.log",
+      "counterexample_state_q88": {
+        "s0": 0,
+        "s1": -3,
+        "s2": 0,
+        "s3": 0
+      }
+    },
+    "layer_2_7": {
+      "status": "FAILED",
+      "elapsed_s": 0.859,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_7.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_7.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_7.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_7.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -538,
+        "s1": -3,
+        "s2": -34,
+        "s3": -1
+      }
+    },
+    "layer_2_8": {
+      "status": "FAILED",
+      "elapsed_s": 1.016,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_8.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_8.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_8.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_8.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -49,
+        "s1": -986,
+        "s2": -32,
+        "s3": -231
+      }
+    },
+    "layer_2_9": {
+      "status": "FAILED",
+      "elapsed_s": 2.562,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_9.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_9.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_9.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_9.stderr.log",
+      "counterexample_state_q88": {
+        "s0": 0,
+        "s1": -812,
+        "s2": -32,
+        "s3": 0
+      }
+    },
+    "layer_2_10": {
+      "status": "FAILED",
+      "elapsed_s": 0.781,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_10.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_10.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_10.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_10.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -128,
+        "s1": 0,
+        "s2": -50,
+        "s3": -46
+      }
+    },
+    "layer_2_11": {
+      "status": "FAILED",
+      "elapsed_s": 2.704,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_11.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_11.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_11.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_11.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -584,
+        "s1": -250,
+        "s2": -24,
+        "s3": -113
+      }
+    },
+    "layer_2_12": {
+      "status": "TIMEOUT",
+      "elapsed_s": 4.031,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_12.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_12.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_12.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_12.stderr.log",
+      "counterexample_state_q88": {}
+    },
+    "layer_2_13": {
+      "status": "FAILED",
+      "elapsed_s": 2.125,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_13.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_13.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_13.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_13.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -552,
+        "s1": -1024,
+        "s2": 0,
+        "s3": 0
+      }
+    },
+    "layer_2_14": {
+      "status": "FAILED",
+      "elapsed_s": 0.782,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_14.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_14.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_14.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_14.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -8,
+        "s1": 0,
+        "s2": 0,
+        "s3": 0
+      }
+    },
+    "layer_2_15": {
+      "status": "FAILED",
+      "elapsed_s": 0.953,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_15.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_15.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_15.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_15.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -32,
+        "s1": -1248,
+        "s2": -1,
+        "s3": -128
+      }
+    },
+    "layer_2_16": {
+      "status": "FAILED",
+      "elapsed_s": 0.984,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_16.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_16.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_16.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_16.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -545,
+        "s1": 0,
+        "s2": -16,
+        "s3": -18
+      }
+    },
+    "layer_2_17": {
+      "status": "FAILED",
+      "elapsed_s": 0.797,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_17.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_17.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_17.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_17.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -26,
+        "s1": 0,
+        "s2": 0,
+        "s3": -10
+      }
+    },
+    "layer_2_18": {
+      "status": "FAILED",
+      "elapsed_s": 0.969,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_18.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_18.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_18.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_18.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -434,
+        "s1": -64,
+        "s2": -5,
+        "s3": -84
+      }
+    },
+    "layer_2_19": {
+      "status": "FAILED",
+      "elapsed_s": 0.703,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_19.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_19.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_19.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_19.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -416,
+        "s1": -755,
+        "s2": -10,
+        "s3": -716
+      }
+    },
+    "layer_2_20": {
+      "status": "FAILED",
+      "elapsed_s": 1.391,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_20.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_20.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_20.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_20.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -192,
+        "s1": -508,
+        "s2": -53,
+        "s3": -1024
+      }
+    },
+    "layer_2_21": {
+      "status": "FAILED",
+      "elapsed_s": 2.593,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_21.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_21.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_21.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_21.stderr.log",
+      "counterexample_state_q88": {
+        "s0": 0,
+        "s1": -1024,
+        "s2": -15,
+        "s3": 0
+      }
+    },
+    "layer_2_22": {
+      "status": "FAILED",
+      "elapsed_s": 3.563,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_22.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_22.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_22.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_22.stderr.log",
+      "counterexample_state_q88": {
+        "s0": 0,
+        "s1": -568,
+        "s2": -37,
+        "s3": -1144
+      }
+    },
+    "layer_2_23": {
+      "status": "FAILED",
+      "elapsed_s": 0.875,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_23.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_L2_23.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_23.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_L2_23.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -472,
+        "s1": -184,
+        "s2": -16,
+        "s3": -12
+      }
+    },
+    "output_nonnegative_universal": {
+      "status": "FAILED",
+      "elapsed_s": 2.594,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_output_nonnegative.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_output_nonnegative.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_output_nonnegative.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_output_nonnegative.stderr.log",
+      "counterexample_state_q88": {
+        "s0": -2,
+        "s1": -305,
+        "s2": -27,
+        "s3": -1184
+      }
+    },
+    "output_nonpositive_universal": {
+      "status": "TIMEOUT",
+      "elapsed_s": 4.046,
+      "timeout_s": 4,
+      "solver": "--z3",
+      "command": [
+        "E:\\Uchoa\\pibic\\pibic\\QNNVerifier\\esbmc-6.8.0\\esbmc.exe",
+        "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_output_nonpositive.c",
+        "--no-unwinding-assertions",
+        "--z3"
+      ],
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\corrected_sat_output_nonpositive.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_output_nonpositive.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\corrected_sat_output_nonpositive.stderr.log",
+      "counterexample_state_q88": {}
+    }
+  }
+}

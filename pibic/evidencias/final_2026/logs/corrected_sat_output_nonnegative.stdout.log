@@ -1,0 +1,432 @@
+ESBMC version 6.8.0 64-bit x86_64 windows
+file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c: Parsing
+Converting
+Generating GOTO Program
+GOTO program creation time: 0.323s
+GOTO program processing time: 0.002s
+Starting Bounded Model Checking
+Symex completed in: 0.047s (120 assignments)
+Slicing time: 0.001s (removed 10 assignments)
+Generated 1 VCC(s), 1 remaining after simplification (110 assignments)
+Encoding remaining VCC(s) using bit-vector/floating-point arithmetic
+Encoding to solver time: 0.004s
+Solving with solver Z3 v4.8.9
+Encoding to solver time: 0.004s
+Runtime decision procedure: 2.053s
+Building error trace
+
+Counterexample:
+
+State 1 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 5 function main thread 0
+----------------------------------------------------
+  s0 = -2 (11111111 11111111 11111111 11111110)
+
+State 2 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 5 function main thread 0
+----------------------------------------------------
+  s1 = -305 (11111111 11111111 11111110 11001111)
+
+State 3 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 5 function main thread 0
+----------------------------------------------------
+  s2 = -27 (11111111 11111111 11111111 11100101)
+
+State 4 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 5 function main thread 0
+----------------------------------------------------
+  s3 = -1184 (11111111 11111111 11111011 01100000)
+
+State 9 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 10 function main thread 0
+----------------------------------------------------
+  pre1_0 = -2731 (11111111 11111111 11110101 01010101)
+
+State 10 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 11 function main thread 0
+----------------------------------------------------
+  h1_0 = 0 (00000000 00000000 00000000 00000000)
+
+State 11 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 12 function main thread 0
+----------------------------------------------------
+  pre1_1 = 1512 (00000000 00000000 00000101 11101000)
+
+State 12 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 13 function main thread 0
+----------------------------------------------------
+  h1_1 = 0 (00000000 00000000 00000000 00000000)
+
+State 13 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 14 function main thread 0
+----------------------------------------------------
+  pre1_2 = 55 (00000000 00000000 00000000 00110111)
+
+State 14 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 15 function main thread 0
+----------------------------------------------------
+  h1_2 = 0 (00000000 00000000 00000000 00000000)
+
+State 15 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 16 function main thread 0
+----------------------------------------------------
+  pre1_3 = -1404 (11111111 11111111 11111010 10000100)
+
+State 16 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 17 function main thread 0
+----------------------------------------------------
+  h1_3 = 0 (00000000 00000000 00000000 00000000)
+
+State 17 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 18 function main thread 0
+----------------------------------------------------
+  pre1_4 = -111 (11111111 11111111 11111111 10010001)
+
+State 18 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 19 function main thread 0
+----------------------------------------------------
+  h1_4 = 0 (00000000 00000000 00000000 00000000)
+
+State 19 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 20 function main thread 0
+----------------------------------------------------
+  pre1_5 = -222 (11111111 11111111 11111111 00100010)
+
+State 20 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 21 function main thread 0
+----------------------------------------------------
+  h1_5 = 0 (00000000 00000000 00000000 00000000)
+
+State 21 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 22 function main thread 0
+----------------------------------------------------
+  pre1_6 = 392 (00000000 00000000 00000001 10001000)
+
+State 22 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 23 function main thread 0
+----------------------------------------------------
+  h1_6 = 0 (00000000 00000000 00000000 00000000)
+
+State 23 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 24 function main thread 0
+----------------------------------------------------
+  pre1_7 = 374 (00000000 00000000 00000001 01110110)
+
+State 24 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 25 function main thread 0
+----------------------------------------------------
+  h1_7 = 0 (00000000 00000000 00000000 00000000)
+
+State 25 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 26 function main thread 0
+----------------------------------------------------
+  pre1_8 = -444 (11111111 11111111 11111110 01000100)
+
+State 26 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 27 function main thread 0
+----------------------------------------------------
+  h1_8 = 0 (00000000 00000000 00000000 00000000)
+
+State 27 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 28 function main thread 0
+----------------------------------------------------
+  pre1_9 = -241 (11111111 11111111 11111111 00001111)
+
+State 28 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 29 function main thread 0
+----------------------------------------------------
+  h1_9 = 0 (00000000 00000000 00000000 00000000)
+
+State 29 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 30 function main thread 0
+----------------------------------------------------
+  pre1_10 = -959 (11111111 11111111 11111100 01000001)
+
+State 30 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 31 function main thread 0
+----------------------------------------------------
+  h1_10 = 0 (00000000 00000000 00000000 00000000)
+
+State 31 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 32 function main thread 0
+----------------------------------------------------
+  pre1_11 = 503 (00000000 00000000 00000001 11110111)
+
+State 32 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 33 function main thread 0
+----------------------------------------------------
+  h1_11 = 0 (00000000 00000000 00000000 00000000)
+
+State 33 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 34 function main thread 0
+----------------------------------------------------
+  pre1_12 = 255 (00000000 00000000 00000000 11111111)
+
+State 34 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 35 function main thread 0
+----------------------------------------------------
+  h1_12 = 0 (00000000 00000000 00000000 00000000)
+
+State 35 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 36 function main thread 0
+----------------------------------------------------
+  pre1_13 = -1769 (11111111 11111111 11111001 00010111)
+
+State 36 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 37 function main thread 0
+----------------------------------------------------
+  h1_13 = 0 (00000000 00000000 00000000 00000000)
+
+State 37 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 38 function main thread 0
+----------------------------------------------------
+  pre1_14 = -707 (11111111 11111111 11111101 00111101)
+
+State 38 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 39 function main thread 0
+----------------------------------------------------
+  h1_14 = 0 (00000000 00000000 00000000 00000000)
+
+State 39 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 40 function main thread 0
+----------------------------------------------------
+  pre1_15 = 257 (00000000 00000000 00000001 00000001)
+
+State 40 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 41 function main thread 0
+----------------------------------------------------
+  h1_15 = 0 (00000000 00000000 00000000 00000000)
+
+State 41 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 42 function main thread 0
+----------------------------------------------------
+  pre1_16 = -264 (11111111 11111111 11111110 11111000)
+
+State 42 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 43 function main thread 0
+----------------------------------------------------
+  h1_16 = 0 (00000000 00000000 00000000 00000000)
+
+State 43 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 44 function main thread 0
+----------------------------------------------------
+  pre1_17 = 312 (00000000 00000000 00000001 00111000)
+
+State 44 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 45 function main thread 0
+----------------------------------------------------
+  h1_17 = 0 (00000000 00000000 00000000 00000000)
+
+State 45 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 46 function main thread 0
+----------------------------------------------------
+  pre1_18 = 95 (00000000 00000000 00000000 01011111)
+
+State 46 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 47 function main thread 0
+----------------------------------------------------
+  h1_18 = 0 (00000000 00000000 00000000 00000000)
+
+State 47 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 48 function main thread 0
+----------------------------------------------------
+  pre1_19 = 1518 (00000000 00000000 00000101 11101110)
+
+State 48 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 49 function main thread 0
+----------------------------------------------------
+  h1_19 = 0 (00000000 00000000 00000000 00000000)
+
+State 49 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 50 function main thread 0
+----------------------------------------------------
+  pre1_20 = 1089 (00000000 00000000 00000100 01000001)
+
+State 50 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 51 function main thread 0
+----------------------------------------------------
+  h1_20 = 0 (00000000 00000000 00000000 00000000)
+
+State 51 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 52 function main thread 0
+----------------------------------------------------
+  pre1_21 = -283 (11111111 11111111 11111110 11100101)
+
+State 52 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 53 function main thread 0
+----------------------------------------------------
+  h1_21 = 0 (00000000 00000000 00000000 00000000)
+
+State 53 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 54 function main thread 0
+----------------------------------------------------
+  pre1_22 = 1314 (00000000 00000000 00000101 00100010)
+
+State 54 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 55 function main thread 0
+----------------------------------------------------
+  h1_22 = 0 (00000000 00000000 00000000 00000000)
+
+State 55 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 56 function main thread 0
+----------------------------------------------------
+  pre1_23 = 569 (00000000 00000000 00000010 00111001)
+
+State 56 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 57 function main thread 0
+----------------------------------------------------
+  h1_23 = 0 (00000000 00000000 00000000 00000000)
+
+State 57 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 58 function main thread 0
+----------------------------------------------------
+  pre2_0 = 253 (00000000 00000000 00000000 11111101)
+
+State 58 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 59 function main thread 0
+----------------------------------------------------
+  h2_0 = 0 (00000000 00000000 00000000 00000000)
+
+State 59 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 60 function main thread 0
+----------------------------------------------------
+  pre2_1 = -192 (11111111 11111111 11111111 01000000)
+
+State 60 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 61 function main thread 0
+----------------------------------------------------
+  h2_1 = 0 (00000000 00000000 00000000 00000000)
+
+State 61 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 62 function main thread 0
+----------------------------------------------------
+  pre2_2 = 1721 (00000000 00000000 00000110 10111001)
+
+State 62 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 63 function main thread 0
+----------------------------------------------------
+  h2_2 = 0 (00000000 00000000 00000000 00000000)
+
+State 63 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 64 function main thread 0
+----------------------------------------------------
+  pre2_3 = -971 (11111111 11111111 11111100 00110101)
+
+State 64 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 65 function main thread 0
+----------------------------------------------------
+  h2_3 = 0 (00000000 00000000 00000000 00000000)
+
+State 65 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 66 function main thread 0
+----------------------------------------------------
+  pre2_4 = 121 (00000000 00000000 00000000 01111001)
+
+State 66 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 67 function main thread 0
+----------------------------------------------------
+  h2_4 = 0 (00000000 00000000 00000000 00000000)
+
+State 67 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 68 function main thread 0
+----------------------------------------------------
+  pre2_5 = 1636 (00000000 00000000 00000110 01100100)
+
+State 68 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 69 function main thread 0
+----------------------------------------------------
+  h2_5 = 0 (00000000 00000000 00000000 00000000)
+
+State 69 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 70 function main thread 0
+----------------------------------------------------
+  pre2_6 = -962 (11111111 11111111 11111100 00111110)
+
+State 70 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 71 function main thread 0
+----------------------------------------------------
+  h2_6 = 0 (00000000 00000000 00000000 00000000)
+
+State 71 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 72 function main thread 0
+----------------------------------------------------
+  pre2_7 = -80 (11111111 11111111 11111111 10110000)
+
+State 72 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 73 function main thread 0
+----------------------------------------------------
+  h2_7 = 0 (00000000 00000000 00000000 00000000)
+
+State 73 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 74 function main thread 0
+----------------------------------------------------
+  pre2_8 = 62 (00000000 00000000 00000000 00111110)
+
+State 74 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 75 function main thread 0
+----------------------------------------------------
+  h2_8 = 0 (00000000 00000000 00000000 00000000)
+
+State 75 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 76 function main thread 0
+----------------------------------------------------
+  pre2_9 = 282 (00000000 00000000 00000001 00011010)
+
+State 76 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 77 function main thread 0
+----------------------------------------------------
+  h2_9 = 0 (00000000 00000000 00000000 00000000)
+
+State 77 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 78 function main thread 0
+----------------------------------------------------
+  pre2_10 = -386 (11111111 11111111 11111110 01111110)
+
+State 78 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 79 function main thread 0
+----------------------------------------------------
+  h2_10 = 0 (00000000 00000000 00000000 00000000)
+
+State 79 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 80 function main thread 0
+----------------------------------------------------
+  pre2_11 = -280 (11111111 11111111 11111110 11101000)
+
+State 80 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 81 function main thread 0
+----------------------------------------------------
+  h2_11 = 0 (00000000 00000000 00000000 00000000)
+
+State 81 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 82 function main thread 0
+----------------------------------------------------
+  pre2_12 = -431 (11111111 11111111 11111110 01010001)
+
+State 82 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 83 function main thread 0
+----------------------------------------------------
+  h2_12 = 0 (00000000 00000000 00000000 00000000)
+
+State 83 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 84 function main thread 0
+----------------------------------------------------
+  pre2_13 = 798 (00000000 00000000 00000011 00011110)
+
+State 84 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 85 function main thread 0
+----------------------------------------------------
+  h2_13 = 0 (00000000 00000000 00000000 00000000)
+
+State 85 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 86 function main thread 0
+----------------------------------------------------
+  pre2_14 = 1568 (00000000 00000000 00000110 00100000)
+
+State 86 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 87 function main thread 0
+----------------------------------------------------
+  h2_14 = 0 (00000000 00000000 00000000 00000000)
+
+State 87 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 88 function main thread 0
+----------------------------------------------------
+  pre2_15 = 1097 (00000000 00000000 00000100 01001001)
+
+State 88 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 89 function main thread 0
+----------------------------------------------------
+  h2_15 = 0 (00000000 00000000 00000000 00000000)
+
+State 89 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 90 function main thread 0
+----------------------------------------------------
+  pre2_16 = 1411 (00000000 00000000 00000101 10000011)
+
+State 90 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 91 function main thread 0
+----------------------------------------------------
+  h2_16 = 0 (00000000 00000000 00000000 00000000)
+
+State 91 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 92 function main thread 0
+----------------------------------------------------
+  pre2_17 = -1320 (11111111 11111111 11111010 11011000)
+
+State 92 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 93 function main thread 0
+----------------------------------------------------
+  h2_17 = 0 (00000000 00000000 00000000 00000000)
+
+State 93 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 94 function main thread 0
+----------------------------------------------------
+  pre2_18 = 1302 (00000000 00000000 00000101 00010110)
+
+State 94 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 95 function main thread 0
+----------------------------------------------------
+  h2_18 = 0 (00000000 00000000 00000000 00000000)
+
+State 95 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 96 function main thread 0
+----------------------------------------------------
+  pre2_19 = -528 (11111111 11111111 11111101 11110000)
+
+State 96 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 97 function main thread 0
+----------------------------------------------------
+  h2_19 = 0 (00000000 00000000 00000000 00000000)
+
+State 97 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 98 function main thread 0
+----------------------------------------------------
+  pre2_20 = 1560 (00000000 00000000 00000110 00011000)
+
+State 98 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 99 function main thread 0
+----------------------------------------------------
+  h2_20 = 0 (00000000 00000000 00000000 00000000)
+
+State 99 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 100 function main thread 0
+----------------------------------------------------
+  pre2_21 = -351 (11111111 11111111 11111110 10100001)
+
+State 100 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 101 function main thread 0
+----------------------------------------------------
+  h2_21 = 0 (00000000 00000000 00000000 00000000)
+
+State 101 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 102 function main thread 0
+----------------------------------------------------
+  pre2_22 = 495 (00000000 00000000 00000001 11101111)
+
+State 102 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 103 function main thread 0
+----------------------------------------------------
+  h2_22 = 0 (00000000 00000000 00000000 00000000)
+
+State 103 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 104 function main thread 0
+----------------------------------------------------
+  pre2_23 = 791 (00000000 00000000 00000011 00010111)
+
+State 104 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 105 function main thread 0
+----------------------------------------------------
+  h2_23 = 0 (00000000 00000000 00000000 00000000)
+
+State 105 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 106 function main thread 0
+----------------------------------------------------
+  z = 2453 (00000000 00000000 00001001 10010101)
+
+State 106 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 107 function main thread 0
+----------------------------------------------------
+Violated property:
+  file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_output_nonnegative.c line 107 function main
+  output always nonnegative
+  (_Bool)(z >= 0)
+
+
+VERIFICATION FAILED

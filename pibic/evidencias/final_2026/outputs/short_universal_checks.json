@@ -1,0 +1,42 @@
+{
+  "method": "ESBMC_short_universal",
+  "checks": {
+    "property_c_bounds_boolector": {
+      "status": "UNKNOWN",
+      "timeout_s": 12,
+      "elapsed_s": 1.5,
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\property_c_bounds_boolector.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\property_c_bounds_boolector.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\property_c_bounds_boolector.stderr.log",
+      "timed_out": false
+    },
+    "property_c_bounds_z3": {
+      "status": "SUCCESSFUL",
+      "timeout_s": 12,
+      "elapsed_s": 3.5,
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\property_c_bounds_z3.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\property_c_bounds_z3.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\property_c_bounds_z3.stderr.log",
+      "timed_out": false
+    },
+    "property_a_right_boolector": {
+      "status": "UNKNOWN",
+      "timeout_s": 12,
+      "elapsed_s": 1.547,
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\property_a_right_boolector.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\property_a_right_boolector.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\property_a_right_boolector.stderr.log",
+      "timed_out": false
+    },
+    "property_a_right_z3": {
+      "status": "TIMEOUT",
+      "timeout_s": 12,
+      "elapsed_s": 12.063,
+      "harness": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\harnesses\\property_a_right_z3.c",
+      "stdout": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\property_a_right_z3.stdout.log",
+      "stderr": "E:\\Uchoa\\pibic\\pibic\\evidencias\\final_2026\\logs\\property_a_right_z3.stderr.log",
+      "timed_out": true
+    }
+  },
+  "interpretation": "TIMEOUT/UNKNOWN e inconclusivo; nenhum resultado e convertido em sucesso ou falha da propriedade."
+}

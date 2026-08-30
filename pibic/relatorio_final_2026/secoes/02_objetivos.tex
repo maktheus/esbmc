@@ -1,0 +1,20 @@
+\chapter{Objetivos}
+
+\section{Objetivo geral}
+Avaliar, por meio do ESBMC, como a quantização Q8.8, a estrutura de um controlador neural DDPG e a verificação limitada de propriedades de uma planta CartPole influenciam a produção de evidências formais e reprodutíveis, identificando também os limites para a reutilização do fluxo em componentes de Inteligência Artificial Generativa.
+
+\section{Objetivos específicos}
+\begin{enumerate}
+  \item \textbf{(PQ1 -- Fidelidade):} especificar o controlador, a planta CartPole, a arquitetura neural adotada e a representação Q8.8, e comparar sua resposta com a versão Float32 em um domínio de estados definido e rastreável.
+  \item \textbf{(PQ2 -- Estrutura neural):} analisar as ativações dos neurônios no domínio declarado para identificar comportamentos mortos ou permanentemente saturados, documentando o critério utilizado e suas consequências para a interpretação do modelo.
+  \item \textbf{(PQ3 -- Segurança):} formalizar no ESBMC propriedades de segurança da malha fechada, registrar os veredictos obtidos e reproduzir contraexemplos quando uma propriedade for refutada.
+  \item \textbf{(PQ4 -- Limites):} medir ou registrar, conforme os dados disponíveis, as hipóteses, os custos computacionais, os limites de desenrolamento e os timeouts que condicionam o alcance das conclusões formais.
+  \item \textbf{(PQ5 -- Generalização metodológica):} avaliar quais etapas do fluxo podem ser reaproveitadas em componentes de Inteligência Artificial Generativa, incluindo apenas casos com execução, entrada, comando e saída verificáveis.
+\end{enumerate}
+
+\section{Critérios de atendimento}
+Cada objetivo será considerado atendido somente quando houver uma cadeia de rastreabilidade formada por pergunta, procedimento, artefato bruto, análise e conclusão. Um resultado `UNSAT` será interpretado como prova apenas dentro das hipóteses, do domínio e do horizonte informados; `SAT` será tratado como evidência de violação acompanhada de contraexemplo; `UNKNOWN` e `TIMEOUT` permanecerão como resultados inconclusivos. Essa convenção será aplicada de maneira uniforme às cinco perguntas de pesquisa.
+
+\textit{Nota de validação: antes do envio, confrontar a redação literal destes
+objetivos com o PDTI aprovado no eCampus e ajustar apenas eventuais diferenças
+formais, sem ampliar o escopo autorizado.}

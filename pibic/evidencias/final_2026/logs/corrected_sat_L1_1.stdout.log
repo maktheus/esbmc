@@ -1,0 +1,48 @@
+ESBMC version 6.8.0 64-bit x86_64 windows
+file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_L1_1.c: Parsing
+Converting
+Generating GOTO Program
+GOTO program creation time: 0.333s
+GOTO program processing time: 0.005s
+Starting Bounded Model Checking
+Symex completed in: 0.042s (120 assignments)
+Slicing time: 0.000s (removed 106 assignments)
+Generated 1 VCC(s), 1 remaining after simplification (14 assignments)
+Encoding remaining VCC(s) using bit-vector/floating-point arithmetic
+Encoding to solver time: 0.000s
+Solving with solver Z3 v4.8.9
+Encoding to solver time: 0.000s
+Runtime decision procedure: 0.040s
+Building error trace
+
+Counterexample:
+
+State 1 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_L1_1.c line 5 function main thread 0
+----------------------------------------------------
+  s0 = -512 (11111111 11111111 11111110 00000000)
+
+State 2 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_L1_1.c line 5 function main thread 0
+----------------------------------------------------
+  s1 = 0 (00000000 00000000 00000000 00000000)
+
+State 3 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_L1_1.c line 5 function main thread 0
+----------------------------------------------------
+  s2 = -17 (11111111 11111111 11111111 11101111)
+
+State 4 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_L1_1.c line 5 function main thread 0
+----------------------------------------------------
+  s3 = -428 (11111111 11111111 11111110 01010100)
+
+State 9 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_L1_1.c line 12 function main thread 0
+----------------------------------------------------
+  pre1_1 = 1011 (00000000 00000000 00000011 11110011)
+
+State 10 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_L1_1.c line 107 function main thread 0
+----------------------------------------------------
+Violated property:
+  file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_sat_L1_1.c line 107 function main
+  saturated_L1_1
+  (_Bool)(pre1_1 >= 0)
+
+
+VERIFICATION FAILED

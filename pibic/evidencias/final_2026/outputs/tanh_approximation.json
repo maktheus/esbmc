@@ -1,0 +1,12 @@
+{
+  "z_domain_q88": [
+    -10000,
+    10000
+  ],
+  "max_absolute_error": 0.04574931274815497,
+  "max_absolute_error_pct_of_tanh_range": 4.574931274815497,
+  "argmax_absolute_z_q88": -281,
+  "max_relative_error_nonzero": 1.0,
+  "argmax_relative_z_q88": -1,
+  "note": "Relative error near zero is ill-conditioned; absolute error is the primary metric."
+}

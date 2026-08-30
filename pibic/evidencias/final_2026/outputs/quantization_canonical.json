@@ -1,0 +1,38 @@
+{
+  "method": "reexecucao_deterministica_com_jsons_exportados",
+  "seed": 42,
+  "rng": "numpy.random.RandomState",
+  "n_samples": 10000,
+  "scale": 256,
+  "source_sha256": {
+    "E:\\Uchoa\\pibic\\pibic\\cartpole\\webapp\\public\\ddpg_weights.json": "1a89f087025e46a8e40c74e72c1d2df8841c95499db60e3f730ae3c9bff094e2",
+    "E:\\Uchoa\\pibic\\pibic\\cartpole\\webapp\\public\\ddpg_weights_q88.json": "f2ae9cc7ae17fc893d436f089c48377d331a75cbfac5fdfce8f00e28b1130e26",
+    "E:\\Uchoa\\pibic\\pibic\\cartpole\\quantization_report.json": "d93f210482da8f9f18c4f2949af8dd0e3b52bed25cb5c85888eb526b33e25a8d"
+  },
+  "recomputed": {
+    "max_abs_error_N": 7.7589197857363,
+    "mean_abs_error_N": 0.07780077585728473,
+    "median_abs_error_N": 0.0390625,
+    "p95_abs_error_N": 0.2262005212120994,
+    "p99_abs_error_N": 1.0927201961732675,
+    "max_relative_to_force_range_pct": 77.589197857363
+  },
+  "published_report": {
+    "scale": 256,
+    "n_samples": 10000,
+    "max_abs_error_N": 7.75891978573628,
+    "mean_abs_error_N": 0.07780077585728473,
+    "p95_abs_error_N": 0.2262005212120994,
+    "p99_abs_error_N": 1.0927201961732624,
+    "force_range_N": [
+      -10.0,
+      10.0
+    ],
+    "max_relative_error_pct": 77.5891978573628
+  },
+  "interpretation": [
+    "A mesma aritmetica Q8.8 foi reexecutada sobre os JSONs exportados.",
+    "O erro maximo e reportado contra o Float32 de referencia; nao e uma divergencia entre harness e runtime Q8.8.",
+    "O checkpoint PyTorch ainda precisa ser validado diretamente nesta rodada quando PyTorch estiver disponivel."
+  ]
+}

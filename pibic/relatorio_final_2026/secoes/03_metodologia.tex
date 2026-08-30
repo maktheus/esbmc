@@ -1,0 +1,243 @@
+\chapter{Metodologia}
+
+\section{Desenho do estudo}
+
+Foi adotado um estudo de caso experimental e reprodutível sobre um controlador
+neural contínuo para o sistema CartPole. O fluxo foi organizado em quatro
+etapas: (i) identificação do artefato de controle e de seus parâmetros; (ii)
+comparação numérica entre as implementações Float32 e Q8.8; (iii) especificação
+e verificação de propriedades no ESBMC; e (iv) reprodução independente dos
+estados que aparecem como contraexemplos. A rodada canônica inicial foi isolada
+em \path{evidencias/final_2026}, preservando os scripts originais. Em seguida,
+os dois scripts da auditoria estrutural foram corrigidos, com as versões legadas
+mantidas em \texttt{legacy}. O manifesto registra comandos, ambiente, hashes
+SHA-256, logs e arquivos gerados.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=7mm and 8mm]
+  \node[pibitibox] (artifacts) {Artefatos\\checkpoint, JSONs e\\histórico de treinamento};
+  \node[pibitiprocess, right=of artifacts] (numeric) {Preparação numérica\\Float32 versus Q8.8\\10.000 estados};
+  \node[pibitiprocess, right=of numeric] (network) {Grafo do controlador\\4--24--24--1\\ReLU + tanh aproximada};
+  \node[pibitiprocess, below=of network] (harness) {Harnesses C\\domínio Q8.8 e propriedades\\A, B e C};
+  \node[pibitiprocess, left=of harness] (bmc) {ESBMC + Z3\\execução simbólica\\e BMC};
+  \node[pibitiresult, left=of bmc] (evidence) {Evidências\\veredictos, contraexemplos,\\logs e hashes};
+  \node[pibitiresult, below=of bmc] (synthesis) {Síntese científica\\resultado confirmado,\\refutado ou inconclusivo};
+  \draw[pibitiarrow] (artifacts) -- (numeric);
+  \draw[pibitiarrow] (numeric) -- (network);
+  \draw[pibitiarrow] (network) -- (harness);
+  \draw[pibitiarrow] (harness) -- (bmc);
+  \draw[pibitiarrow] (bmc) -- (evidence);
+  \draw[pibitiarrow] (bmc) -- (synthesis);
+\end{tikzpicture}
+\caption{Visão geral do desenho experimental e da cadeia de evidências.}
+\label{fig:visao-geral-estudo}
+\end{figure}
+
+A Figura~\ref{fig:visao-geral-estudo} explicita a separação entre três camadas
+do trabalho: a medição numérica, a verificação formal e a interpretação. Essa
+separação evita que uma amostra estatística seja apresentada como prova
+universal e permite rastrear cada conclusão até o arquivo e o log que a
+produziram.
+
+O desenho distingue três tipos de resultado. Uma prova universal é um veredicto
+\texttt{SUCCESSFUL} obtido sobre um harness simbólico, dentro do domínio e do
+modelo explicitamente declarados. Uma refutação é um contraexemplo obtido para
+um harness universal. Já uma reprodução concreta verifica apenas o estado fixo
+publicado e não substitui a prova universal. \texttt{TIMEOUT} e \texttt{UNKNOWN}
+são tratados como resultados inconclusivos.
+
+\section{Artefatos e ambiente experimental}
+
+Os artefatos de entrada da rodada foram o checkpoint
+\path{cartpole/ddpg_actor_best.pth}, as exportações
+\path{webapp/public/ddpg_weights.json} e
+\path{webapp/public/ddpg_weights_q88.json}, o histórico de treinamento e os
+resultados históricos de verificação. A confirmação direta do conteúdo do
+checkpoint PyTorch não foi possível nesta rodada porque o ambiente de execução
+não possui PyTorch; por isso, a análise numérica canônica usa explicitamente os
+dois JSONs exportados e registra seus hashes.
+
+\begin{table}[H]
+\centering
+\caption{Ambiente e protocolo registrados no manifesto da rodada canônica.}
+\label{tab:ambiente}
+\begin{tabularx}{\textwidth}{>{\bfseries}p{0.38\textwidth}Y}
+\toprule
+Item & Registro \\
+\midrule
+Sistema operacional & Windows 10 (build 10.0.26200) \\
+Python & 3.11.15 (64 bits) \\
+Biblioteca numérica & NumPy 2.4.3; gerador \texttt{RandomState(42)} \\
+Verificador & ESBMC 6.8.0, executável Windows 64 bits \\
+Solver solicitado & Boolector; indisponível no executável Windows \\
+Solver alternativo & Z3 v4.8.9, quando explicitamente indicado \\
+Flags & \texttt{--no-unwinding-assertions}; \texttt{--boolector} ou \texttt{--z3} \\
+Sementes e amostras & semente 42; 10.000 estados para a quantização \\
+Rastreabilidade & \path{evidencias/final_2026/MANIFESTO.json} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+O executável sem extensão presente no diretório do QNNVerifier é um binário ELF
+Linux, enquanto \texttt{esbmc.exe} é o binário Windows usado pela rodada. O
+\texttt{esbmc.exe} aceita a opção \texttt{--boolector}, mas informa em tempo de
+execução que o solver não foi compilado. Consequentemente, a ausência de
+Boolector é registrada como bloqueio de infraestrutura, e não como falha de uma
+propriedade.
+
+\section{Modelo físico e controlador neural}
+
+O estado do CartPole é
+\(s=(x,\dot{x},\theta,\dot{\theta})\), com posição do carro em metros,
+velocidade linear em metros por segundo, ângulo do pêndulo em radianos e
+velocidade angular em radianos por segundo. O atuador recebe uma força contínua
+\(F\in[-10,10]\,\mathrm{N}\). A planta usada no simulador emprega os parâmetros
+\(g=9{,}8\,\mathrm{m/s^2}\), \(m_c=1{,}0\,\mathrm{kg}\),
+\(m_p=0{,}1\,\mathrm{kg}\), meio comprimento \(l=0{,}5\,\mathrm{m}\) e passo de
+Euler \(\Delta t=0{,}02\,\mathrm{s}\). A dinâmica completa usa seno e cosseno;
+o harness da propriedade de segurança usa sua linearização
+\(\sin(\theta)\approx\theta\) e \(\cos(\theta)\approx1\).
+
+O ator DDPG tem arquitetura \(4\mathbin{\to}24\mathbin{\to}24\mathbin{\to}1\),
+com ReLU nas duas camadas ocultas e tanh na saída. O vetor de saída é convertido
+em força por \(F=10\tanh(z)\). A rede possui 769 parâmetros treináveis. A
+verificação trata o controlador exportado como o artefato sob análise; ela não
+constitui prova sobre qualquer outro checkpoint ou sobre o treinamento em
+geral.
+
+\section{Representação Q8.8}
+
+Para tornar o grafo neural compatível com a aritmética inteira do BMC, foi usada
+a representação de ponto fixo Q8.8, com escala \(S=256\). Cada valor real é
+convertido por \(q(v)=\operatorname{round}(256v)\). O produto de dois valores
+escalados é reduzido por divisão inteira por 256. Tanto o código C do harness
+quanto os scripts de auditoria usam truncamento em direção a zero, de modo a
+reproduzir o operador \texttt{/} de C.
+
+O domínio discreto empregado pelos harnesses é:
+
+\begin{table}[H]
+\centering
+\caption{Domínio de entrada declarado para os harnesses Q8.8.}
+\label{tab:dominio-q88}
+\begin{tabular}{lccc}
+\toprule
+Variável & Unidade & Domínio real de referência & Domínio inteiro usado \\
+\midrule
+\(x\) & m & \([-2{,}4,2{,}4]\) & \([-614,614]\) \\
+\(\dot{x}\) & m/s & \([-5,5]\) & \([-1280,1280]\) \\
+\(\theta\) & rad & aproximadamente \([-12^\circ,12^\circ]\) & \([-53,53]\) \\
+\(\dot{\theta}\) & rad/s & \([-5,5]\) & \([-1280,1280]\) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+O limite inteiro \(53\) representa aproximadamente \(11{,}86^\circ\). Como a
+quantização por arredondamento pode transformar valores reais próximos de
+\(12^\circ\) em 54 unidades, o domínio inteiro usado é uma aproximação
+conservadora e ligeiramente menor que a imagem completa da quantização do
+intervalo angular. Essa diferença é registrada como ameaça à validade.
+
+A tanh do runtime é aproximada por cinco segmentos lineares, com quebras em
+\(|z|=64,192,384,768\) unidades Q8.8 e saturação em \(\pm255\). A mesma função
+é copiada nos harnesses e na implementação web. Isso elimina uma diferença de
+implementação entre esses dois artefatos, mas não elimina o erro em relação à
+tanh real nem à rede Float32.
+
+\section{Propriedades formais}
+
+Foram consideradas as seguintes propriedades do controlador:
+
+\begin{enumerate}
+  \item \textbf{Limite do atuador (C).} Para todo estado do domínio, a força
+  quantizada deve satisfazer \(-2560\leq F_Q\leq2560\), equivalente a
+  \(|F|\leq10\,\mathrm{N}\).
+  \item \textbf{Segurança em um passo (B).} Para todo estado inicial no domínio,
+  calcula-se a ação da rede e um passo da dinâmica angular linearizada. A
+  asserção é \(-53\leq\theta_1\leq53\). O horizonte é exatamente um passo;
+  portanto, o resultado não implica invariância para múltiplos passos.
+  \item \textbf{Correção direcional (A).} Para \(\theta>25\) e
+  \(\dot{\theta}\geq0\), testa-se \(z>0\); simetricamente, para
+  \(\theta<-25\) e \(\dot{\theta}\leq0\), testa-se \(z<0\). Como a tanh é
+  monotônica, o sinal de \(z\) determina o sinal da força, mas a propriedade
+  continua sujeita à complexidade simbólica da rede.
+\end{enumerate}
+
+Na propriedade B, as equações usadas no domínio escalado são
+\[
+  \ddot{\theta}_Q=\operatorname{trunc}\!\left(
+  \frac{4040\theta_Q-375F_Q}{256}\right),\qquad
+  \theta_1=\theta_Q+\operatorname{trunc}\!\left(\frac{5\dot{\theta}_Q}{256}\right).
+\]
+Os fatores 4040, 375 e 5 codificam os parâmetros físicos e o passo temporal na
+escala empregada pelo harness.
+
+\section{Execução e reprodução}
+
+O protocolo canônico usa scripts novos para quantização, ativação, reproduções
+fixas e verificações universais curtas. A auditoria estrutural acrescenta dois
+scripts corrigidos para atividade e saturação dos neurônios, cujos nomes,
+comandos e hashes estão registrados no manifesto. Essas versões
+constroem o grafo completo da rede a partir das quatro entradas simbólicas.
+Esses harnesses não impõem bounds de pré-ativação menores que os intervalos
+calculados e não injetam ativações independentes entre camadas. Como o
+executável Windows disponível não contém Boolector, a rodada corrigida usa
+explicitamente Z3 v4.8.9 e registra a indisponibilidade do solver solicitado.
+Cada processo preserva \texttt{stdout}, \texttt{stderr}, comando, tempo,
+status e eventual estado de contraexemplo.
+
+Cada execução grava o comando no manifesto, os arquivos de entrada por hash,
+os harnesses gerados e os logs correspondentes. Um contraexemplo só é
+considerado reproduzido quando a mesma entrada inteira e a mesma aritmética Q8.8
+produzem a asserção esperada em um harness independente.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=6mm and 4mm,
+  smallbox/.style={draw, rounded corners=2pt, fill=blue!7, text width=2.35cm,
+    align=center, minimum height=.85cm, inner sep=3pt, font=\scriptsize},
+  smallprocess/.style={draw, rounded corners=2pt, fill=green!8, text width=2.35cm,
+    align=center, minimum height=.85cm, inner sep=3pt, font=\scriptsize},
+  smallresult/.style={draw, rounded corners=2pt, fill=orange!12, text width=2.5cm,
+    align=center, minimum height=.85cm, inner sep=3pt, font=\scriptsize}]
+  \node[smallbox] (source) {Programa C\\harness com entradas\\simbólicas};
+  \node[smallprocess, right=of source] (front) {Pré-processamento\\e unwinding\\do laço};
+  \node[smallprocess, right=of front] (bmc) {Execução simbólica\\exploração limitada\\por BMC};
+  \node[smallprocess, right=of bmc] (solver) {Solver SMT\\Z3 nesta rodada\\Boolector indisponível};
+  \node[smallresult, below=of solver, xshift=-3cm] (success) {SUCCESSFUL\\propriedade provada\\no harness};
+  \node[smallresult, below=of solver] (inc) {TIMEOUT / UNKNOWN\\resultado inconclusivo\\sem conclusão de segurança};
+  \node[smallresult, below=of solver, xshift=3cm] (failed) {FAILED\\contraexemplo\\registrado};
+  \draw[pibitiarrow] (source) -- (front);
+  \draw[pibitiarrow] (front) -- (bmc);
+  \draw[pibitiarrow] (bmc) -- (solver);
+  \draw[pibitiarrow] (solver) -- (success);
+  \draw[pibitiarrow] (solver) -- (failed);
+  \draw[pibitiarrow] (solver) -- (inc);
+\end{tikzpicture}
+\caption{Fluxo de verificação do ESBMC e interpretação dos veredictos.}
+\label{fig:fluxo-esbmc}
+\end{figure}
+
+A Figura~\ref{fig:fluxo-esbmc} é a chave de leitura dos resultados formais.
+\texttt{SUCCESSFUL} só sustenta a propriedade especificada para o domínio e
+para o modelo codificado; \texttt{FAILED} fornece um contraexemplo; já
+\texttt{TIMEOUT} e \texttt{UNKNOWN} não podem ser convertidos em aprovação ou
+reprovação do controlador.
+
+\section{Critérios de validade}
+
+As conclusões formais são restritas ao checkpoint exportado, à representação
+Q8.8, ao domínio inteiro da Tabela~\ref{tab:dominio-q88}, ao modelo da planta
+especificado e ao horizonte declarado. A comparação Float32--Q8.8 é estatística
+sobre 10.000 estados uniformes, não uma prova de equivalência. Resultados
+\texttt{TIMEOUT} ou \texttt{UNKNOWN} não recebem interpretação de segurança.
+
+As versões históricas das análises de neurônios mortos e saturação permanecem
+preservadas no diretório \texttt{legacy} das evidências. Os resultados
+corrigidos foram gerados pelos grafos completos e estão nos dois arquivos JSON
+correspondentes do diretório \texttt{outputs}. Ainda assim,
+\texttt{TIMEOUT} e \texttt{UNKNOWN} não são convertidos em provas: a rodada
+corrigida só permite afirmar uma propriedade quando o respectivo harness
+termina em \texttt{SUCCESSFUL}, ou refutá-la quando termina em
+\texttt{FAILED} com contraexemplo registrado.

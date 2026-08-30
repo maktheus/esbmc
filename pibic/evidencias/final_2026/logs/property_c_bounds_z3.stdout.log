@@ -1,0 +1,18 @@
+ESBMC version 6.8.0 64-bit x86_64 windows
+file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\property_c_bounds_z3.c: Parsing
+Converting
+Generating GOTO Program
+GOTO program creation time: 0.443s
+GOTO program processing time: 0.002s
+Starting Bounded Model Checking
+Symex completed in: 0.068s (139 assignments)
+Slicing time: 0.001s (removed 14 assignments)
+Generated 1 VCC(s), 1 remaining after simplification (125 assignments)
+Encoding remaining VCC(s) using bit-vector/floating-point arithmetic
+Encoding to solver time: 0.005s
+Solving with solver Z3 v4.8.9
+Encoding to solver time: 0.005s
+Runtime decision procedure: 2.636s
+BMC program time: 2.711s
+
+VERIFICATION SUCCESSFUL

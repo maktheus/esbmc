@@ -1,0 +1,10 @@
+{
+  "max_abs_error_N": 7.7589197857363,
+  "mean_abs_error_N": 0.07780077585728473,
+  "median_abs_error_N": 0.0390625,
+  "p95_abs_error_N": 0.2262005212120994,
+  "p99_abs_error_N": 1.0927201961732675,
+  "max_relative_to_force_range_pct": 77.589197857363
+}
+wrote E:\Uchoa\pibic\pibic\evidencias\final_2026\outputs\quantization_canonical.json
+wrote E:\Uchoa\pibic\pibic\evidencias\final_2026\outputs\quantization_extremes.csv

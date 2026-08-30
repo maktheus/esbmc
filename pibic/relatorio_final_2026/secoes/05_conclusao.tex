@@ -1,0 +1,79 @@
+\chapter{Conclusão}
+
+O objetivo geral foi avaliar se o ESBMC pode produzir evidências formais e
+reprodutíveis sobre um controlador neural quantizado, dentro de um domínio de
+entradas e de um horizonte explicitamente definidos. A rodada canônica confirma
+que o fluxo pode produzir uma prova de limite de saída para o harness curto e
+reproduzir estados publicados como contraexemplos, mas não sustenta uma
+certificação global do controlador. A interpretação permanece limitada pela
+quantização, pelas hipóteses da planta, pelo horizonte finito, pela correção dos
+harnesses e pela disponibilidade e custo dos solucionadores SMT.
+Essa conclusão é compatível com a análise de redes quantizadas por model checking
+SMT descrita em \cite{gopinath2021verifying,meng2022qnnverifier}, mas não deve ser
+interpretada como uma certificação global do controlador Float32 ou da dinâmica
+não linear completa.
+
+\begin{enumerate}
+  \item \textbf{Observação quantitativa de fidelidade.} A rodada canônica,
+  executada com \texttt{RandomState(42)}, confirmou em 10.000 estados erro absoluto
+  médio de 0,0778 N, percentil 95 de 0,2262 N, percentil 99 de 1,0927 N e
+  máximo de 7,7589 N. O pior estado registrou inversão do sinal da ação:
+  +6,4308 N em Float32 e -1,3281 N em Q8.8. A varredura da aproximação de
+  $\tanh$ registrou erro máximo de 0,0457493 (4,5749\% do intervalo unitário).
+  Portanto, Q8.8 não deve ser descrito como equivalente ao Float32 sem qualificar
+  o domínio, a amostragem e a cauda de erro. A origem desses JSONs no checkpoint
+  PyTorch ainda precisa ser confirmada diretamente.
+
+  \item \textbf{Resultado estrutural histórico, ainda condicional.} Os arquivos
+  legados registram 24 neurônios vivos em cada camada oculta, nenhum neurônio
+  morto e nenhuma saturação permanente na camada analisada. A auditoria, porém,
+  identificou bounds artificiais e independência indevida entre camadas. Assim,
+  esse resultado deve ser tratado como indicação histórica, não como prova
+  universal, até a correção e a repetição do harness. “Vivo” significa apenas que
+  foi encontrada uma entrada do domínio que ativa o neurônio.
+
+  \item \textbf{Prova formal delimitada.} O harness curto canônico para o limite
+  de força, $|F|\leq 10$ N, terminou \texttt{SUCCESSFUL} com Z3 em 3,5 s. Essa
+  é uma prova do programa quantizado e do domínio codificado nesse harness,
+  não do controlador Float32, da dinâmica não linear ou de qualquer implementação
+  que não seja semanticamente equivalente. A tentativa com Boolector terminou
+  \texttt{UNKNOWN} porque o solver não está compilado no executável Windows.
+
+  \item \textbf{Reprodução de contraexemplo, sem refutação universal nova.} A
+  rodada canônica verificou como \texttt{SUCCESSFUL} as asserções para os estados
+  fixos publicados para direção e segurança em um passo. Isso confirma a
+  consistência da asserção de replay com os harnesses gerados, mas não prova por
+  si só que a propriedade universal é falsa. A refutação universal histórica e
+  seus status devem ser publicados somente após preservar um novo log universal
+  e o contraexemplo completo.
+
+  \item \textbf{Resultado inconclusivo para a propriedade direcional.} Na rodada
+  canônica, a tentativa universal com Z3 atingiu \texttt{TIMEOUT} em 12 s e a
+  tentativa com Boolector terminou \texttt{UNKNOWN} por indisponibilidade do
+  solver. Os registros legados marcam status diferentes; até que o comando, o
+  binário, o solver, o limite de tempo e o log sejam reconciliados, a propriedade
+  deve ser descrita como \emph{inconclusiva}. Timeout ou solver indisponível não
+  são prova de satisfação nem de violação.
+
+  \item \textbf{Contribuição tecnológica.} O trabalho organiza um fluxo que
+  transforma pesos do controlador em representação Q8.8, gera harnesses C,
+  especifica propriedades para o ESBMC e permite reproduzir contraexemplos no
+  simulador. O valor do fluxo está na rastreabilidade entre especificação,
+  veredicto, estado concreto e comportamento observado, e não em alegar uma
+  garantia além das hipóteses codificadas.
+
+  \item \textbf{Limites e continuidade.} Permanecem como limites o erro da
+  quantização, a aproximação de $\tanh$, a dinâmica linearizada quando utilizada,
+  o horizonte de um passo, o domínio finito, a correção dos bounds, a dependência
+  do solver e os timeouts. Os próximos passos realistas são validar o checkpoint
+  PyTorch, corrigir os harnesses estruturais, preservar uma execução universal
+  completa, particionar o domínio, avaliar horizontes maiores e comparar a
+  dinâmica linearizada com a não linear. Qualquer decisão sobre patente ou
+  registro de software deve ser tomada apenas após verificar a situação
+  administrativa e a novidade do artefato com a orientação responsável.
+\end{enumerate}
+
+Os resultados acima respondem aos objetivos específicos sem extrapolar o domínio
+formal. Antes da submissão, deve-se substituir as marcações condicionais pela
+rodada experimental autoritativa, preservar os logs correspondentes e conferir
+que cada número publicado possui um arquivo bruto, comando e versão associados.

@@ -1,0 +1,73 @@
+% Resumo exigido pelo modelo PROTEC. Resultados marcados como condicionais
+% devem ser congelados somente depois da rodada experimental final.
+\begin{resumo}
+Sistemas de controle que utilizam redes neurais podem produzir ações adequadas em
+simulação e, ainda assim, não oferecer uma justificativa verificável para todos os
+estados admitidos. Este relatório investiga a aplicabilidade do ESBMC à análise de
+propriedades de um controlador neural DDPG para o sistema Cart-Pole, considerando
+explicitamente o domínio de entradas, o horizonte de verificação e a representação
+numérica utilizada. O ator analisado possui arquitetura 4--24--24--1, com 48
+neurônios nas camadas ocultas. Para viabilizar a análise por aritmética inteira,
+os pesos e estados são representados em ponto fixo Q8.8, com fator de escala 256,
+e os harnesses C são comparados com a implementação correspondente do simulador.
+
+Na rodada canônica de quantização, executada com \texttt{RandomState(42)}, foram
+reavaliados 10.000 estados. O erro absoluto médio entre as saídas Float32 e Q8.8
+foi de 0,0778 N, o percentil 95 foi de 0,2262 N, o percentil 99 foi de 1,0927 N
+e o erro máximo foi de 7,7589 N. O pior estado registrado apresentou inversão
+do sinal da ação (+6,4308 N em Float32 e -1,3281 N em Q8.8). A varredura da
+aproximação de $\tanh$ encontrou erro absoluto máximo de 0,0457493, equivalente
+a 4,5749\% do intervalo unitário. Esses resultados são observações da
+representação exportada; a origem no checkpoint PyTorch ainda precisa ser
+confirmada diretamente.
+
+Os registros históricos indicam 24 neurônios vivos em cada camada oculta, mas a
+auditoria identificou bounds artificiais e independência indevida entre camadas;
+por isso, essa análise não é apresentada como prova universal. Na malha fechada,
+o harness curto canônico obteve veredicto \texttt{SUCCESSFUL} para o limite de força
+$|F|\leq 10$ N com Z3 em 3,5 s,
+enquanto Boolector não está disponível no executável Windows. O contraexemplo de
+segurança em um passo foi reproduzido como estado fixo, mas esse replay não prova
+sozinho a refutação universal. A propriedade direcional permanece inconclusiva
+na rodada canônica (timeout com Z3 e solver indisponível com Boolector). A
+contribuição é distinguir prova, refutação, reprodução, observação empírica e
+resultado inconclusivo, associando cada afirmação ao domínio e ao artefato que a
+sustentam.
+
+\textbf{Palavras-chave}: verificação formal; ESBMC; controlador neural; Cart-Pole; quantização Q8.8.
+\end{resumo}
+
+\begin{resumo}[Abstract]
+\begin{otherlanguage*}{english}
+Neural control systems may perform adequately in simulation without providing a
+verifiable justification for every admitted state. This report investigates the
+applicability of ESBMC to the analysis of a DDPG neural controller for the Cart-Pole
+system, explicitly considering the input domain, verification horizon and numerical
+representation. The analyzed actor has a 4--24--24--1 architecture, with 48 hidden
+neurons. To enable integer-arithmetic analysis, weights and states are represented
+in Q8.8 fixed point with scale factor 256, and the C harnesses are compared with
+the corresponding simulator implementation.
+
+The canonical quantization run, executed with \texttt{RandomState(42)}, reevaluated
+10,000 states. The mean absolute error between Float32 and Q8.8 outputs is
+0.0778 N, the 95th percentile is 0.2262 N, the 99th percentile is 1.0927 N,
+and the maximum absolute error is 7.7589 N. The worst recorded state reverses
+the action sign (+6.4308 N in Float32 and -1.3281 N in Q8.8). A scan of the
+$\tanh$ approximation found a maximum absolute error of 0.0457493, or 4.5749\%
+of the unit range. These are observations of the exported representations; the
+PyTorch checkpoint origin still requires direct confirmation.
+
+Historical records list 24 live neurons in each hidden layer, but the audit found
+artificial bounds and improper independence between layers; this analysis is
+therefore not presented as a universal proof. In closed-loop analysis, the
+canonical short harness proved the force bound $|F|\leq 10$ N with Z3 in 3.5 s,
+while Boolector is unavailable in the Windows executable. The one-step safety
+counterexample was reproduced as a fixed state, but this replay alone is not a
+universal refutation. The directional property remains inconclusive in the
+canonical run (Z3 timeout and Boolector unavailable). The contribution is to
+distinguish proof, refutation, replay, empirical observation and inconclusive
+outcome, linking each claim to its domain and supporting artifact.
+
+\textbf{Keywords}: formal verification; ESBMC; neural controller; Cart-Pole; Q8.8 quantization.
+\end{otherlanguage*}
+\end{resumo}

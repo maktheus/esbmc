@@ -1,0 +1,72 @@
+{
+  "layer_1": {
+    "total": 24,
+    "saturated_proven": [],
+    "not_saturated_counterexample": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+    ],
+    "timeouts": [],
+    "unknown": []
+  },
+  "layer_2": {
+    "total": 24,
+    "saturated_proven": [],
+    "not_saturated_counterexample": [
+      0,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+    ],
+    "timeouts": [
+      1,
+      12
+    ],
+    "unknown": []
+  },
+  "output": {
+    "always_nonnegative": "FAILED",
+    "always_nonpositive": "TIMEOUT",
+    "interpretation": "RESPONSIVE somente quando ambas as propriedades universais forem refutadas com contraexemplos validos; TIMEOUT/UNKNOWN e inconclusivo."
+  }
+}

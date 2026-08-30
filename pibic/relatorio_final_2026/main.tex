@@ -1,0 +1,160 @@
+% Relatório Final PIBITI 2025/2026 -- esqueleto de montagem.
+% Este projeto é independente de pibic/artigo. Os campos administrativos
+% devem ser conferidos no eCampus antes da submissão.
+\documentclass[
+  12pt,
+  oneside,
+  a4paper,
+  chapter=TITLE,
+  brazilian
+]{abntex2}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{babel}
+\usepackage{geometry}
+\geometry{top=3cm,left=3cm,bottom=2cm,right=2cm}
+\usepackage{indentfirst}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{url}
+\usepackage[brazilian,hyperpageref]{backref}
+\usepackage[alf]{abntex2cite}
+% abntex2/abntex2cite já carregam hyperref; apenas configurá-lo abaixo.
+
+\input{config/dados_projeto}
+
+\titulo{\tituloProjeto}
+\autor{\nomeAluno}
+\orientador{\nomeOrientador}
+\local{\cidadeProjeto}
+\data{\anoRelatorio}
+\instituicao{\instituicaoProjeto}
+\tipotrabalho{Relatório Final de Iniciação em Desenvolvimento Tecnológico e Inovação (PIBITI)}
+\preambulo{Relatório final das atividades desenvolvidas no âmbito do Programa Institucional de Bolsas de Iniciação em Desenvolvimento Tecnológico e Inovação (PIBITI), edição 2025/2026, da Universidade Federal do Amazonas.}
+
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{0.2cm}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+
+\hypersetup{
+  hidelinks,
+  pdftitle={\tituloProjeto},
+  pdfauthor={\nomeAluno},
+  pdfsubject={Relatório Final PIBITI 2025/2026},
+  pdfkeywords={PIBITI, ESBMC, verificação formal, redes neurais}
+}
+
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\tikzset{
+  pibitibox/.style={draw, rounded corners=2pt, fill=blue!7, text width=3.1cm,
+    align=center, minimum height=1.0cm, inner sep=4pt, font=\small},
+  pibitiprocess/.style={draw, rounded corners=2pt, fill=green!8, text width=3.0cm,
+    align=center, minimum height=1.0cm, inner sep=4pt, font=\small},
+  pibitiresult/.style={draw, rounded corners=2pt, fill=orange!12, text width=3.15cm,
+    align=center, minimum height=1.0cm, inner sep=4pt, font=\small},
+  pibitiarrow/.style={-{Latex[length=2.2mm]}, thick}
+}
+
+\begin{document}
+\frenchspacing
+\pretextual
+
+\imprimircapa
+\imprimirfolhaderosto
+
+% Identificação exigida no modelo oficial PROTEC.
+\chapter*{Dados do Projeto}
+\addcontentsline{toc}{chapter}{Dados do Projeto}
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\small
+\begin{tabularx}{\textwidth}{>{\bfseries}p{0.40\textwidth}Y}
+\toprule
+Edição & \edicaoPIBITI \\
+Orientador(a) & \nomeOrientador \\
+Aluno(a) & \nomeAluno \\
+Modalidade & \modalidadeProjeto \\
+Título & \tituloProjeto \\
+Código do projeto & \codigoProjeto \\
+Grande área CNPq & \areaCNPQ \\
+Área de concentração & \areaConcentracao \\
+Potencial de patente/registro de software & \propriedadeIntelectual \\
+Apresentação reservada & \apresentacaoReservada \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\input{secoes/00_resumo}
+
+\pdfbookmark[0]{Lista de Ilustrações}{lof}
+\listoffigures*
+\cleardoublepage
+\pdfbookmark[0]{Lista de Tabelas}{lot}
+\listoftables*
+\cleardoublepage
+\pdfbookmark[0]{Sumário}{toc}
+\tableofcontents*
+\cleardoublepage
+
+\textual
+\input{secoes/01_introducao}
+\input{secoes/02_objetivos}
+\input{secoes/03_metodologia}
+\input{secoes/04_resultados_discussao}
+\input{secoes/05_conclusao}
+
+\postextual
+\chapter*{Agradecimentos}
+\addcontentsline{toc}{chapter}{Agradecimentos}
+Agradeço à Fundação de Amparo à Pesquisa e ao Desenvolvimento Científico e
+Tecnológico do Maranhão (FAPEMA) pelo apoio financeiro ao desenvolvimento deste
+projeto, bem como à Universidade Federal do Amazonas e ao grupo de pesquisa
+pelas condições institucionais e técnicas disponibilizadas.
+
+\bibliography{referencias}
+
+\appendix
+\chapter{Cronograma executado}
+O quadro abaixo consolida as atividades que possuem registro técnico no
+repositório. Os períodos iniciais sem documentação detalhada devem ser
+confrontados com o diário de atividades, relatórios parciais ou registros do
+orientador antes da submissão.
+
+\begin{table}[H]
+\centering
+\caption{Cronograma de atividades documentadas no projeto.}
+\label{tab:cronograma}
+\begin{tabularx}{\textwidth}{p{0.22\textwidth}Y}
+\toprule
+Período & Atividade registrada ou pendência de comprovação \\
+\midrule
+Setembro--dezembro de 2025 & Vigência inicial do projeto; não foi localizado no repositório um diário mensal consolidado. \\
+Janeiro--abril de 2026 & Continuidade da vigência; completar a partir dos registros do orientador e do bolsista. \\
+Maio de 2026 & Evolução da aplicação CartPole, visualização de contraexemplos e documentação da metodologia ESBMC. \\
+Junho de 2026 & Implementação do controlador DDPG contínuo, pipeline Q8.8, harnesses e aplicação web interativa. \\
+Julho--agosto de 2026 & Auditoria canônica, correção dos harnesses estruturais, consolidação das evidências e redação do relatório final. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\chapter{Termo de autorização do RIU}
+O termo vigente de autorização e declaração de distribuição não exclusiva no
+Repositório Institucional da UFAM deve ser preenchido, assinado pelo autor e
+pelo orientador e anexado conforme a forma de envio definida no eCampus. Este
+anexo permanece pendente de assinatura; nenhum campo ou decisão de
+confidencialidade foi presumido.
+
+\end{document}

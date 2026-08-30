@@ -1,0 +1,52 @@
+ESBMC version 6.8.0 64-bit x86_64 windows
+file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_dead_L1_21.c: Parsing
+Converting
+Generating GOTO Program
+GOTO program creation time: 0.433s
+GOTO program processing time: 0.001s
+Starting Bounded Model Checking
+Symex completed in: 0.058s (119 assignments)
+Slicing time: 0.000s (removed 104 assignments)
+Generated 1 VCC(s), 1 remaining after simplification (15 assignments)
+Encoding remaining VCC(s) using bit-vector/floating-point arithmetic
+Encoding to solver time: 0.000s
+Solving with solver Z3 v4.8.9
+Encoding to solver time: 0.000s
+Runtime decision procedure: 0.016s
+Building error trace
+
+Counterexample:
+
+State 1 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_dead_L1_21.c line 5 function main thread 0
+----------------------------------------------------
+  s0 = -68 (11111111 11111111 11111111 10111100)
+
+State 2 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_dead_L1_21.c line 5 function main thread 0
+----------------------------------------------------
+  s1 = -124 (11111111 11111111 11111111 10000100)
+
+State 3 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_dead_L1_21.c line 5 function main thread 0
+----------------------------------------------------
+  s2 = 0 (00000000 00000000 00000000 00000000)
+
+State 4 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_dead_L1_21.c line 5 function main thread 0
+----------------------------------------------------
+  s3 = -695 (11111111 11111111 11111101 01001001)
+
+State 9 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_dead_L1_21.c line 52 function main thread 0
+----------------------------------------------------
+  pre1_21 = -306 (11111111 11111111 11111110 11001110)
+
+State 10 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_dead_L1_21.c line 53 function main thread 0
+----------------------------------------------------
+  h1_21 = 0 (00000000 00000000 00000000 00000000)
+
+State 11 file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_dead_L1_21.c line 106 function main thread 0
+----------------------------------------------------
+Violated property:
+  file E:\Uchoa\pibic\pibic\evidencias\final_2026\harnesses\corrected_dead_L1_21.c line 106 function main
+  dead_neuron_L1_21
+  (_Bool)(h1_21 == 0)
+
+
+VERIFICATION FAILED
