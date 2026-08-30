@@ -1,0 +1,81 @@
+% =====================================================================
+% Resumo e Abstract
+% =====================================================================
+\clearpage
+\phantomsection
+\addcontentsline{toc}{section}{RESUMO}
+\section*{RESUMO}
+
+Sistemas de inteligência artificial vêm sendo incorporados a malhas de controle e a
+cadeias de decisão em que uma saída fora de faixa deixa de ser um erro estatístico e
+passa a ser uma falha de segurança. Este relatório apresenta os resultados do plano de
+iniciação científica que investigou a aplicação de \textit{bounded model checking}
+baseado em SMT, por meio do verificador ESBMC, a sete classes de artefatos de IA:
+redes neurais quantizadas em ponto fixo, \textit{kernels} de inferência em C/C++,
+blocos \textit{feed-forward} extraídos de modelos de linguagem (GPT-2 e LLaMA-7B),
+um ciclo neuro-simbólico de geração e correção de código, um controlador PID sob ruído
+não determinístico, uma política de aprendizado por reforço e, por fim, uma malha
+fechada completa formada por planta \textit{cart-pole} e controlador DDPG quantizado.
+A contribuição metodológica central não está no número de propriedades provadas, mas na
+disciplina de evidência adotada: todo veredito relatado aqui é acompanhado da saída
+bruta do \textit{solver}, do comando exato, das \textit{flags}, do limite de tempo e do
+ambiente de execução, e \textit{timeout} é tratado como resultado \textbf{indeciso},
+nunca como prova de segurança. Sob esse critério, dos doze \textit{harnesses}
+reexecutáveis do repositório, nove foram provados, três produziram contraexemplo e
+nenhum ficou indeciso. Duas propriedades da malha fechada foram diagnosticadas como
+\textbf{vácuas} --- eram decididas sem que os 745 parâmetros do controlador
+participassem da prova --- e foram reescritas de modo a depender efetivamente da rede.
+A limitação central do método foi medida, e não estimada: provar $K$ passos da malha
+fechada custa 0,3\,s em $K{=}1$ e 909\,s em $K{=}4$, de modo que a barreira prática do
+BMC neste sistema está em quatro passos. Para contorná-la, o sistema acoplado foi
+exportado como sistema de transição e submetido a \textit{model checking} indutivo
+(IC3/PDR): no modelo sintético, o PDR produziu prova ilimitada em 0,37\,s onde o BMC
+levou 909\,s para quatro passos; sobre o controlador real, porém, nenhum dos dois
+métodos decide a instância. Conclui-se que a verificação formal de componentes de IA é
+viável e informativa em escala modular, que a maior ameaça à validade desse tipo de
+trabalho é a propriedade vácua, e que o próximo passo não é trocar de motor, mas mudar
+a representação do problema para o nível de palavra.
+
+\vspace{0.4cm}
+\noindent\textbf{Palavras-chave}: verificação formal; ESBMC; \textit{bounded model
+checking}; SMT; redes neurais quantizadas; IC3/PDR; segurança de sistemas de controle.
+
+\clearpage
+\phantomsection
+\addcontentsline{toc}{section}{ABSTRACT}
+\section*{ABSTRACT}
+\begin{otherlanguage*}{english}
+
+Artificial intelligence components are increasingly embedded in control loops and
+decision pipelines where an out-of-range output is no longer a statistical error but a
+safety failure. This report presents the results of an undergraduate research project
+that investigated SMT-based bounded model checking, through the ESBMC verifier, applied
+to seven classes of AI artifacts: fixed-point quantized neural networks, C/C++ inference
+kernels, feed-forward blocks extracted from language models (GPT-2 and LLaMA-7B), a
+neuro-symbolic code generation and repair loop, a PID controller under non-deterministic
+sensor noise, a reinforcement learning policy, and a full closed loop comprising a
+cart-pole plant and a quantized DDPG controller. The main methodological contribution is
+not the number of properties proved but the evidence discipline adopted: every verdict
+reported here is backed by the raw solver output, the exact command, the flags, the time
+limit and the execution environment, and \textit{timeout} is treated as an
+\textbf{undecided} outcome, never as proof of safety. Under this criterion, out of the
+twelve reproducible harnesses in the repository, nine were proved, three produced
+counterexamples and none remained undecided. Two closed-loop properties were diagnosed
+as \textbf{vacuous} --- they were decided without the controller's 745 parameters taking
+part in the proof --- and were rewritten so as to genuinely depend on the network. The
+central limitation of the method was measured rather than estimated: proving $K$ steps of
+the closed loop costs 0.3\,s at $K{=}1$ and 909\,s at $K{=}4$, so the practical BMC wall
+for this system lies at four steps. To work around it, the coupled system was exported as
+a transition system and submitted to inductive model checking (IC3/PDR): on the synthetic
+model, PDR produced an unbounded proof in 0.37\,s where BMC took 909\,s for four steps;
+on the real controller, however, neither method decides the instance. We conclude that
+formal verification of AI components is feasible and informative at a modular scale, that
+the greatest threat to validity in this line of work is the vacuous property, and that
+the next step is not to switch engines but to change the problem representation to the
+word level.
+
+\vspace{0.4cm}
+\noindent\textbf{Keywords}: formal verification; ESBMC; bounded model checking; SMT;
+quantized neural networks; IC3/PDR; control system safety.
+
+\end{otherlanguage*}

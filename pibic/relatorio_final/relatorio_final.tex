@@ -1,0 +1,149 @@
+% =====================================================================
+%  RELATORIO FINAL - PIBIC/UFAM 2025-2026
+%  Verificacao Formal de Sistemas de IA Generativa e Controladores
+%  Neurais com o model checker ESBMC
+%
+%  Compilacao:
+%     pdflatex relatorio_final
+%     bibtex   relatorio_final
+%     pdflatex relatorio_final
+%     pdflatex relatorio_final
+%  ou simplesmente: make
+%
+%  Dependencias: texlive-latex-base, -recommended, -extra,
+%                texlive-fonts-recommended, texlive-lang-portuguese,
+%                texlive-publishers (abntex2cite + abntex2-alf.bst)
+% =====================================================================
+\documentclass[12pt,a4paper,oneside]{article}
+
+% --- codificacao e idioma -------------------------------------------
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,brazil]{babel}
+\usepackage{mathptmx}          % Times New Roman (exigencia usual da PROPESP)
+\usepackage[scaled=0.9]{helvet}
+\usepackage{courier}
+
+% --- geometria e espacamento (ABNT NBR 14724) -----------------------
+\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=2cm]{geometry}
+\usepackage{setspace}
+\usepackage{indentfirst}
+\setlength{\parindent}{1.25cm}
+
+% --- tabelas, figuras, matematica -----------------------------------
+\usepackage{graphicx}
+\graphicspath{{figuras/}{../artigo/figs/}}
+\usepackage{amsmath,amssymb}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage[font=small,labelfont=bf,justification=centering]{caption}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{url}
+\usepackage{microtype}
+\usepackage[htt]{hyphenat}   % permite hifenizar texto em \texttt
+\setlength{\emergencystretch}{3em}
+
+% --- codigo-fonte ---------------------------------------------------
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\bfseries\color{blue!55!black},
+  commentstyle=\itshape\color{gray!65!black},
+  stringstyle=\color{green!35!black},
+  numbers=none,
+  frame=single,
+  framesep=4pt,
+  breaklines=true,
+  showstringspaces=false,
+  captionpos=b,
+  literate={á}{{\'a}}1 {ã}{{\~a}}1 {â}{{\^a}}1 {é}{{\'e}}1 {ê}{{\^e}}1
+           {í}{{\'i}}1 {ó}{{\'o}}1 {ô}{{\^o}}1 {õ}{{\~o}}1 {ú}{{\'u}}1
+           {ç}{{\c c}}1 {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1
+}
+
+% --- hyperref ANTES de abntex2cite (a ordem inversa quebra o
+%     mecanismo \abntnextkey do pacote de citacoes) -----------------
+\usepackage[hidelinks,breaklinks=true]{hyperref}
+\usepackage[alf,abnt-emphasize=bf,abnt-etal-text=it]{abntex2cite}
+
+% --- titulos de secao no estilo ABNT --------------------------------
+\usepackage[explicit]{titlesec}
+\titleformat{\section}{\normalfont\bfseries\large}{\thesection}{0.6em}{\MakeUppercase{#1}}
+\titleformat{\subsection}{\normalfont\bfseries\normalsize}{\thesubsection}{0.6em}{#1}
+\titleformat{\subsubsection}{\normalfont\normalsize\itshape}{\thesubsubsection}{0.6em}{#1}
+\titlespacing*{\section}{0pt}{18pt}{10pt}
+\titlespacing*{\subsection}{0pt}{14pt}{8pt}
+\titlespacing*{\subsubsection}{0pt}{12pt}{6pt}
+
+% --- cabecalho de pagina --------------------------------------------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+% --- macros auxiliares ----------------------------------------------
+% \pendente{...} marca campos administrativos que so o autor pode
+% preencher (numero do processo, banca, datas de defesa).
+\newcommand{\pendente}[1]{\textcolor{red}{\textbf{[preencher: #1]}}}
+\newcommand{\esbmc}{\textsc{esbmc}}
+\newcommand{\veredito}[1]{\textnormal{\textsc{#1}}}
+\newcommand{\SAFE}{\veredito{safe}}
+\newcommand{\UNSAFE}{\veredito{unsafe}}
+\newcommand{\INDECISO}{\veredito{timeout}}
+% \legend{...}: fonte/nota sob figuras e tabelas, no espirito do abnTeX2
+\newcommand{\legend}[1]{\par\vspace{2pt}{\centering #1\par}}
+
+\hypersetup{
+  pdftitle={Relatorio Final PIBIC 2025-2026 - Verificacao Formal de IA com ESBMC},
+  pdfauthor={Matheus Serrao Uchoa},
+  pdfsubject={Programa Institucional de Bolsas de Iniciacao Cientifica - UFAM},
+  pdfkeywords={verificacao formal, ESBMC, SMT, redes neurais quantizadas, IC3}
+}
+
+% =====================================================================
+\begin{document}
+\onehalfspacing
+
+\input{secoes/00_capa}
+
+\pagenumbering{roman}
+\input{secoes/00_resumo}
+
+\cleardoublepage
+\pdfbookmark[1]{Sumário}{toc}
+\tableofcontents
+\clearpage
+\listoffigures
+\listoftables
+\clearpage
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\input{secoes/01_introducao}
+\input{secoes/02_objetivos}
+\input{secoes/03_fundamentacao}
+\input{secoes/04_metodologia}
+\input{secoes/05_resultados}
+\input{secoes/06_limitacoes}
+\input{secoes/07_conclusao}
+\input{secoes/08_cronograma}
+
+% --- referencias -----------------------------------------------------
+\clearpage
+\phantomsection
+\addcontentsline{toc}{section}{REFERÊNCIAS}
+\bibliographystyle{abntex2-alf}
+\bibliography{referencias}
+
+% --- apendices -------------------------------------------------------
+\clearpage
+\input{apendices/a_reprodutibilidade}
+\input{apendices/b_indice_evidencias}
+
+\end{document}

@@ -1,0 +1,68 @@
+% =====================================================================
+\section{Objetivos}
+\label{sec:objetivos}
+
+\subsection{Objetivo geral}
+
+Investigar e estender metodologias de verificação formal baseadas em SMT, por meio do
+verificador ESBMC, para componentes de inteligência artificial generativa e de redes
+neurais quantizadas, de modo a obter garantias de segurança, limites operacionais estritos
+e corretude lógica tanto em abstrações de alto nível quanto em \textit{kernels} de baixo
+nível.
+
+\subsection{Objetivos específicos e grau de cumprimento}
+
+O plano de trabalho previa cinco frentes, organizadas por complexidade arquitetural
+crescente. A Tabela~\ref{tab:objetivos} apresenta cada uma delas ao lado do que foi
+efetivamente entregue, indicando explicitamente onde o resultado ficou aquém do previsto e
+por quê. O detalhamento está na Seção~\ref{sec:resultados}.
+
+\begin{table}[H]
+\centering
+\caption{Objetivos específicos do plano de trabalho e grau de cumprimento.}
+\label{tab:objetivos}
+\small
+\begin{tabular}{@{}p{4.3cm}p{7.1cm}p{2.5cm}@{}}
+\toprule
+\textbf{Objetivo específico} & \textbf{Resultado obtido} & \textbf{Situação} \\
+\midrule
+Verificação de redes neurais quantizadas (simulação QNN) &
+Camada Q8.8 implementada e verificada em C; \textit{harness} XOR provado em 0,08\,s;
+o \textit{frontend} Python do ESBMC não está disponível no binário utilizado &
+Cumprido com ressalva \\
+\addlinespace
+Segurança de \textit{kernels} e \textit{stubs} de inferência &
+Contraexemplo de segurança de memória obtido em 0,43\,s; GEMM com \textit{tiling}
+provado até $N{=}3$; barreira de escalabilidade medida em $N{=}4$ &
+Cumprido \\
+\addlinespace
+Verificação de propriedades de sistema em malha fechada &
+Planta \textit{cart-pole} e ator DDPG quantizado verificados acoplados; duas
+propriedades vácuas identificadas e reescritas; envelope de segurança caracterizado &
+Cumprido parcialmente \\
+\addlinespace
+Arcabouço programático em Python e ciclo neuro-simbólico &
+API \texttt{core\_verify} com status tri-estado e suíte de regressão; ciclo
+gerar--verificar--corrigir demonstrado com \textit{mock} determinístico &
+Cumprido com ressalva \\
+\addlinespace
+Garantias de segurança em aprendizado por reforço &
+Política de RL verificada; \textit{solver} produziu contraexemplo: a ação
+ultrapassa o limite do atuador na caixa de estados analisada &
+Cumprido (resultado negativo) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Três observações são necessárias para que a tabela seja lida corretamente. Primeiro,
+``cumprido com ressalva'' na primeira linha significa que o objetivo foi atingido em C, e
+não em Python: o binário do ESBMC versionado no repositório (6.8.0) não possui o
+\textit{frontend} Python compilado e rejeita arquivos \texttt{.py}; concluir essa frente
+exige compilar a versão 8.0.0 com \texttt{ENABLE\_PYTHON\_FRONTEND=ON}. Segundo, na quarta
+linha, o ciclo neuro-simbólico foi demonstrado com um agente simulado determinístico, e não
+com um modelo de linguagem real --- o experimento comprova o \emph{protocolo}
+(gerar, verificar, extrair diagnóstico, corrigir), não a autonomia de um agente. Terceiro, o
+resultado negativo da última linha é reportado como resultado, e não como falha de
+execução: o \textit{solver} exibiu um traço concreto em que a ação excede o intervalo
+$[-1,1]$, de modo que o \textit{safety shield} projetado ainda \textbf{não} está validado
+como bloqueio eficaz.

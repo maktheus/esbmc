@@ -1,0 +1,63 @@
+% =====================================================================
+\section{Introdução}
+\label{sec:introducao}
+
+A incorporação de modelos de aprendizado de máquina a sistemas embarcados e a malhas de
+controle deslocou uma classe inteira de defeitos para fora do alcance dos métodos
+tradicionais de teste. Enquanto um modelo preditivo isolado pode ser avaliado por acurácia
+sobre um conjunto de validação, um controlador neural embarcado em uma planta física não
+admite esse critério: o que importa não é o erro médio, mas se existe \emph{alguma}
+combinação de entradas, dentro do envelope operacional declarado, capaz de levar o sistema
+a um estado inseguro. Essa pergunta é de natureza exaustiva, e amostragem --- por mais
+densa que seja --- não a responde.
+
+A verificação formal ataca exatamente essa lacuna. No paradigma de \textit{bounded model
+checking} (BMC) baseado em SMT, o programa é desenrolado até um limite $K$, traduzido em
+uma fórmula lógica e submetido a um \textit{solver} que decide se existe atribuição de
+entradas capaz de violar a propriedade especificada. Quando existe, o \textit{solver}
+devolve um contraexemplo concreto --- um traço reproduzível que exibe a violação
+\cite{cordeiro2012smt}. Aplicada a redes neurais, a técnica vem sendo empregada tanto para
+provar robustez local quanto para exibir entradas adversariais concretas
+\cite{huang2017robustness}. Quando não existe, obtém-se uma garantia matemática, ainda que
+limitada ao horizonte $K$ e às hipóteses declaradas.
+
+Aplicar esse maquinário a componentes de inteligência artificial impõe três dificuldades
+específicas. A primeira é de \textbf{escala}: uma camada densa de dimensão $d$ gera
+$O(d^2)$ multiplicações simbólicas, e um bloco de \textit{transformer} de produção opera
+com $d = 4096$. A segunda é de \textbf{aritmética}: funções de ativação transcendentais
+como a sigmoide e a SiLU não possuem axiomatização nas teorias SMT usuais, e o
+\textit{solver} as trata como funções não interpretadas, devolvendo \veredito{unknown}. A
+terceira, menos discutida na literatura e a que se mostrou mais perigosa neste trabalho, é
+de \textbf{especificação}: uma propriedade mal formulada pode ser decidida sem que o modelo
+sob verificação participe da prova. O resultado é uma prova verdadeira sobre um objeto que
+não é o objeto de interesse --- uma \emph{propriedade vácua}.
+
+Este relatório apresenta o trabalho desenvolvido no ciclo PIBIC 2025--2026 em torno do
+verificador ESBMC \cite{gadelha2018esbmc}, um \textit{model checker} de código aberto,
+baseado em SMT, com suporte a C, C++ e ponto flutuante. O projeto percorreu sete estudos de
+caso de complexidade crescente, do neurônio quantizado isolado à malha fechada completa
+formada por planta e controlador de aprendizado por reforço, e produziu, além dos vereditos,
+uma infraestrutura de reprodutibilidade: um invólucro Python sobre o binário do verificador,
+uma suíte de regressão que impede a confusão entre erro de execução e propriedade violada, e
+um gerador de evidências que reexecuta cada \textit{harness} citado no texto e versiona a
+saída bruta do \textit{solver}.
+
+A justificativa para essa ênfase em procedência de evidência não é retórica. Uma auditoria
+sistemática do próprio repositório, conduzida na fase final do ciclo, encontrou afirmações
+quantitativas que os artefatos não sustentavam: tempos de verificação que provinham de
+valores fixos em \textit{scripts} de plotagem, um experimento de escalabilidade cujo
+parâmetro de dimensão nunca chegava ao código compilado, um orquestrador de verificação com
+o portão de chamada ao \textit{solver} comentado, e duas propriedades de segurança que
+decidiam sem tocar nos pesos da rede. Nenhum desses defeitos produzia erro visível; todos
+produziam números plausíveis. A correção deles, documentada ao longo da
+Seção~\ref{sec:resultados}, é parte substantiva do resultado deste PIBIC.
+
+O relatório está organizado da seguinte forma. A Seção~\ref{sec:objetivos} recupera os
+objetivos do plano de trabalho e indica o grau de cumprimento de cada um. A
+Seção~\ref{sec:fundamentacao} apresenta os fundamentos de \textit{model checking} limitado e
+indutivo, de codificação SMT e de quantização em ponto fixo. A Seção~\ref{sec:metodologia}
+descreve a infraestrutura construída, o protocolo de evidência e a formulação de cada
+estudo de caso. A Seção~\ref{sec:resultados} reporta e discute os resultados medidos. A
+Seção~\ref{sec:limitacoes} explicita limitações, ameaças à validade e dificuldades
+enfrentadas. A Seção~\ref{sec:conclusao} sintetiza as conclusões e a
+Seção~\ref{sec:cronograma} registra o cronograma efetivamente executado.

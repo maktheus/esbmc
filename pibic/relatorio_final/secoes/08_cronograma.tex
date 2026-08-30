@@ -1,0 +1,103 @@
+% =====================================================================
+\section{Cronograma de atividades executadas}
+\label{sec:cronograma}
+
+A Tabela~\ref{tab:cronograma} apresenta a distribuição das atividades ao longo da vigência.
+As marcações correspondem aos períodos de execução; os bimestres anteriores a fevereiro de
+2026 antecedem o registro versionado do projeto e devem ser conferidos contra o plano de
+trabalho aprovado antes da entrega \pendente{conferir os dois primeiros bimestres com o plano
+aprovado}.
+
+\begin{table}[H]
+\centering
+\caption{Cronograma executado, por bimestre da vigência 2025--2026.}
+\label{tab:cronograma}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}p{6.6cm}cccccc@{}}
+\toprule
+\multirow{2}{*}{\textbf{Atividade}} & \multicolumn{6}{c}{\textbf{Bimestre}} \\
+\cmidrule(l){2-7}
+ & 1º & 2º & 3º & 4º & 5º & 6º \\
+\midrule
+Revisão bibliográfica em verificação formal, BMC/SMT e verificação de redes neurais
+ & X & X & X &   &   &   \\
+Preparação do ambiente e do repositório; estudo do ESBMC e de suas primitivas
+ & X & X &   &   &   &   \\
+Caso 1 --- redes quantizadas e \textit{stubs} de inferência
+ &   & X & X & X &   &   \\
+Caso 2 --- \textit{kernels} de inferência e estudo de escalabilidade
+ &   &   & X & X &   &   \\
+Caso 3 --- ciclo neuro-simbólico de geração e correção
+ &   &   & X & X &   &   \\
+Caso 4 --- controlador PID sob ruído e biblioteca de terceiros
+ &   &   &   & X & X &   \\
+Caso 5 --- blocos \textit{feed-forward} de modelos de linguagem
+ &   &   &   & X & X &   \\
+Caso 6 --- política de aprendizado por reforço
+ &   &   &   & X & X &   \\
+Caso 7 --- malha fechada \textit{cart-pole} com controlador DDPG
+ &   &   &   &   & X & X \\
+Construção da camada \texttt{core\_verify} e da suíte de regressão
+ &   &   &   &   & X & X \\
+Auditoria de evidências, correção das propriedades vácuas e reexecução dos
+\textit{harnesses}
+ &   &   &   &   &   & X \\
+Pipeline IC3/PDR: geração do sistema de transição, síntese e verificação indutiva
+ &   &   &   &   &   & X \\
+Redação do artigo, do relatório final e preparação da apresentação
+ &   &   &   &   & X & X \\
+\bottomrule
+\end{tabular}
+\legend{\small Fonte: elaborada pelo autor.}
+\end{table}
+
+\subsection{Produtos gerados}
+
+A Tabela~\ref{tab:produtos} relaciona os produtos entregues ao artefato correspondente no
+repositório, de modo que cada item seja verificável de forma independente.
+
+\begin{table}[H]
+\centering
+\caption{Produtos do ciclo e respectivos artefatos de verificação.}
+\label{tab:produtos}
+\footnotesize
+\begin{tabular}{@{}p{6.0cm}p{8.0cm}@{}}
+\toprule
+\textbf{Produto} & \textbf{Artefato} \\
+\midrule
+Doze \textit{harnesses} de verificação reexecutáveis &
+\texttt{scripts/gerar\_evidencias.py}, \texttt{results/logs/} \\
+Tabela consolidada de evidências &
+\texttt{results/EVIDENCIAS.md} \\
+Invólucro programático com status tri-estado &
+\texttt{core\_verify/esbmc\_caller.py} \\
+Analisador de contraexemplos &
+\texttt{core\_verify/SMT\_feedback\_parser.py} \\
+Suíte de regressão, incluindo os quatro modos de falha &
+\texttt{tests/}, com destaque para \texttt{tests/test\_ground\_truth.py} \\
+Propriedades corrigidas da malha fechada e caracterização do envelope &
+\texttt{cartpole/verify\_ddpg\_closed\_loop.py},
+\texttt{cartpole/caracteriza\_prop\_b.py} \\
+Pipeline de verificação ilimitada por IC3/PDR &
+\texttt{ic3/gen\_transition\_system.py}, \texttt{ic3/validate\_forward.py},
+\texttt{ic3/run\_pdr.sh} \\
+Evidência das medições indutivas &
+\texttt{ic3/EVIDENCIA.md} \\
+Geradores e tabelas de consulta dos blocos FFN &
+\texttt{cases/llm\_ffn\_verification/} \\
+Regeneração reprodutível das figuras &
+\texttt{artigo/figs/gerar\_figuras.sh} \\
+Documentação de uso e de limitações conhecidas &
+\texttt{pibic/README.md}, \texttt{cartpole/ESBMC\_NOTES.md} \\
+Backlog auditado com procedência de evidência por tarefa &
+\texttt{KANBAN.md} \\
+\bottomrule
+\end{tabular}
+\legend{\small Fonte: elaborada pelo autor.}
+\end{table}
+
+\subsection{Participação em eventos e produção associada}
+
+\pendente{listar aqui apresentação no Congresso de Iniciação Científica da UFAM, resumos
+submetidos, participação em eventos e eventuais publicações decorrentes do plano}

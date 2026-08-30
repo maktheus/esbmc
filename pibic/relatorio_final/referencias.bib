@@ -1,0 +1,174 @@
+% =====================================================================
+% referencias.bib — Relatório Final PIBIC 2025–2026
+%
+% Contém apenas entradas efetivamente citadas no relatório.
+%
+% Duas entradas foram CORRIGIDAS em relação ao .bib do artigo: a autoria de
+% sena2021qnn e de song2021qnnverifier estava trocada naquele arquivo. As
+% autorias abaixo foram conferidas contra os registros do arXiv
+% (2106.05997 e 2111.13110).
+%
+% As demais entradas trazem autores, título, veículo e ano. Volume, número e
+% páginas foram omitidos onde não puderam ser conferidos contra a fonte:
+% um .bib com dado inventado seria exatamente o defeito que este trabalho
+% passou o ciclo corrigindo. Conferir antes da entrega definitiva.
+% =====================================================================
+
+% ─── A ferramenta central e o método ─────────────────────────────────────────
+
+@inproceedings{gadelha2018esbmc,
+  author    = {Gadelha, Mikhail R. and Monteiro, Felipe R. and Morse, Jeremy and
+               Cordeiro, Lucas C. and Fischer, Bernd and Nicole, Denis A.},
+  title     = {{ESBMC} 5.0: An Industrial-Strength {C} Model Checker},
+  booktitle = {Proceedings of the 33rd ACM/IEEE International Conference on
+               Automated Software Engineering (ASE)},
+  pages     = {888--891},
+  year      = {2018}
+}
+
+@article{cordeiro2012smt,
+  author  = {Cordeiro, Lucas and Fischer, Bernd and Marques-Silva, Jo{\~a}o},
+  title   = {{SMT}-Based Bounded Model Checking for Embedded {ANSI-C} Software},
+  journal = {IEEE Transactions on Software Engineering},
+  volume  = {38},
+  number  = {4},
+  pages   = {957--974},
+  year    = {2012}
+}
+
+% ─── Solvers SMT ─────────────────────────────────────────────────────────────
+
+@inproceedings{demoura2008z3,
+  author    = {de Moura, Leonardo and Bj{\o}rner, Nikolaj},
+  title     = {{Z3}: An Efficient {SMT} Solver},
+  booktitle = {Tools and Algorithms for the Construction and Analysis of
+               Systems (TACAS)},
+  year      = {2008}
+}
+
+@article{niemetz2014boolector,
+  author  = {Niemetz, Aina and Preiner, Mathias and Biere, Armin},
+  title   = {Boolector 2.0 System Description},
+  journal = {Journal on Satisfiability, Boolean Modeling and Computation},
+  year    = {2014}
+}
+
+@inproceedings{niemetz2023bitwuzla,
+  author    = {Niemetz, Aina and Preiner, Mathias},
+  title     = {Bitwuzla},
+  booktitle = {Computer Aided Verification (CAV)},
+  year      = {2023}
+}
+
+% ─── Model checking indutivo, síntese e verificação de circuitos ─────────────
+
+@inproceedings{bradley2011ic3,
+  author    = {Bradley, Aaron R.},
+  title     = {{SAT}-Based Model Checking without Unrolling},
+  booktitle = {Verification, Model Checking, and Abstract Interpretation (VMCAI)},
+  pages     = {70--87},
+  year      = {2011}
+}
+
+@inproceedings{een2011pdr,
+  author    = {E{\'e}n, Niklas and Mishchenko, Alan and Brayton, Robert},
+  title     = {Efficient Implementation of Property Directed Reachability},
+  booktitle = {Formal Methods in Computer-Aided Design (FMCAD)},
+  year      = {2011}
+}
+
+@inproceedings{brayton2010abc,
+  author    = {Brayton, Robert and Mishchenko, Alan},
+  title     = {{ABC}: An Academic Industrial-Strength Verification Tool},
+  booktitle = {Computer Aided Verification (CAV)},
+  year      = {2010}
+}
+
+@misc{wolf2016yosys,
+  author = {Wolf, Clifford},
+  title  = {{Yosys} Open {SYnthesis} {Suite}},
+  year   = {2016},
+  note   = {Dispon{\'i}vel em: \url{https://yosyshq.net/yosys/}}
+}
+
+% ─── Verificação de redes neurais ────────────────────────────────────────────
+
+@inproceedings{katz2017reluplex,
+  author    = {Katz, Guy and Barrett, Clark and Dill, David L. and Julian, Kyle
+               and Kochenderfer, Mykel J.},
+  title     = {Reluplex: An Efficient {SMT} Solver for Verifying Deep Neural
+               Networks},
+  booktitle = {Computer Aided Verification (CAV)},
+  year      = {2017}
+}
+
+@inproceedings{katz2019marabou,
+  author    = {Katz, Guy and Huang, Derek A. and Ibeling, Duligur and others},
+  title     = {The Marabou Framework for Verification and Analysis of Deep
+               Neural Networks},
+  booktitle = {Computer Aided Verification (CAV)},
+  year      = {2019}
+}
+
+@inproceedings{wang2018neurify,
+  author    = {Wang, Shiqi and Pei, Kexin and Whitehouse, Justin and
+               Yang, Junfeng and Jana, Suman},
+  title     = {Efficient Formal Safety Analysis of Neural Networks},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2018}
+}
+
+@inproceedings{huang2017robustness,
+  author    = {Huang, Xiaowei and Kwiatkowska, Marta and Wang, Sen and Wu, Min},
+  title     = {Safety Verification of Deep Neural Networks},
+  booktitle = {Computer Aided Verification (CAV)},
+  pages     = {3--29},
+  year      = {2017}
+}
+
+% ─── Verificação de redes QUANTIZADAS (a linha mais próxima deste trabalho) ──
+% Autorias conferidas contra o arXiv; o .bib do artigo as trazia trocadas.
+
+@inproceedings{sena2021qnn,
+  author    = {Sena, Luiz and Song, Xidan and Alves, Erickson and
+               Bessa, Iury and Manino, Edoardo and Cordeiro, Lucas C.},
+  title     = {Verifying Quantized Neural Networks using {SMT}-Based Model
+               Checking},
+  booktitle = {Proceedings of the 36th IEEE/ACM International Conference on
+               Automated Software Engineering (ASE)},
+  year      = {2021},
+  note      = {arXiv:2106.05997}
+}
+
+@inproceedings{song2021qnnverifier,
+  author    = {Song, Xidan and Manino, Edoardo and Sena, Luiz and
+               Alves, Erickson and de Lima Filho, Eddie and Bessa, Iury and
+               Luj{\'a}n, Mikel and Cordeiro, Lucas C.},
+  title     = {{QNNVerifier}: A Tool for Verifying Neural Networks using
+               {SMT}-Based Model Checking},
+  booktitle = {International Conference on Software Engineering: Companion
+               Proceedings (ICSE Companion)},
+  year      = {2022},
+  note      = {arXiv:2111.13110}
+}
+
+% ─── Aprendizado por reforço e controle ──────────────────────────────────────
+
+@inproceedings{lillicrap2016ddpg,
+  author    = {Lillicrap, Timothy P. and Hunt, Jonathan J. and
+               Pritzel, Alexander and others},
+  title     = {Continuous Control with Deep Reinforcement Learning},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2016}
+}
+
+@article{barto1983cartpole,
+  author  = {Barto, Andrew G. and Sutton, Richard S. and Anderson, Charles W.},
+  title   = {Neuronlike Adaptive Elements That Can Solve Difficult Learning
+             Control Problems},
+  journal = {IEEE Transactions on Systems, Man, and Cybernetics},
+  volume  = {SMC-13},
+  number  = {5},
+  pages   = {834--846},
+  year    = {1983}
+}

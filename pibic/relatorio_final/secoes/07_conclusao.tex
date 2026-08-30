@@ -1,0 +1,76 @@
+% =====================================================================
+\section{Conclusões}
+\label{sec:conclusao}
+
+Este relatório apresentou a aplicação de \textit{bounded model checking} baseado em SMT, por
+meio do verificador ESBMC, a sete classes de artefatos de inteligência artificial, do neurônio
+quantizado isolado à malha fechada formada por planta \textit{cart-pole} e controlador DDPG.
+Dos doze \textit{harnesses} reexecutáveis consolidados, nove foram provados, três produziram
+contraexemplo e nenhum ficou indeciso, todos com saída bruta do \textit{solver} versionada.
+
+Quatro conclusões se sustentam sobre a evidência apresentada.
+
+\textbf{Primeira: a verificação formal de componentes de IA é praticável em escala modular e
+produz informação que a amostragem não produz.} O caso mais eloquente é o do Caso 1, em que
+$10^4$ amostras não exibem violação alguma e o \textit{solver} encontra, em 197\,s, uma
+entrada admissível que excede o limite declarado. Contraexemplos são acionáveis: no ciclo
+neuro-simbólico, o diagnóstico com deslocamento exato da violação fecha o ciclo de correção em
+uma iteração.
+
+\textbf{Segunda: a maior ameaça a este tipo de trabalho é a propriedade vácua, e ela não emite
+sinal.} Duas das três propriedades da malha fechada decidiam sem que os 745 parâmetros do
+controlador participassem da prova. Elas não produziam erro, aviso ou número implausível ---
+produziam provas verdadeiras sobre o objeto errado. O único mecanismo que as expôs foi o teste
+explícito de dependência: remover o modelo e verificar se o veredito muda. Esse teste é barato
+e deveria ser rotina em qualquer verificação de rede neural.
+
+\textbf{Terceira: a barreira do BMC em malha fechada é do método, não do esforço, e foi
+medida.} Provar $K$ passos custa 0,3\,s em $K{=}1$ e 909\,s em $K{=}4$, com memória crescendo
+de 46\,MB para 383\,MB. O \textit{harness} de cinquenta passos não ficou por fazer: ele é
+inviável nesta máquina. Reconhecer isso transforma a maior limitação do trabalho em resultado,
+desde que a comparação seja feita com honestidade.
+
+\textbf{Quarta: o \textit{model checking} indutivo é a direção certa, mas a instância real
+exige atacar a representação, e não trocar de motor.} No modelo sintético, o IC3 produziu
+prova \emph{ilimitada} em 0,37\,s, com invariante de quatro cláusulas sobre três dos 65 bits
+de estado, onde o BMC levou 909\,s para quatro passos. Sobre o controlador real, entretanto,
+nenhum dos dois métodos decide: o PDR não convergiu em 1802\,s e o BMC parou em cinco
+\textit{frames} em 901\,s. A hipótese mais plausível para esse impasse é a perda de estrutura
+na tradução: converter quatro palavras de estado em 65 bits isolados destrói exatamente aquilo
+sobre o que o PDR generaliza cláusulas.
+
+Além dos vereditos, o ciclo entrega uma infraestrutura de reprodutibilidade que é, em si, um
+resultado: um invólucro que distingue erro de execução de propriedade violada, uma suíte de
+regressão que congela essa distinção, um gerador que reexecuta cada afirmação do texto e
+versiona a saída bruta, e um índice que liga cada número deste relatório ao log que o produziu.
+
+\subsection{Perspectivas de continuidade}
+
+Cinco direções decorrem diretamente do que foi medido, em ordem de prioridade:
+
+\begin{enumerate}[leftmargin=1.4cm]
+  \item \textbf{Representação em nível de palavra.} Exportar o sistema de transição em BTOR2,
+  que preserva as quatro palavras de estado em vez de dissolvê-las em bits, e empregar um motor
+  word-level. É a continuidade direta do impasse do Caso 7 e a hipótese que o projeto considera
+  mais promissora.
+  \item \textbf{Fechar a curva de escalabilidade do BMC} no modelo sintético, medindo $K{=}8$ e
+  $K{=}16$, para caracterizar a barreira em vez de a supor. A medição deve permanecer no modelo
+  sintético: no modelo real, cinco \textit{frames} em 901\,s já indicam que esses horizontes
+  estão fora de alcance nesta máquina.
+  \item \textbf{Corrigir e verificar o \textit{safety shield}} do Caso 6, de modo que o
+  contraexemplo hoje obtido deixe de ser atingível, e reverificar a propriedade sobre o escudo
+  corrigido.
+  \item \textbf{Compilar o ESBMC 8.0.0} com o \textit{frontend} Python habilitado, o que
+  desbloqueia simultaneamente a verificação a partir de modelos em Python e a da biblioteca de
+  controle em C++11 --- dois objetivos hoje impedidos pelo mesmo obstáculo.
+  \item \textbf{Substituir a sobreaproximação intervalar} das ativações por limites derivados
+  de propagação de intervalos sobre os pesos reais, tornando o conservadorismo verificável em
+  vez de assumido, e manter o teste de vacuidade das hipóteses como guarda permanente.
+\end{enumerate}
+
+Encerra-se com a observação metodológica que atravessou todo o ciclo. O erro que mais
+frequentemente compromete trabalhos desta natureza não é provar algo falso --- o
+\textit{solver} raramente permite isso --- mas \textbf{tratar ausência de sinal como sinal}:
+ler \textit{timeout} como segurança, ler suíte verde como verificação, ler número plausível
+como medição. As correções mais importantes deste PIBIC foram todas dessa família, e a
+infraestrutura construída existe para que elas não se repitam silenciosamente.

@@ -1,0 +1,276 @@
+% =====================================================================
+\section{Metodologia}
+\label{sec:metodologia}
+
+\subsection{Visão geral}
+
+A metodologia seguiu o ciclo canônico da verificação baseada em SMT, ilustrado na
+Figura~\ref{fig:pipeline}: o artefato sob análise é reduzido a um \textit{harness} em C ou
+C++ que declara as hipóteses de ambiente por \texttt{\_\_ESBMC\_assume} e a propriedade por
+\texttt{\_\_ESBMC\_assert}; o ESBMC converte esse \textit{harness} em \textit{GOTO-program},
+executa-o simbolicamente e submete as condições de verificação ao \textit{solver}, que
+devolve prova ou contraexemplo.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{fluxo-esbmc.png}
+\caption{Fluxo de verificação formal com o ESBMC, do código-fonte ao veredito do
+\textit{solver}.}
+\label{fig:pipeline}
+\legend{\small Fonte: elaborada pelo autor.}
+\end{figure}
+
+Sobre esse ciclo foram construídas três camadas metodológicas que constituem a contribuição
+de infraestrutura do projeto: um invólucro programático que classifica corretamente o
+resultado do verificador (Seção~\ref{sub:wrapper}), um protocolo de evidência que torna cada
+número reexecutável (Seção~\ref{sub:evidencia}), e um teste de vacuidade que impede que uma
+propriedade seja aceita sem que o modelo participe da prova (Seção~\ref{sub:vacuidade}).
+
+\subsection{A camada \texttt{core\_verify} e o status tri-estado}
+\label{sub:wrapper}
+
+A automação da verificação exige interpretar a saída do ESBMC programaticamente. A primeira
+implementação do projeto reduzia essa interpretação a um booleano \texttt{is\_safe}, derivado
+da presença da cadeia \texttt{VERIFICATION SUCCESSFUL} na saída padrão. Essa modelagem
+contém um defeito grave e silencioso: quando o verificador \emph{não executa} --- arquivo
+ausente, erro de compilação, \textit{flag} inexistente, estouro de tempo ---
+\texttt{is\_safe} também é falso, e o código cliente que testa \texttt{not is\_safe} conclui
+``bug encontrado'' a partir de uma execução que nunca ocorreu.
+
+O invólucro foi reescrito para derivar um status de seis valores, cruzando o código de
+retorno do processo com o marcador textual da saída:
+
+\begin{lstlisting}[language=Python,caption={Interpretação correta do resultado da verificação.},label={lst:status}]
+from core_verify.esbmc_caller import run_esbmc, SAFE, UNSAFE
+
+r = run_esbmc("harness.c", z3=True, floatbv=True, unwind=10)
+
+r.status      # SAFE | UNSAFE | PARSE_ERROR | USAGE_ERROR | TIMEOUT | UNKNOWN
+r.verificou   # True somente em SAFE ou UNSAFE
+
+if r.status == UNSAFE:        # correto
+    tratar_contraexemplo(r)
+# if not r.is_safe:           # INCORRETO: verdadeiro tambem quando nada rodou
+\end{lstlisting}
+
+Quando código de retorno e marcador discordam, o status resultante é \veredito{unknown}, e
+não um dos dois vereditos: a discordância indica que a execução não é confiável. Os códigos
+de retorno foram medidos diretamente sobre o binário 6.8.0 utilizado (0, 1, 6 e 64). O
+tratamento de \textit{timeout} encerra o grupo de processos, e não apenas o processo filho,
+evitando que instâncias do \textit{solver} sobrevivam à chamada.
+
+Duas regressões foram acrescentadas à suíte para congelar decisões que já haviam sido
+tomadas erradas antes. A primeira garante que as \textit{flags} \texttt{--bounds-check} e
+\texttt{--pointer-check}, que \textbf{não existem} no ESBMC --- as verificações
+correspondentes são ativadas por padrão e a ferramenta expõe apenas as formas negativas ---
+jamais voltem a ser emitidas; ao recebê-las, o verificador termina com código 64, que o
+invólucro classifica como \veredito{usage\_error} e não como propriedade violada. A segunda
+exercita os quatro modos de falha (arquivo ausente, fonte inválido, \textit{flag} inválida e
+estouro de tempo) exigindo, em cada caso, que o resultado \textbf{não} seja confundido com
+\veredito{unsafe}.
+
+\subsection{Protocolo de evidência}
+\label{sub:evidencia}
+
+Todo veredito citado neste relatório é produzido por um único ponto de entrada,
+\texttt{scripts/gerar\_evidencias.py}, que executa cada \textit{harness}, grava a saída
+\textbf{bruta} do \textit{solver} em \texttt{results/logs/} e consolida a tabela
+afirmação~$\rightarrow$~comando~$\rightarrow$~veredito~$\rightarrow$~log em
+\texttt{results/EVIDENCIAS.md}. O protocolo obedece a quatro regras:
+
+\begin{enumerate}[leftmargin=1.4cm]
+  \item a saída bruta é sempre preservada, inclusive quando o veredito é negativo ou
+  indeciso, e nunca filtrada por palavra-chave antes de ser gravada;
+  \item \textit{timeout} é registrado como \textbf{indeciso}, em coluna distinta de
+  \veredito{safe} e de \veredito{unsafe}, e nunca colapsado com nenhum dos dois;
+  \item o ambiente de execução --- versão do verificador, \textit{solver}, \textit{flags}
+  completas, limite de tempo, sistema operacional e número de núcleos --- acompanha cada
+  medição;
+  \item falha de compilação aparece como \veredito{parse\_error}, e não como ausência de
+  violação.
+\end{enumerate}
+
+A Tabela~\ref{tab:ambiente} descreve o ambiente da execução consolidada reportada na
+Seção~\ref{sec:resultados}.
+
+\begin{table}[H]
+\centering
+\caption{Ambiente da execução consolidada de evidências.}
+\label{tab:ambiente}
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Item} & \textbf{Valor} \\
+\midrule
+Verificador            & ESBMC 6.8.0, 64 bits, \texttt{x86\_64-linux} \\
+\textit{Solvers}       & Boolector (padrão) e Z3 (\textit{harnesses} com \texttt{--floatbv}) \\
+Sistema operacional    & Linux 6.18.5, \texttt{x86\_64}, glibc 2.39 \\
+Processador            & 4 núcleos \\
+\textit{Harnesses}     & 12, todos reexecutáveis por \texttt{scripts/gerar\_evidencias.py} \\
+Duração total          & 463\,s \\
+\bottomrule
+\end{tabular}
+\legend{\small Fonte: \texttt{results/EVIDENCIAS.md}, gerado por execução.}
+\end{table}
+
+Registre-se que o binário versionado no repositório é a versão 6.8.0, enquanto a árvore de
+código do ESBMC presente no mesmo repositório é a 8.0.0, não compilada. Algumas
+\textit{flags} existem apenas nesta última --- entre elas \texttt{--std}, necessária para
+C++11, \texttt{--multi-property} e \texttt{--cvc4}. Essa diferença é a causa direta de dois
+bloqueios reportados na Seção~\ref{sec:resultados}.
+
+\subsection{Teste de vacuidade}
+\label{sub:vacuidade}
+
+Uma propriedade é \textbf{vácua} quando seu veredito não depende do artefato que se pretende
+verificar. O teste adotado é direto e barato: substitui-se o modelo por uma entrada livre e
+reexecuta-se a mesma asserção. Se o veredito e o contraexemplo se reproduzem inalterados, o
+modelo era código morto para aquela propriedade.
+
+O procedimento é aplicado em duas direções complementares:
+
+\begin{itemize}[leftmargin=1.4cm]
+  \item \textbf{vacuidade do modelo}: a rede é removida e a propriedade reexecutada. Se ainda
+  decide, ela não fala sobre a rede;
+  \item \textbf{vacuidade das hipóteses}: insere-se \texttt{assert(0)} imediatamente após os
+  \texttt{assume} do \textit{harness}. Se essa asserção for \emph{provada}, os \texttt{assume}
+  são insatisfazíveis e todo veredito daquele \textit{harness} é vazio.
+\end{itemize}
+
+Aplicado às propriedades da malha fechada, o teste revelou duas vacuidades, cuja correção é
+relatada na Seção~\ref{sub:cartpole}. Aplicado às 24 hipóteses da segunda camada da rede de
+neurônios mortos, mostrou que nenhum \texttt{assume} é insatisfazível --- o risco existia,
+mas não se materializou naquele conjunto.
+
+\subsection{Formulação dos estudos de caso}
+
+\subsubsection{Caso 1 --- rede neural quantizada e \textit{stubs} de inferência}
+
+Uma perceptron multicamadas com ativação ReLU foi implementada em ponto fixo Q8.8, com as
+operações \texttt{fxp\_add} e \texttt{fxp\_mult} reproduzindo o truncamento do dispositivo
+alvo, e verificada sobre as quatro entradas discretas do problema XOR. Ao lado dela, foram
+verificados um \textit{stub} da mesma rede em ponto flutuante, um \textit{harness} de
+propriedade sobre a rede completa e um \textit{stub} de bloco MLP \textit{gated} no estilo
+DeepSeek. A pré-condição de entrada é $x_1, x_2 \in [0,1]$ e a propriedade de saída é um
+limite superior explícito sobre a predição desquantizada.
+
+Neste caso foi reproduzida, em código, a estratégia de poda por intervalos do QNNVerifier:
+limites por neurônio são injetados como hipóteses, colapsando ramos que a propagação de
+valores mostra inalcançáveis. A operação é uma \emph{sobreaproximação} e está declarada como
+tal --- o veredito vale para a relaxação definida pelos intervalos.
+
+\subsubsection{Caso 2 --- \textit{kernels} de inferência em C/C++}
+
+Dois \textit{kernels} análogos aos de motores de inferência foram verificados quanto a
+segurança de memória: um \textit{kernel} de atenção por produto escalar com alocação dinâmica
+e comprimento de sequência simbólico $\texttt{seq\_len} \in [1,10]$, e um \textit{kernel} de
+multiplicação de matrizes com \textit{tiling}, parametrizado pela dimensão $N$ para o estudo
+de escalabilidade. As verificações empregam \texttt{--memory-leak-check} e
+\texttt{--overflow-check}, com limite de tempo de 300\,s.
+
+\subsubsection{Caso 3 --- ciclo neuro-simbólico de geração e correção}
+
+O terceiro caso modela o protocolo em que um gerador produz código C, o ESBMC o verifica e,
+havendo contraexemplo, o diagnóstico volta ao gerador como entrada para correção. A
+iteração~0 introduz deliberadamente um \textit{buffer overflow} por \texttt{strcpy} de 20
+bytes em um destino de 10; a iteração~1 aplica a correção com \texttt{strncpy}.
+
+O gerador é um \textbf{\textit{mock} determinístico}, e não um modelo de linguagem. Essa
+escolha é uma limitação assumida do experimento e está registrada como tal: o que se
+demonstra é o protocolo e o custo do verificador dentro do ciclo, não a competência de um
+agente autônomo.
+
+\subsubsection{Caso 4 --- controlador PID sob ruído não determinístico}
+
+Uma planta térmica de primeira ordem, com aquecimento proporcional à ação de controle e perda
+constante, é regulada por um PID digital com $K_p = 1{,}0$, $K_i = 0{,}1$, $K_d = 0{,}5$ e
+saturação em $[0, 100]$:
+
+\begin{equation}
+T_{k+1} = \max\!\left(20,\; T_k + (u_k r_h - r_c)\,\Delta t\right), \qquad
+u_k = K_p e_k + K_i \sum_{j \le k} e_j \Delta t + K_d \frac{e_k - e_{k-1}}{\Delta t}.
+\end{equation}
+
+O ruído de sensor é escolhido pelo próprio \textit{solver} a cada passo, restrito a
+$[-5,+5]\,^\circ$C, e a propriedade de segurança é a invariante $T_k < 150\,^\circ$C para
+todos os dez passos. A verificação usa \texttt{--floatbv} e \texttt{--unwind 11}.
+
+Complementarmente, avaliou-se a aplicabilidade da abordagem a uma biblioteca de controle real
+de terceiros: a \textit{Arduino-PID-Library}, incorporada como submódulo Git fixado em
+\textit{commit} determinado, com \textit{harness} que instancia a classe \texttt{PID} sob a
+mesma planta e o mesmo modelo de ruído.
+
+\subsubsection{Caso 5 --- blocos \textit{feed-forward} de modelos de linguagem}
+
+Blocos FFN foram extraídos de modelos ONNX do GPT-2 e do LLaMA-7B e quantizados em Q8.8. Duas
+codificações foram comparadas:
+
+\begin{itemize}[leftmargin=1.4cm]
+  \item \textbf{Método 1 --- \textit{proxy} ReLU}: substitui GeLU/SiLU por ReLU. É mais
+  rápido, mas verifica um modelo que não é o modelo implantado;
+  \item \textbf{Método 2 --- ativação abstrata}: substitui a ativação por hipóteses de
+  intervalo por neurônio, no estilo do QNNVerifier. Produz uma sobreaproximação intervalar,
+  conservadora \emph{somente se} os limites cobrirem todas as saídas alcançáveis; a relação
+  funcional exata não é codificada.
+\end{itemize}
+
+Os resultados reportados adiante correspondem ao Método 2. Os geradores de
+\textit{harnesses} e as tabelas de consulta de GeLU e SiLU são reexecutáveis e produzem
+arquivos byte a byte idênticos aos versionados.
+
+A dificuldade de fundo é que $\sigma(z) = 1/(1+e^{-z})$ é transcendental e não possui
+axiomatização SMT, levando a \veredito{unknown}. Onde foi necessário manter a forma
+funcional, empregou-se a aproximação linear conservadora
+$\sigma_{\text{aprox}}(z) = \operatorname{clip}(0{,}25z + 0{,}5,\,0,\,1)$, tangente de
+$\sigma$ em $z = 0$ com saturação, ilustrada na Figura~\ref{fig:silu}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{plot_silu_approx.png}
+\caption{Substituição da ativação transcendental: SiLU exata contra a aproximação linear
+tratável pelo \textit{solver}. O veredito obtido vale para a aproximação, não para a função
+original.}
+\label{fig:silu}
+\legend{\small Fonte: elaborada pelo autor.}
+\end{figure}
+
+\subsubsection{Caso 6 --- política de aprendizado por reforço}
+
+Uma política de RL do tipo ator-crítico, com ação contínua em $[-1,1]$, foi transcrita para C
+e submetida à busca não determinística sob \texttt{--floatbv}, com o objetivo de decidir se
+existe estado, dentro da caixa admitida, para o qual a ação viola o limite do atuador.
+
+\subsubsection{Caso 7 --- malha fechada \textit{cart-pole} com controlador DDPG}
+\label{sub:metodologia_cartpole}
+
+Este é o único caso em que planta e controlador são verificados \textbf{acoplados}. O ator
+DDPG \cite{lillicrap2016ddpg}, de arquitetura $4 \rightarrow 24 \rightarrow 24 \rightarrow 1$
+e 745 parâmetros, foi quantizado em Q8.8 e integrado ao modelo do \textit{cart-pole}
+\cite{barto1983cartpole}. A aritmética de inferência está implementada três vezes --- em
+Python para o treinamento, em TypeScript para a demonstração em navegador e em C para o
+\textit{harness} --- e as três coincidem bit a bit: mesma ordem de operações, mesmo
+truncamento em direção a zero e mesma aproximação de $\tanh$ em cinco ramos.
+
+Para superar o horizonte do BMC, o sistema acoplado foi também exportado como sistema de
+transição: \texttt{gen\_transition\_system.py} lê os pesos reais e emite Verilog com largura
+configurável, o Yosys \cite{wolf2016yosys} sintetiza o circuito e o ABC
+\cite{brayton2010abc} executa \texttt{pdr} e \texttt{bmc3}. Antes de qualquer medição,
+\texttt{validate\_forward.py} realiza um teste diferencial entre o Verilog gerado e a
+referência Q8.8 em doze estados amostrados; a coincidência detecta regressão de tradução, mas
+\textbf{não} constitui prova de equivalência universal entre as implementações.
+
+\subsection{Integração contínua}
+
+A suíte de verificação é executada a cada submissão por um fluxo de integração contínua. Duas
+decisões de projeto merecem registro por decorrerem de defeitos observados na primeira versão
+do fluxo. O binário do verificador é \textbf{versionado junto ao repositório} em vez de
+baixado a cada execução, o que elimina a divergência de versão entre ambiente local e remoto
+--- fonte de resultados não reproduzíveis. E o caminho do binário é propagado por
+\texttt{\$GITHUB\_ENV}, e não por \texttt{export PATH}: variáveis exportadas em um passo não
+persistem para o seguinte, defeito que mantinha a etapa de verificação inoperante \emph{sem
+emitir erro}.
+
+Por decisão de escopo do ciclo, os resultados de execução remota em múltiplas plataformas
+não são apresentados como evidência neste relatório. A aceitação dos resultados apoia-se
+exclusivamente nas execuções locais documentadas na Seção~\ref{sec:resultados}; a
+estabilização em Windows, macOS e ARM permanece como trabalho separado.
