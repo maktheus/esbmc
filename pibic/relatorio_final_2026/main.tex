@@ -1,4 +1,4 @@
-% Relatório Final PIBITI 2025/2026 -- esqueleto de montagem.
+% Relatório Final PIBIC 2025/2026 -- esqueleto de montagem.
 % Este projeto é independente de pibic/artigo. Os campos administrativos
 % devem ser conferidos no eCampus antes da submissão.
 \documentclass[
@@ -41,8 +41,8 @@
 \local{\cidadeProjeto}
 \data{\anoRelatorio}
 \instituicao{\instituicaoProjeto}
-\tipotrabalho{Relatório Final de Iniciação em Desenvolvimento Tecnológico e Inovação (PIBITI)}
-\preambulo{Relatório final das atividades desenvolvidas no âmbito do Programa Institucional de Bolsas de Iniciação em Desenvolvimento Tecnológico e Inovação (PIBITI), edição 2025/2026, da Universidade Federal do Amazonas.}
+\tipotrabalho{Relatório Final de Iniciação Científica (PIBIC)}
+\preambulo{Relatório final das atividades desenvolvidas no âmbito do Programa Institucional de Bolsas de Iniciação Científica (PIBIC/UFAM/CNPq), edição 2025/2026, da Universidade Federal do Amazonas, sob a Pró-Reitoria de Pesquisa e Pós-Graduação (PROPESP).}
 
 \setlength{\parindent}{1.25cm}
 \setlength{\parskip}{0.2cm}
@@ -53,19 +53,19 @@
   hidelinks,
   pdftitle={\tituloProjeto},
   pdfauthor={\nomeAluno},
-  pdfsubject={Relatório Final PIBITI 2025/2026},
-  pdfkeywords={PIBITI, ESBMC, verificação formal, redes neurais}
+  pdfsubject={Relatório Final PIBIC 2025/2026},
+  pdfkeywords={PIBIC, ESBMC, verificação formal, redes neurais}
 }
 
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 \tikzset{
-  pibitibox/.style={draw, rounded corners=2pt, fill=blue!7, text width=3.1cm,
+  pibicbox/.style={draw, rounded corners=2pt, fill=blue!7, text width=3.1cm,
     align=center, minimum height=1.0cm, inner sep=4pt, font=\small},
-  pibitiprocess/.style={draw, rounded corners=2pt, fill=green!8, text width=3.0cm,
+  pibicprocess/.style={draw, rounded corners=2pt, fill=green!8, text width=3.0cm,
     align=center, minimum height=1.0cm, inner sep=4pt, font=\small},
-  pibitiresult/.style={draw, rounded corners=2pt, fill=orange!12, text width=3.15cm,
+  pibicresult/.style={draw, rounded corners=2pt, fill=orange!12, text width=3.15cm,
     align=center, minimum height=1.0cm, inner sep=4pt, font=\small},
-  pibitiarrow/.style={-{Latex[length=2.2mm]}, thick}
+  pibicarrow/.style={-{Latex[length=2.2mm]}, thick}
 }
 
 \begin{document}
@@ -75,7 +75,7 @@
 \imprimircapa
 \imprimirfolhaderosto
 
-% Identificação exigida no modelo oficial PROTEC.
+% Identificação exigida pela PROPESP/UFAM para relatórios de Iniciação Científica.
 \chapter*{Dados do Projeto}
 \addcontentsline{toc}{chapter}{Dados do Projeto}
 \begin{center}
@@ -83,7 +83,7 @@
 \small
 \begin{tabularx}{\textwidth}{>{\bfseries}p{0.40\textwidth}Y}
 \toprule
-Edição & \edicaoPIBITI \\
+Edição & \edicaoPIBIC \\
 Orientador(a) & \nomeOrientador \\
 Aluno(a) & \nomeAluno \\
 Modalidade & \modalidadeProjeto \\
@@ -111,6 +111,7 @@ Apresentação reservada & \apresentacaoReservada \\
 
 \textual
 \input{secoes/01_introducao}
+\input{secoes/01b_revisao_bibliografica}
 \input{secoes/02_objetivos}
 \input{secoes/03_metodologia}
 \input{secoes/04_resultados_discussao}

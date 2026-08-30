@@ -1,4 +1,13 @@
-# Plano do Relatório Final PIBITI 2025/2026
+# Plano do Relatório Final PIBIC 2025/2026
+
+> **Correção de identificação (30/08/2026):** este documento foi escrito
+> quando o projeto ainda estava identificado como PIBITI/PROTEC. O programa
+> correto é **PIBIC** (PROPESP/UFAM); ver `PENDENCIAS_FINAIS_AUDITORIA.md`.
+> A referência ao "modelo oficial da PROTEC" abaixo deve ser lida como o
+> `modelos/UFAM_guia_relatorio_PIBIC_exatas.pdf`, que é a estrutura
+> efetivamente aplicada no relatório final. O restante do conteúdo
+> narrativo (perguntas de pesquisa, caso CartPole, matriz afirmação–evidência)
+> permanece válido.
 
 Plano elaborado a partir do modelo oficial atual da PROTEC, da estrutura dos trabalhos premiados no CONIC/UFAM entre 2021 e 2025 e da auditoria dos arquivos existentes no projeto.
 

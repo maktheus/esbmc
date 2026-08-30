@@ -1,4 +1,5 @@
 \chapter{Resultados e Discussão}
+\label{chap:resultados}
 
 Os resultados desta seção foram separados por nível de evidência. Os números da
 rodada canônica estão em \path{evidencias/final_2026/outputs} e podem ser
@@ -33,17 +34,17 @@ Saída do controlador & Os dois sinais da saída foram refutados universalmente?
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[node distance=9mm and 9mm]
-  \node[pibitibox, text width=3.5cm] (question) {Pergunta central\\o controlador quantizado\\é verificável e confiável?};
-  \node[pibitiresult, below left=of question, text width=3.7cm] (numeric) {Fidelidade numérica\\média: 0,0778 N\\máximo: 7,7589 N\\inversão de sinal no pior estado};
-  \node[pibitiresult, below=of question, text width=3.7cm] (formal) {Propriedades formais\\força limitada: provada\\A-direita universal: timeout\\replays A e B: reproduzidos};
-  \node[pibitiresult, below right=of question, text width=3.7cm] (structure) {Estrutura da rede\\L1: 24/24 contraexemplos\\L2: timeouts parciais\\saída conjunta: inconclusiva};
-  \node[pibitiprocess, below=of formal, text width=5.4cm] (conclusion) {Conclusão equilibrada\\há evidência reprodutível de limites e falhas concretas,\\mas não há prova de segurança global do controlador};
-  \draw[pibitiarrow] (question) -- (numeric);
-  \draw[pibitiarrow] (question) -- (formal);
-  \draw[pibitiarrow] (question) -- (structure);
-  \draw[pibitiarrow] (numeric) -- (conclusion);
-  \draw[pibitiarrow] (formal) -- (conclusion);
-  \draw[pibitiarrow] (structure) -- (conclusion);
+  \node[pibicbox, text width=3.5cm] (question) {Pergunta central\\o controlador quantizado\\é verificável e confiável?};
+  \node[pibicresult, below left=of question, text width=3.7cm] (numeric) {Fidelidade numérica\\média: 0,0778 N\\máximo: 7,7589 N\\inversão de sinal no pior estado};
+  \node[pibicresult, below=of question, text width=3.7cm] (formal) {Propriedades formais\\força limitada: provada\\A-direita universal: timeout\\replays A e B: reproduzidos};
+  \node[pibicresult, below right=of question, text width=3.7cm] (structure) {Estrutura da rede\\L1: 24/24 contraexemplos\\L2: timeouts parciais\\saída conjunta: inconclusiva};
+  \node[pibicprocess, below=of formal, text width=5.4cm] (conclusion) {Conclusão equilibrada\\há evidência reprodutível de limites e falhas concretas,\\mas não há prova de segurança global do controlador};
+  \draw[pibicarrow] (question) -- (numeric);
+  \draw[pibicarrow] (question) -- (formal);
+  \draw[pibicarrow] (question) -- (structure);
+  \draw[pibicarrow] (numeric) -- (conclusion);
+  \draw[pibicarrow] (formal) -- (conclusion);
+  \draw[pibicarrow] (structure) -- (conclusion);
 \end{tikzpicture}
 \caption{Síntese visual dos resultados e da conclusão sustentada pelos dados.}
 \label{fig:sintese-resultados}

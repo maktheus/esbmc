@@ -11,10 +11,8 @@ Testes de simulação e testes de regressão são indispensáveis para avaliar c
 
 Do ponto de vista tecnológico, uma cadeia que associe o modelo, a propriedade, o comando de verificação, o veredicto e o contraexemplo facilita a revisão de componentes de IA antes de sua integração em aplicações maiores. Para a formação em desenvolvimento tecnológico e inovação, a contribuição esperada está na organização de um fluxo executável e rastreável, e não somente na produção de uma descrição conceitual. O estudo também é relevante para a UFAM por consolidar um procedimento que pode ser reaplicado em protótipos de controle e em componentes de software de IA, respeitando o domínio e as limitações documentados.
 
-\section{Revisão bibliográfica e estado da arte}
-A revisão será organizada em quatro eixos. O primeiro é o \textit{Bounded Model Checking}, no qual a propriedade é analisada em um número finito de passos e o resultado depende das pré-condições, do horizonte e da teoria utilizada. O segundo é a verificação de redes neurais por SMT, incluindo técnicas voltadas a redes quantizadas e ferramentas como QNNVerifier \cite{gopinath2021verifying,meng2022qnnverifier}. O terceiro eixo reúne controle por aprendizado por reforço, representação numérica e efeitos de precisão finita. O quarto trata da transferência de verificações para componentes de IA generativa, distinguindo propriedades do código produzido, propriedades do modelo neural e propriedades do sistema que integra esses componentes.
-
-Essa revisão não deve ser uma enumeração de ferramentas. Cada referência será relacionada a uma decisão metodológica do presente estudo: escolha da representação, definição do domínio, seleção das propriedades, tratamento de contraexemplos ou avaliação de escalabilidade. Referências específicas de DDPG, CartPole, ESBMC e controle seguro deverão ser acrescentadas ao arquivo bibliográfico antes da versão final.
+O Capítulo~\ref{chap:revisao} apresenta a revisão bibliográfica que fundamenta as
+escolhas metodológicas descritas a seguir.
 
 \section{Perguntas de pesquisa}
 As perguntas a seguir organizam a coleta de evidências e a discussão dos resultados:

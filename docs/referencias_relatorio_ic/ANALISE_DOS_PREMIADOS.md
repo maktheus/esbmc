@@ -1,6 +1,6 @@
 # Análise dos trabalhos premiados — Engenharias/Computação, CONIC UFAM 2021–2025
 
-Análise realizada em 30 de agosto de 2026 para orientar a redação do Relatório Final PIBITI 2025/2026. O objetivo não é imitar temas ou textos, mas identificar padrões de comunicação científica e de evidência que possam ser aplicados honestamente ao projeto atual.
+Análise realizada em 30 de agosto de 2026 para orientar a redação do Relatório Final PIBIC 2025/2026 (correção de identificação: o programa é PIBIC/PROPESP, não PIBITI/PROTEC — ver `PENDENCIAS_FINAIS_AUDITORIA.md`). O objetivo não é imitar temas ou textos, mas identificar padrões de comunicação científica e de evidência que possam ser aplicados honestamente ao projeto atual.
 
 ## Como esta análise foi feita
 
