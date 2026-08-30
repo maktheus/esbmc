@@ -1,14 +1,18 @@
-# Anexos do Relatório Final PIBITI 2025/2026
+# Anexos do Relatório Final PIBIC 2025/2026
 
 Esta pasta deve receber os anexos efetivamente necessários ao envio. Não colocar aqui dados administrativos inventados.
 
 ## Termo do RIU
 
-O edital PIBITI 2025/2026 determina o envio, junto ao Relatório Final, do **Termo de Autorização e Declaração de distribuição não exclusiva de Publicação Digital no Repositório Institucional da UFAM (RIU)**.
+O Edital 05/2025-PROPESP/UFAM (PIBIC, edição 2025-2026) determina, em seu item 11.4,
+que o(a) orientador(a) deposite junto ao Relatório Final, no e-Campus, o **Termo de
+Autorização e Declaração de distribuição não exclusiva de Publicação Digital no
+Repositório Institucional da UFAM (RIU)**; em caso de pesquisa confidencial, deve-se
+informar o período de embargo/restrição.
 
 Situação atual: pendente de obtenção, preenchimento e assinatura.
 
-- obter a versão vigente do termo no RIU/PROTEC;
+- obter a versão vigente do termo na página do RIU/PROPESP;
 - preencher autor, e-mail, departamento, título e tipo de documento;
 - marcar versão final, confidencialidade, patente e autorização total/parcial;
 - colher a assinatura do autor e do orientador;

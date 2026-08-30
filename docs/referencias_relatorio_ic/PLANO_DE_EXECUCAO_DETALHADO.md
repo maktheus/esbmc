@@ -1,4 +1,7 @@
-# Plano de execução detalhado — Relatório Final PIBITI 2025/2026
+# Plano de execução detalhado — Relatório Final PIBIC 2025/2026
+
+> **Correção de identificação (30/08/2026):** o programa correto é **PIBIC**
+> (PROPESP/UFAM), não PIBITI/PROTEC; ver `PENDENCIAS_FINAIS_AUDITORIA.md`.
 
 Este documento descreve como transformar o material atual em um relatório final tecnicamente defensável, rastreável e competitivo. Ele complementa `PLANO_RELATORIO_FINAL_PREMIAVEL.md`: aquele documento define a arquitetura científica; este define a execução, os arquivos, as verificações e os critérios de aceite.
 

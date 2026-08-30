@@ -1,0 +1,87 @@
+\chapter{Revisão Bibliográfica}
+\label{chap:revisao}
+
+Esta revisão está organizada em quatro eixos, cada um ligado a uma decisão
+metodológica adotada no relatório: a escolha da técnica de verificação, a
+forma de representar a rede neural quantizada, a origem do controlador
+avaliado e o tratamento dado a componentes de Inteligência Artificial
+Generativa.
+
+\section{Bounded Model Checking e verificação de software em C}
+O \textit{Bounded Model Checking} (BMC) verifica uma propriedade
+explorando as execuções de um programa até um número finito de passos,
+codificando o programa e a negação da propriedade como uma fórmula e
+delegando a busca por uma violação a um \textit{solver}. Biere et al.
+\cite{biere1999symbolic} propuseram o BMC como alternativa ao
+\textit{model checking} simbólico baseado em diagramas de decisão binários,
+mostrando que a codificação proposicional de um número limitado de passos
+já é suficiente para encontrar contraexemplos em muitos casos práticos.
+Cordeiro, Fischer e Marques-Silva \cite{cordeiro2012smt} estenderam essa
+ideia para software ANSI-C incorporado, propondo a verificação baseada em
+SMT (\textit{Satisfiability Modulo Theories}) em vez de lógica proposicional
+pura, o que permite raciocinar diretamente sobre aritmética de ponteiros,
+inteiros de largura fixa e ponto flutuante -- exatamente o tipo de código
+produzido pelos harnesses C usados neste relatório. O ESBMC evoluiu dessa
+linha de trabalho; Gadelha et al. \cite{gadelha2018esbmc}
+descrevem a ferramenta em sua versão 5.0 como um verificador de força
+industrial que combina múltiplos \textit{solvers} SMT, oferece suporte a
+concorrência e mantém compatibilidade com o padrão C. Para este projeto,
+a relevância dessa linha está em três decisões diretas: usar C como
+linguagem intermediária entre o modelo treinado e o verificador, expressar
+propriedades como pares \texttt{assume}/\texttt{assert} e aceitar que
+\texttt{TIMEOUT} é um resultado epistemicamente distinto de prova ou
+refutação, e não um indício de segurança.
+
+\section{Verificação formal de redes neurais e redes quantizadas}
+Huang et al. \cite{huang2017robustness} formularam a verificação de
+robustez de redes neurais profundas como uma busca sistemática por
+perturbações de entrada que alterem a classificação, discutindo garantias
+de cobertura da vizinhança de uma entrada. Esse trabalho estabeleceu que
+verificar uma rede neural exige tratar explicitamente a rede como um
+programa com estrutura conhecida (camadas, pesos e ativações), e não como
+uma caixa-preta amostrada por testes. Sena et al.
+\cite{sena2021verifying} tornaram esse problema mais próximo do
+presente relatório ao tratar redes neurais \emph{quantizadas}: os autores
+mostram que a verificação baseada em SMT precisa modelar explicitamente a
+aritmética de precisão finita -- escala, arredondamento e saturação --
+porque uma propriedade provada para a rede em ponto flutuante não se
+transfere automaticamente para sua versão quantizada. Song et al.
+\cite{song2022qnnverifier} consolidaram esse fluxo na ferramenta
+QNNVerifier, que converte um modelo treinado em um programa C anotado com
+propriedades e o submete a um \textit{model checker} baseado em SMT. O
+harness Q8.8 e o desenho da comparação Float32~$\times$~Q8.8 deste
+relatório seguem diretamente essa mesma lógica: o controlador quantizado é
+reescrito como código C, e a fidelidade em relação à versão original é
+tratada como uma propriedade a ser medida e verificada, não como uma
+suposição.
+
+\section{Controle por aprendizado por reforço e a planta CartPole}
+O controlador analisado neste relatório é treinado com \textit{Deep
+Deterministic Policy Gradient} (DDPG), algoritmo de aprendizado por reforço
+com espaço de ações contínuo proposto por Lillicrap et al.
+\cite{lillicrap2016ddpg}, que combina uma rede de ator (a política, cuja
+representação quantizada é o objeto verificado neste relatório) com uma
+rede de crítico usada apenas durante o treinamento. A planta de controle
+usada como estudo de caso, o \textit{Cart-Pole}, é um problema clássico de
+controle não linear com realimentação: Barto, Sutton e Anderson
+\cite{barto1983cartpole} formalizaram o problema de equilibrar um pêndulo
+invertido sobre um carrinho por meio de elementos adaptativos, e essa
+formulação de estado (posição e velocidade do carrinho, ângulo e
+velocidade angular do pêndulo) é a mesma usada para definir o domínio
+operacional e as propriedades de segurança verificadas neste relatório.
+
+\section{Componentes de Inteligência Artificial Generativa}
+O título do projeto também contempla sistemas de Inteligência Artificial
+Generativa. Diferentemente dos três eixos anteriores, não há neste
+relatório um estudo de caso de IA generativa com artefato executável,
+comando registrado e resultado auditável equivalente ao do controlador
+CartPole; por isso, esta revisão não apresenta uma linha de trabalhos
+específicos para esse eixo. A posição adotada é metodológica: os mesmos
+princípios de verificação -- expressar a propriedade como
+\texttt{assume}/\texttt{assert} sobre uma representação em C, delegar a
+busca ao ESBMC e distinguir prova, refutação e resultado inconclusivo --
+são, em princípio, aplicáveis a código produzido ou auxiliado por modelos
+de linguagem, mas essa transferência é tratada neste relatório como trabalho futuro
+condicionado à existência de um caso executável, comando registrado e
+saída verificável (PQ5, discutida nos Capítulos~\ref{chap:objetivos} e
+\ref{chap:resultados}).

@@ -1,4 +1,7 @@
-# Rascunho de narrativa para o Relatório Final PIBITI
+# Rascunho de narrativa para o Relatório Final PIBIC
+
+> **Correção de identificação (30/08/2026):** o programa correto é **PIBIC**
+> (PROPESP/UFAM), não PIBITI/PROTEC; ver `PENDENCIAS_FINAIS_AUDITORIA.md`.
 
 **Projeto:** Verificação Formal de Sistemas de Inteligência Artificial Generativa e Controladores Neurais utilizando ESBMC  
 **Estudo de caso recomendado:** controlador DDPG para o problema Cart-Pole  

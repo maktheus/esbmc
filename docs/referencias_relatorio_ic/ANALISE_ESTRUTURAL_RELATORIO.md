@@ -1,5 +1,11 @@
 # Análise estrutural do relatório atual
 
+> **Correção de identificação (30/08/2026):** o programa correto é **PIBIC**
+> (PROPESP/UFAM), não PIBITI/PROTEC. O "formulário oficial atual" citado
+> abaixo (DOCX da PROTEC) foi substituído, para fins de estrutura, pelo guia
+> `modelos/UFAM_guia_relatorio_PIBIC_exatas.pdf`; ver
+> `PENDENCIAS_FINAIS_AUDITORIA.md`.
+
 Escopo analisado: `pibic/artigo/`, arquivos de resultados em `pibic/results/` e materiais mais maduros existentes no projeto, especialmente `pibic/cartpole/`.
 
 ## Diagnóstico executivo

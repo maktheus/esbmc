@@ -16,19 +16,19 @@ SHA-256, logs e arquivos gerados.
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[node distance=7mm and 8mm]
-  \node[pibitibox] (artifacts) {Artefatos\\checkpoint, JSONs e\\histórico de treinamento};
-  \node[pibitiprocess, right=of artifacts] (numeric) {Preparação numérica\\Float32 versus Q8.8\\10.000 estados};
-  \node[pibitiprocess, right=of numeric] (network) {Grafo do controlador\\4--24--24--1\\ReLU + tanh aproximada};
-  \node[pibitiprocess, below=of network] (harness) {Harnesses C\\domínio Q8.8 e propriedades\\A, B e C};
-  \node[pibitiprocess, left=of harness] (bmc) {ESBMC + Z3\\execução simbólica\\e BMC};
-  \node[pibitiresult, left=of bmc] (evidence) {Evidências\\veredictos, contraexemplos,\\logs e hashes};
-  \node[pibitiresult, below=of bmc] (synthesis) {Síntese científica\\resultado confirmado,\\refutado ou inconclusivo};
-  \draw[pibitiarrow] (artifacts) -- (numeric);
-  \draw[pibitiarrow] (numeric) -- (network);
-  \draw[pibitiarrow] (network) -- (harness);
-  \draw[pibitiarrow] (harness) -- (bmc);
-  \draw[pibitiarrow] (bmc) -- (evidence);
-  \draw[pibitiarrow] (bmc) -- (synthesis);
+  \node[pibicbox] (artifacts) {Artefatos\\checkpoint, JSONs e\\histórico de treinamento};
+  \node[pibicprocess, right=of artifacts] (numeric) {Preparação numérica\\Float32 versus Q8.8\\10.000 estados};
+  \node[pibicprocess, right=of numeric] (network) {Grafo do controlador\\4--24--24--1\\ReLU + tanh aproximada};
+  \node[pibicprocess, below=of network] (harness) {Harnesses C\\domínio Q8.8 e propriedades\\A, B e C};
+  \node[pibicprocess, left=of harness] (bmc) {ESBMC + Z3\\execução simbólica\\e BMC};
+  \node[pibicresult, left=of bmc] (evidence) {Evidências\\veredictos, contraexemplos,\\logs e hashes};
+  \node[pibicresult, below=of bmc] (synthesis) {Síntese científica\\resultado confirmado,\\refutado ou inconclusivo};
+  \draw[pibicarrow] (artifacts) -- (numeric);
+  \draw[pibicarrow] (numeric) -- (network);
+  \draw[pibicarrow] (network) -- (harness);
+  \draw[pibicarrow] (harness) -- (bmc);
+  \draw[pibicarrow] (bmc) -- (evidence);
+  \draw[pibicarrow] (bmc) -- (synthesis);
 \end{tikzpicture}
 \caption{Visão geral do desenho experimental e da cadeia de evidências.}
 \label{fig:visao-geral-estudo}
@@ -208,12 +208,12 @@ produzem a asserção esperada em um harness independente.
   \node[smallresult, below=of solver, xshift=-3cm] (success) {SUCCESSFUL\\propriedade provada\\no harness};
   \node[smallresult, below=of solver] (inc) {TIMEOUT / UNKNOWN\\resultado inconclusivo\\sem conclusão de segurança};
   \node[smallresult, below=of solver, xshift=3cm] (failed) {FAILED\\contraexemplo\\registrado};
-  \draw[pibitiarrow] (source) -- (front);
-  \draw[pibitiarrow] (front) -- (bmc);
-  \draw[pibitiarrow] (bmc) -- (solver);
-  \draw[pibitiarrow] (solver) -- (success);
-  \draw[pibitiarrow] (solver) -- (failed);
-  \draw[pibitiarrow] (solver) -- (inc);
+  \draw[pibicarrow] (source) -- (front);
+  \draw[pibicarrow] (front) -- (bmc);
+  \draw[pibicarrow] (bmc) -- (solver);
+  \draw[pibicarrow] (solver) -- (success);
+  \draw[pibicarrow] (solver) -- (failed);
+  \draw[pibicarrow] (solver) -- (inc);
 \end{tikzpicture}
 \caption{Fluxo de verificação do ESBMC e interpretação dos veredictos.}
 \label{fig:fluxo-esbmc}

@@ -1,24 +1,37 @@
-# Referências para o Relatório Final PIBITI 2025/2026
+# Referências para o Relatório Final PIBIC 2025/2026
 
 Coleta realizada em 30 de agosto de 2026 para apoiar a preparação do relatório final do projeto de Engenharia da Computação.
 
+**Correção de identificação (30/08/2026):** o projeto é do **PIBIC**
+(Programa Institucional de Bolsas de Iniciação Científica, administrado pela
+PROPESP/UFAM), não do PIBITI (administrado pela PROTEC/UFAM). Os arquivos
+`UFAM_modelo_relatorio_final_PIBITI_PROTEC.docx` e
+`UFAM_edital_PIBITI_2025_2026.pdf` abaixo foram mantidos apenas como registro
+histórico da pesquisa anterior; eles **não** devem ser usados como fonte de
+estrutura, prazo ou identificação para este relatório. Ver
+`PENDENCIAS_FINAIS_AUDITORIA.md` para o detalhamento da correção.
+
 ## Prazo e submissão
 
-- O Edital PIBITI 2025/2026 e a página de instruções da PROTEC informam o período de envio do relatório final de **1º a 31 de agosto de 2026**.
-- As fontes oficiais consultadas **não publicam um horário-limite** para o dia 31. Portanto, não há base documental para assumir 23h59.
-- O arquivo deve ser enviado em **PDF, com no máximo 2 MB**, pela Plataforma eCampus, no perfil do orientador ou do técnico administrativo responsável.
-- Fonte principal: <https://protec.ufam.edu.br/elaboracao-de-relatorio-parcial-e-final.html>
-- Edital: <https://edoc.ufam.edu.br/handle/123456789/9689>
+- O Edital 05/2025-PROPESP/UFAM (PIBIC 2025-2026) lista, em seu cronograma, a
+  submissão do Relatório Técnico Final no e-Campus — junto com o Termo RIU —
+  no período de **1º a 30 de agosto de 2026**.
+- As fontes oficiais consultadas **não publicam um horário-limite** para o
+  dia 30. Portanto, não há base documental para assumir 23h59. **O prazo
+  termina hoje.**
+- Fonte principal (edital): <https://edoc.ufam.edu.br/bitstream/123456789/9616/1/EDITAL_PIBIC%202025-2026.pdf>
+- Página de editais PIBIC/PAIC: <https://propesp.ufam.edu.br/ultimas-noticias/486-pibic-paic-2025-2026.html>
 
 ## Modelos e normas baixados
 
 | Arquivo | Uso recomendado | Observação |
 |---|---|---|
-| `modelos/UFAM_modelo_relatorio_final_PIBITI_PROTEC.docx` | Modelo oficial vigente | Deve prevalecer sobre os demais modelos. Contém identificação, Resumo, Introdução, Objetivos, Metodologia, Resultados/Discussão, Conclusão, Referências e termo anexo. |
-| `modelos/UFAM_edital_PIBITI_2025_2026.pdf` | Cronograma e regras do ciclo | Confirma o período final de 01 a 31/08/2026, sem indicar hora. |
-| `modelos/Overleaf_modelo_relatorio_PIBIC_UFAM.pdf` | Referência visual e de organização em LaTeX | Modelo público de 2021, feito para PIBIC/PAIC e relatório parcial; não é o formulário oficial atual do PIBITI. Página: <https://pt.overleaf.com/latex/templates/modelo-de-relatorio-de-pibic-ufam/xgntxbfshpgb>. |
+| `modelos/UFAM_guia_relatorio_PIBIC_exatas.pdf` | Guia oficial da estrutura do relatório | Guia do Comitê Local de Ciências Exatas, da Terra e Engenharias do PIBIC. Deve prevalecer sobre os demais modelos: define Capa, Folha de rosto, Resumo (≤500 palavras), Sumário, Introdução (≤1 pág.), **Revisão bibliográfica (≤2 pág.)**, Métodos utilizados (≤2 pág.), Resultados e discussões (≤5 pág.), Conclusões (≤1 pág.), Agradecimentos, Referências e Cronograma. |
+| `modelos/UFAM_edital_PIBIC_2025_2026.pdf` | Cronograma e regras do ciclo | Edital 05/2025-PROPESP/UFAM. Confirma o período final de 01 a 30/08/2026, sem indicar hora, e o depósito do Termo RIU junto ao Relatório Final (item 11.4). |
+| `modelos/Overleaf_modelo_relatorio_PIBIC_UFAM.pdf` | Referência visual e de organização em LaTeX | Modelo público de 2021, feito para PIBIC/PAIC. Página: <https://pt.overleaf.com/latex/templates/modelo-de-relatorio-de-pibic-ufam/xgntxbfshpgb>. |
 | `modelos/overleaf_fonte/main.tex` | Fonte principal exposto pelo modelo público | Foi recuperado da página do Overleaf. Depende de includes e imagens que não são expostos separadamente; por isso, não é um projeto autônomo completo. Leia `modelos/overleaf_fonte/README.md`. |
-| `modelos/UFAM_guia_relatorio_PIBIC_exatas.pdf` | Referência complementar | Guia antigo da área de Exatas; usar apenas onde não conflitar com o modelo PROTEC. |
+| `modelos/UFAM_modelo_relatorio_final_PIBITI_PROTEC.docx` | Histórico — não usar | Modelo do PROTEC para o PIBITI, programa distinto do PIBIC. Mantido apenas para registro da pesquisa anterior. |
+| `modelos/UFAM_edital_PIBITI_2025_2026.pdf` | Histórico — não usar | Edital do PIBITI (PROTEC), programa distinto do PIBIC. Mantido apenas para registro da pesquisa anterior. |
 
 ## Documentação produzida
 
