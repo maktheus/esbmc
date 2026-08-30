@@ -1,16 +1,19 @@
+
 #include <stdlib.h>
 #include <string.h>
 
 void parse_csv(char* input) {
-    char buffer[10]; 
-    strcpy(buffer, input); // BUG: Buffer overflow
+    // FIX: Dynamic allocation or bounds check
+    // Here we just use strncpy for safety
+    char buffer[10];
+    strncpy(buffer, input, 9);
+    buffer[9] = '\0';
 }
 
 int main() {
-    char* input = calloc(20, 1);
-    if(input) {
-        parse_csv(input);
-        free(input);
-    }
+    char* input = malloc(20);
+    parse_csv(input);
+    free(input);
     return 0;
 }
+    

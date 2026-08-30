@@ -2,7 +2,7 @@
 
 // Funções primitivas para injeção do SMT Solver (Z3/MathSAT)
 extern float __VERIFIER_nondet_float();
-extern void __ESBMC_assume(int);
+extern void __ESBMC_assume(_Bool);
 extern void __ESBMC_assert(int, const char*);
 
 // A clássica função de ativação não-linear de uma Rede Neural

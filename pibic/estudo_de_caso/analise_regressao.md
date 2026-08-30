@@ -40,7 +40,7 @@ pip install numpy matplotlib
 ### Como Rodar
 Num Terminal na pasta `estudo_de_caso` ou do root do VS Code, dispare:
 ```bash
-python /home/uchoa/esbmc/pibic/estudo_de_caso/regressao_visual.py
+python estudo_de_caso/regressao_visual.py
 ```
 
 ### O que você verá?

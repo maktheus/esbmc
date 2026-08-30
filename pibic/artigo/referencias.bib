@@ -1,151 +1,139 @@
-%% This BibTeX bibliography file was created using BibDesk.
-%% http://bibdesk.sourceforge.net/
+% referencias.bib — Verificação Formal de IA com ESBMC (PIBIC)
+%
+% RECONSTRUÍDO. A versão anterior tinha 18 entradas das quais apenas 2 eram
+% citadas, e 14 pertenciam a outro trabalho (detecção de impedimento em futebol
+% / visão computacional: dorazio2009, miura2008, yolo_docs, opencv_docs, …).
+% O cabeçalho ainda dizia "Created for Lauro Cesar Araujo at 2013-08-21" — era
+% o .bib do template abnTeX2 somado ao .bib de outro projeto.
+%
+% Mais grave: o artigo NÃO citava o ESBMC, sua ferramenta central, nem nenhum
+% dos solvers usados.
+%
+% ATENÇÃO: confira cada entrada abaixo contra a fonte original antes de
+% submeter. Elas foram escritas para dar a partida na bibliografia, e detalhes
+% de volume, páginas e editora precisam de conferência — um .bib com dado
+% inventado seria o mesmo defeito que este trabalho está corrigindo.
 
+% ─── A ferramenta central ────────────────────────────────────────────────────
 
-%% Created for Lauro Cesar Araujo at 2013-08-21 10:57:09 -0300 
-
-
-%%Saved with string encoding Unicode (UTF-8) 
-
-@article{dorazio2009,
-  author = {D'Orazio, T. and Leo, M. and Spagnolo, P. and Mazzeo, P. and Mosca, N. and Nitti, M. and Distante, A.},
-  title = {An Investigation into the Feasibility of Real-Time Soccer Offside Detection from a Multiple Camera System},
-  journal = {IEEE Transactions on Circuits and Systems for Video Technology},
-  volume = {19},
-  number = {12},
-  pages = {1804--1818},
-  year = {2009},
-  doi = {10.1109/tcsvt.2009.2026817}
+@inproceedings{gadelha2018esbmc,
+  author    = {Gadelha, Mikhail R. and Monteiro, Felipe R. and Morse, Jeremy and
+               Cordeiro, Lucas C. and Fischer, Bernd and Nicole, Denis A.},
+  title     = {{ESBMC} 5.0: An Industrial-Strength {C} Model Checker},
+  booktitle = {Automated Software Engineering (ASE)},
+  year      = {2018}
 }
 
-@inproceedings{miura2008,
-  author = {Miura, J. and Kubo, H.},
-  title = {Tracking players in highly complex scenes in broadcast soccer video using a constraint satisfaction approach},
-  booktitle = {Proceedings of the 2008 International Conference on Content-Based Image and Video Retrieval - CIVR '08},
-  year = {2008},
-  doi = {10.1145/1386352.1386417}
+@article{cordeiro2012smt,
+  author  = {Cordeiro, Lucas and Fischer, Bernd and Marques-Silva, Jo{\~a}o},
+  title   = {{SMT}-Based Bounded Model Checking for Embedded {ANSI-C} Software},
+  journal = {IEEE Transactions on Software Engineering},
+  year    = {2012}
 }
 
-@inproceedings{hashimoto2006,
-  author = {Hashimoto, S. and Ozawa, S.},
-  title = {A System for Automatic Judgment of Offsides in Soccer Games},
-  booktitle = {2006 IEEE International Conference on Multimedia and Expo},
-  year = {2006},
-  doi = {10.1109/icme.2006.262924}
+% ─── Solvers SMT ─────────────────────────────────────────────────────────────
+
+@inproceedings{demoura2008z3,
+  author    = {de Moura, Leonardo and Bj{\o}rner, Nikolaj},
+  title     = {{Z3}: An Efficient {SMT} Solver},
+  booktitle = {Tools and Algorithms for the Construction and Analysis of Systems (TACAS)},
+  year      = {2008}
 }
 
-@inproceedings{hosseinkhani2011,
-  author = {Hossein-Khani, J. and Soltanian-Zadeh, H. and Kamarei, M. and Staadt, O.},
-  title = {Ball Detection with the Aim of Corner Event Detection in Soccer Video},
-  booktitle = {2011 IEEE Ninth International Symposium on Parallel and Distributed Processing With Applications Workshops},
-  year = {2011},
-  doi = {10.1109/ispaw.2011.41}
+@inproceedings{niemetz2014boolector,
+  author    = {Niemetz, Aina and Preiner, Mathias and Biere, Armin},
+  title     = {Boolector 2.0 System Description},
+  booktitle = {Journal on Satisfiability, Boolean Modeling and Computation},
+  year      = {2014}
 }
 
-@incollection{jin2004,
-  author = {Jin, G. and Tao, L. and Xu, G.},
-  title = {Hidden Markov Model Based Events Detection in Soccer Video},
-  booktitle = {Lecture Notes in Computer Science},
-  publisher = {Springer},
-  pages = {605--612},
-  year = {2004},
-  doi = {10.1007/978-3-540-30125-7_75}
+@inproceedings{niemetz2023bitwuzla,
+  author    = {Niemetz, Aina and Preiner, Mathias},
+  title     = {Bitwuzla},
+  booktitle = {Computer Aided Verification (CAV)},
+  year      = {2023}
 }
 
-@inproceedings{assadifard2013,
-  author = {Assadifard, Mohammad and Javanmard, Mehdi},
-  title = {Using Digital Image Processing Solutions For Offside Recognition, Instead of Assistant Referees},
-  booktitle = {The 2013 World Congress in Computer Science Computer Engineering and Applied Computing},
-  year = {2013}
+% ─── Model checking indutivo (raia E) ────────────────────────────────────────
+
+@inproceedings{bradley2011ic3,
+  author    = {Bradley, Aaron R.},
+  title     = {{SAT}-Based Model Checking without Unrolling},
+  booktitle = {Verification, Model Checking, and Abstract Interpretation (VMCAI)},
+  year      = {2011}
 }
 
-@article{tavassolipour2014,
-  author = {Tavassolipour, M. and Karimian, M. and Kasaei, S.},
-  title = {Event Detection and Summarization in Soccer Videos Using Bayesian Network and Copula},
-  journal = {IEEE Transactions on Circuits and Systems for Video Technology},
-  volume = {24},
-  number = {2},
-  pages = {291--304},
-  year = {2014},
-  doi = {10.1109/tcsvt.2013.2243640}
+@inproceedings{een2011pdr,
+  author    = {E{\'e}n, Niklas and Mishchenko, Alan and Brayton, Robert},
+  title     = {Efficient Implementation of Property Directed Reachability},
+  booktitle = {Formal Methods in Computer-Aided Design (FMCAD)},
+  year      = {2011}
 }
 
-@misc{sinha2017,
-  author = {Sinha, U.},
-  title = {Normalized RGB - AI Shack - Tutorials for OpenCV, computer vision, deep learning, image processing, neural networks and artificial intelligence},
-  year = {2017},
-  url = {http://www.aishack.in/tutorials/normalized-rgb/}
+@inproceedings{brayton2010abc,
+  author    = {Brayton, Robert and Mishchenko, Alan},
+  title     = {{ABC}: An Academic Industrial-Strength Verification Tool},
+  booktitle = {Computer Aided Verification (CAV)},
+  year      = {2010}
 }
 
-@inproceedings{lima2021,
-  author = {Lima, Karim Ferreira and Figueiredo, Rodrigo Marques de and Martins, Eduardo Augusto and Schmith, Jean},
-  title = {Virtual lines for offside situations analysis in football},
-  booktitle = {Workshop de Trabalhos da Graduação - Conference on Graphics, Patterns and Images (SIBGRAPI)},
-  year = {2021},
-  pages = {189--194},
-  doi = {10.5753/sibgrapi.est.2021.20037}
+@misc{wolf2016yosys,
+  author = {Wolf, Clifford},
+  title  = {{Yosys} Open {SYnthesis} {Suite}},
+  year   = {2016},
+  note   = {\url{https://yosyshq.net/yosys/}}
 }
+
+% ─── Verificação de redes neurais ────────────────────────────────────────────
+
+@inproceedings{katz2017reluplex,
+  author    = {Katz, Guy and Barrett, Clark and Dill, David L. and Julian, Kyle
+               and Kochenderfer, Mykel J.},
+  title     = {Reluplex: An Efficient {SMT} Solver for Verifying Deep Neural Networks},
+  booktitle = {Computer Aided Verification (CAV)},
+  year      = {2017}
+}
+
+@inproceedings{katz2019marabou,
+  author    = {Katz, Guy and Huang, Derek A. and Ibeling, Duligur and others},
+  title     = {The Marabou Framework for Verification and Analysis of Deep Neural Networks},
+  booktitle = {Computer Aided Verification (CAV)},
+  year      = {2019}
+}
+
+@inproceedings{wang2018neurify,
+  author    = {Wang, Shiqi and Pei, Kexin and Whitehouse, Justin and Yang, Junfeng
+               and Jana, Suman},
+  title     = {Efficient Formal Safety Analysis of Neural Networks},
+  booktitle = {Neural Information Processing Systems (NeurIPS)},
+  year      = {2018}
+}
+
+% ─── Aprendizado por reforço e controle (cart-pole) ──────────────────────────
+
+@inproceedings{lillicrap2016ddpg,
+  author    = {Lillicrap, Timothy P. and Hunt, Jonathan J. and Pritzel, Alexander
+               and others},
+  title     = {Continuous Control with Deep Reinforcement Learning},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2016}
+}
+
+@article{barto1983cartpole,
+  author  = {Barto, Andrew G. and Sutton, Richard S. and Anderson, Charles W.},
+  title   = {Neuronlike Adaptive Elements That Can Solve Difficult Learning
+             Control Problems},
+  journal = {IEEE Transactions on Systems, Man, and Cybernetics},
+  year    = {1983}
+}
+
+% ─── Entradas preservadas da versão anterior ─────────────────────────────────
 
 @patent{gopinath2008,
   author = {Gopinath, V. P. and Gopinath, J.},
   title = {Method of automatically detecting offside in Soccer using fixed and wireless sensors and central server},
   year = {2008},
   number = {U.S. Patent Application No. 12/131,086}
-}
-
-@article{xu2006,
-  author = {Xu, H. and Chua, T.},
-  title = {Fusion of AV features and external information sources for event detection in team sports video},
-  journal = {ACM Transactions on Multimedia Computing, Communications, and Applications},
-  volume = {2},
-  number = {1},
-  pages = {44--67},
-  year = {2006},
-  doi = {10.1145/1126004.1126007}
-}
-
-@misc{
-    football-players-detection,
-    title = { football-players-detection Dataset },
-    type = { Open Source Dataset },
-    author = { Roboflow },
-    howpublished = { \url{ https://universe.roboflow.com/roboflow-jvuqo/football-players-detection-3zvbc } },
-    url = { https://universe.roboflow.com/roboflow-jvuqo/football-players-detection-3zvbc },
-    journal = { Roboflow Universe },
-    publisher = { Roboflow },
-    year = { 2024 },
-    month = { aug },
-    note = { visited on 2025-01-14 },
-}
-
-@misc{yolo_docs_introduction,
-    title = {YOLO Documentation - Introduction},
-    author = {{YOLO Development Team}},
-    year = {2025},
-    url = {https://yolo-docs.readthedocs.io/en/latest/0_get_start/1_introduction.html},
-    note = {Acessado em: 28 jan. 2025}
-}
-
-@misc{opencv_docs,
-    title = {OpenCV Documentation - Introduction},
-    author = {{OpenCV Development Team}},
-    year = {2025},
-    url = {https://docs.opencv.org/4.10.0/d1/dfb/intro.html},
-    note = {Acessado em: 28 jan. 2025}
-}
-
-@article{Bassek2025,
-  title = {An integrated dataset of spatiotemporal and event data in elite soccer},
-  volume = {12},
-  ISSN = {2052-4463},
-  url = {http://dx.doi.org/10.1038/s41597-025-04505-y},
-  DOI = {10.1038/s41597-025-04505-y},
-  number = {1},
-  journal = {Scientific Data},
-  publisher = {Springer Science and Business Media LLC},
-  author = {Bassek,  Manuel and Rein,  Robert and Weber,  Hendrik and Memmert,  Daniel},
-  year = {2025},
-  month = feb 
 }
 
 @inproceedings{gopinath2021verifying,

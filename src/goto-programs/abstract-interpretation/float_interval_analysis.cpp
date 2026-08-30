@@ -67,10 +67,8 @@ static bool try_extract_float_bound(
     return false;
 
   out_symbol_name = sym_gte.thename.as_string();
-  out_lower =
-    (float)to_constant_floatbv2t(gte.side_2).value.to_double();
-  out_upper =
-    (float)to_constant_floatbv2t(lte.side_2).value.to_double();
+  out_lower = (float)to_constant_floatbv2t(gte.side_2).value.to_double();
+  out_upper = (float)to_constant_floatbv2t(lte.side_2).value.to_double();
   return true;
 }
 
@@ -89,7 +87,7 @@ static void collect_float_intervals(
   const goto_functiont &goto_function,
   float_interval_map_t &interval_map)
 {
-  forall_goto_program_instructions(i_it, goto_function.body)
+  forall_goto_program_instructions (i_it, goto_function.body)
   {
     if (!i_it->is_assume())
       continue;
@@ -118,7 +116,7 @@ static void instrument_float_intervals(
   if (interval_map.empty())
     return;
 
-  Forall_goto_program_instructions(i_it, goto_function.body)
+  Forall_goto_program_instructions (i_it, goto_function.body)
   {
     if (!i_it->is_assign())
       continue;
@@ -180,7 +178,7 @@ void float_interval_analysis(
 
   // Phase 1: Collect float bounds from all ASSUME guards
   float_interval_map_t global_intervals;
-  Forall_goto_functions(f_it, goto_functions)
+  Forall_goto_functions (f_it, goto_functions)
   {
     if (!f_it->second.body_available)
       continue;
@@ -192,7 +190,7 @@ void float_interval_analysis(
     global_intervals.size());
 
   // Phase 2: Instrument assignments with concrete interval assumptions
-  Forall_goto_functions(f_it, goto_functions)
+  Forall_goto_functions (f_it, goto_functions)
   {
     if (!f_it->second.body_available)
       continue;
@@ -203,6 +201,5 @@ void float_interval_analysis(
 
   fine_timet t_stop = current_time();
   log_status(
-    "Float Interval Analysis: done in {}s.",
-    time2string(t_stop - t_start));
+    "Float Interval Analysis: done in {}s.", time2string(t_stop - t_start));
 }

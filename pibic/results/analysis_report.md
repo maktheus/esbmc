@@ -115,11 +115,11 @@ Simulamos um loop onde um Agente de IA gera código C inseguro (com buffer overf
 Para ilustrar de forma didática o que o ESBMC efetivamente enxerga durante o ciclo do agente (em contraste com o modelo idealizado da LLM), elaboramos as representações conceituais abaixo:
 
 ### A Visão Contínua (Expectativa do Agente/IA)
-![Expected NN Boundary](/home/uchoa/.gemini/antigravity/brain/ab035961-5cb8-43dd-9ed6-c903ecc815d4/expected_nn_boundary_1772153552771.png)
+<!-- imagem ausente: Expected NN Boundary (estava em /home/uchoa/.gemini/, fora do repo) -->
 *A rede neural ou o Agente generalizam o espaço simulado e assumem uma fronteira de decisão suave e contínua, invisível ao risco de bordas extremas nas validações primitivas.*
 
 ### A Visão Discreta Formal (Realidade SMT no ESBMC)
-![Actual SMT Violation](/home/uchoa/.gemini/antigravity/brain/ab035961-5cb8-43dd-9ed6-c903ecc815d4/actual_smt_violation_1772153568416.png)
+<!-- imagem ausente: Actual SMT Violation (estava em /home/uchoa/.gemini/, fora do repo) -->
 *O solver (Z3 atuando no ESBMC) "quebra" as superfícies estáticas em domínios discretos restritos. Pelo modelo de Ralph Loop, ele caça ativamente contra-exemplos provando matematicamente os picos (falhas de buffer, violações de arrays, vazamentos de memória). Essas ranhuras e violações caóticas são devolvidas como feedback exato e semântico à LLM reescrever o código de volta à segurança.*
 
 ### 2.4. Caso 4: Sistema de Controle Digital (Engenharia do Caos)

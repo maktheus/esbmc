@@ -1,38 +1,37 @@
 \chapter{Resultado Parcial}
 \label{cap:resultados}
 
-Este capítulo apresenta os resultados parciais obtidos, organizados por caso de uso. Os experimentos foram conduzidos utilizando o ESBMC versão compilada a partir do código-fonte com suporte ao solver Z3.
+Este capítulo apresenta os resultados parciais obtidos, organizados por caso de uso. Como os experimentos usam versões e solvers diferentes, o ambiente, as flags e o tempo limite são registrados por execução em \texttt{results/EVIDENCIAS.md}; não se assume uma configuração global única.
 
 \section{Caso 1 Verificacao Formal de Neuronio com ReLU}
 
 \subsection{Metodologia de Execucao}
 
-A verificacao do neurônio (\texttt{neuron.py}) foi executada localmente via linha de comando:
+A verificacao direta de \texttt{neuron.py} permanece como experimento proposto:
 
 \begin{lstlisting}[language=bash, numbers=none]
 esbmc pibic/1_python_models/neuron.py --floatbv --k-induction
 \end{lstlisting}
 
-O \textit{frontend} Python do ESBMC (baseado em \texttt{ast2json}) converte o c\'odigo-fonte diretamente para \texttt{GOTO-Programs}, a representacao intermediaria interna do verificador. A execucao simb\'olica trata as variaveis nao inicializadas (\texttt{in1}, \texttt{in2}) como valores nao-determin\'isticos. 
-
-Neste caso de uso, as primitivas magnas da verificacao \textbf{foram meticulosamente selecionadas}:
-- A estrutura condicional \texttt{if in1 >= 0.0 and in1 <= 1.0} \'e automaticamente convertida em uma restrincao de ambiente, ou \textbf{\textit{pre-condicao}} (\texttt{\_\_ESBMC\_assume}), pelo \textit{solver}. Essa \textit{assumption} \'e vital: sem ela, o ESBMC tentaria provar o modelo para qualquer n\'umero de ponto flutuante ($-\infty$ a $+\infty$), o que causaria violacao dos limites te\'oricos e explosao do espaco de estados SMT. Assumir que as variaveis de entrada estao contidas em $[0, 1]$ (pixel normalizado) poda ramos computacionalmente intrataveis.
-- A condicao s'imbolica \textbf{\textit{assert}} (\texttt{assert out <= 0.6}) representa nosso invariante de seguranca estrito a ser provado. Foi selecionada especificamente para consolidar matematicamente a fronteira de ativacao maxima do neuronio, fornecendo uma base axiomatica impenetravel para ataques sobrepostas no espectro.
+O binario ESBMC 6.8.0 embarcado neste repositorio nao possui o \textit{frontend}
+Python compilado e rejeita arquivos \texttt{.py}. Portanto, esta rodada nao atribui
+veredito formal a \texttt{neuron.py}. Executar esse experimento requer uma versao
+com \texttt{ENABLE\_PYTHON\_FRONTEND=ON} e um novo log bruto.
 
 \subsection{Resultado da Verificacao do Emulador QNN}
 
-O ESBMC retornou o veredicto \textbf{VERIFICATION SUCCESSFUL} confirmando a eficácia do método misto (Python limitando as fronteiras via simulacro de EVA):
+O log \texttt{results/logs/verify\_mlp\_qnn.log} pertence a outro artefato: o
+\textit{harness} C quantizado que implementa XOR nas quatro entradas discretas.
+Para esse escopo, o ESBMC retornou \textbf{VERIFICATION SUCCESSFUL} em 0,08\,s
+(tabela completa em \texttt{results/EVIDENCIAS.md}). O veredito não cobre o
+dominio continuo de \texttt{neuron.py}.
 
-\begin{alineas}
-    \item \textbf{Propriedades de Conversão}: As macros literais \texttt{fxp\_add} e \texttt{fxp\_mult} efeturam matematicamente precisas as rolagens lógicas sem acusarem sobrecargas.
-    \item \textbf{Verificação das Fronteiras Injetadas}: A prova pelo \textit{solver} atesta que os ramos que foram forçadamente podados na árvore de execução pelos nossos detectores artificiais (\texttt{if not (...) return}) extirparam efetivamente o ruído, colapsando a asserção final para um cenário de prova em $t < 5s$;
-    \item \textbf{Validade Matemática}: A integridade cruzou-se satisfatoriamente: não existe nenhuma atribuição de ruídos $x \in [0, 1]$ capaz de perturbar a integridade analítica final quantizada que limitava $out > 0.65$ após o \textit{shift-right}.
-\end{alineas}
-
-A \autoref{fig:case1_plot} ilustra, de forma visual, a superf\'icie de sa\'idas do neuronio sobre todo o dom\'inio de entrada $[0,1]^2$ e a distribuicao dos valores de sa\'ida obtidos por amostragem densa ($10^4$ pontos), comprovando que 100\% das amostras respeitam os \textit{bounds} formalmente verificados.
+A \autoref{fig:case1_plot} ilustra a superficie de saidas por amostragem densa
+($10^4$ pontos). Os 100\% de acertos observados descrevem apenas a amostra e nao
+substituem uma prova sobre todo o dominio continuo.
 
 \begin{figure}[htb]
-    \caption{\label{fig:case1_plot}Superf\'icie de Sa\'ida do Neuronio e Distribuicao das Sa\'idas com os Limites Verificados pelo ESBMC.}
+    \caption{\label{fig:case1_plot}Superficie de saida do neuronio e distribuicao amostral; a figura nao constitui prova formal do dominio continuo.}
     \begin{center}
         \includegraphics[width=0.95\textwidth]{case1_plot.png}
     \end{center}
@@ -41,7 +40,9 @@ A \autoref{fig:case1_plot} ilustra, de forma visual, a superf\'icie de sa\'idas 
 
 \subsection{Analise dos Benchmarks QNN na Literatura Base}
 
-O Caso 1 prova uma viabilidade local de modelagem, entretanto a base paramétrica original que referenciamos, \textbf{o QNNVerifier original (\cite{gopinath2021verifying})}, extraiu e balizou benchmarks fundamentais em C que dão base ao escopo das simulações que estamos almejando replicar perfeitamente em \textit{esbmc-python}. Na literatura, os autores avaliaram três grandes compilações:
+O Caso 1 demonstra uma viabilidade local no harness C quantizado. Como referencia,
+o QNNVerifier original~\cite{gopinath2021verifying} avaliou benchmarks maiores em C;
+reproduzir esses resultados pelo frontend Python permanece trabalho futuro.
 \begin{enumerate}
     \item \textbf{Iris Dataset:} Redes simples (3 camadas densas com Tanh).
     \item \textbf{Character Recognition:} Redes clássicas com 4 camadas com Sigmoides.
@@ -52,13 +53,14 @@ As amarrações extraídas pela técnica deles (Intervalos injetados pelo Frama-
 
 \subsection{Verificacao de M\'ultiplas Camadas (MLP Quantizada)}
 
-Para estender o conceito de neuronio \'unico sob a mesma topologia, uma arquitetura de \textit{Multilayer Perceptron} (MLP) com duas camadas (sendo a oculta composta por tr\^es neuronios com ativacao ReLU e uma camada de sa\'ida) suportou a conversão rígida descrita na metodologia. O limite anal\'itico rigoroso determinou que a sa\'ida maxima do tensor quantizado compensa o realinhamento da escala $S$.
-
-O ESBMC concluiu a analise do modelo MLP modificado (\texttt{mlp\_qnn.py}) sob a prova indutiva \texttt{k=15}. A ampliacao da arquitetura exige o desdobramento na geracao formal (\textit{Verification Conditions}). Tais instruc\~oes derivam fisicamente do desenrolamento simb\'olico integral de cada multiplicacao vetorial em inteiros combinada as restrições inferidas simuladamente pelo Módulo Abstrato. 
-Diferente da heurística \textit{float} que gastava dezenas de segundos no truncamento de precisão infinitesimal, o pareamento dos axiomas em Bitvectores Int8 forçou ao encerramento seguro sob os Limites do Desenvolvedor através do status final de \textbf{VERIFICATION SUCCESSFUL}. A \autoref{fig:case1_mlp_plot} apresenta a topologia resultante de decisao dessa MLP e atesta que nenhuma das amostras testadas extrapola as fronteiras validadas formalmente pelo \textit{solver}.
+A MLP quantizada foi materializada como harness C gerado, com aritmetica inteira
+Q8.8 e quatro casos XOR. E esse artefato, nao \texttt{mlp\_qnn.py}, que recebe o
+veredito \textbf{VERIFICATION SUCCESSFUL} registrado. A
+\autoref{fig:case1_mlp_plot} apresenta uma visualizacao amostral da decisao; ela
+complementa, mas nao amplia, o escopo discreto das quatro propriedades verificadas.
 
 \begin{figure}[htb]
-    \caption{\label{fig:case1_mlp_plot}Superf\'icie de Sa\'ida da MLP e Distribuicao das Amostras em Relacao aos Limites Verificados.}
+    \caption{\label{fig:case1_mlp_plot}Superficie de saida da MLP e distribuicao amostral; o veredito formal pertence ao harness C XOR.}
     \begin{center}
         \includegraphics[width=0.95\textwidth]{case1_mlp_plot.png}
     \end{center}
@@ -66,16 +68,18 @@ Diferente da heurística \textit{float} que gastava dezenas de segundos no trunc
 \end{figure}
 
 \begin{figure}[htb]
-    \caption{\label{fig:case1_weights}Heatmap de Pesos da MLP atestando a origem topol\'ogica das VCCs.}
+    \caption{\label{fig:case1_weights}Pesos da MLP submetida a verificacao (\texttt{teste\_mlp/mlp\_weights.h}). A figura ilustra a magnitude e o sinal dos parametros; nao constitui, por si, resultado de verificacao.}
     \begin{center}
         \includegraphics[width=0.95\textwidth]{plot_case1_weights.png}
     \end{center}
-    \legend{Fonte: Elaborada pelo autor (Subagente Grafico), 2026.}
+    \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{figure}
 
 \subsection{Extensao ao Dom\'{i}nio Generativo: Verificacao Modular de Transformers}
 
-O Caso~1 provou a viabilidade computacional da abordagem SMT de limitadores fixos para um neur\^{o}nio isolado e uma MLP pequena. O experimento estendeu a hierarquia de avaliação (Níveis 3 e 4) aos \textbf{Blocos de Transformer} e \textbf{Blocos MLP Gated (DeepSeek-R1)} em \textit{stubs} especializados de \textit{C}.
+O harness C do Caso~1 demonstrou a viabilidade computacional da abordagem SMT
+em uma MLP pequena. O experimento estendeu a avaliacao a blocos de Transformer e
+MLP gated em \textit{stubs} especializados de C, sem representar o modelo completo.
 
 Enquanto os detalhamentos técnicos sobre os tensores (dimensão de embedding $d=4$ e entrada simbólica $x \in [-1,1]^4$) e as deduções axiomáticas (\textit{Verifiability Properties P1-P4}) estão expostos no material de Metodologia, os resultados destas experimentações atestam a robusteza operacional dos verificadores modulares.
 
@@ -107,14 +111,16 @@ O desafio fundamental \'{e} que $\sigma(z) = 1/(1+e^{-z})$ \'{e} uma funcao tran
 \sigma_{\text{approx}}(z) = \text{clip}\!\left(0.25z + 0.5,\; 0,\; 1\right) \;\in\; [0,1] \quad \forall\, z
 \end{equation}
 
-Essa expressao \'{e} a tangente de $\sigma$ em $z=0$ (exata nesse ponto) com \textit{clipping} que preserva os limites globais. Ao substituir transcric\~oes exponenciais complexas por diretrizes retil\'ineas liminares, transmutamos geometricamente o \textit{state space}: O \textit{solver} SMT (Z3/Bitwuzla), que usualmente declararia estado \texttt{UNKNOWN} ou sofreria \textit{timeout} perante calculos anal\'iticos de pontos flutuantes indecid\'iveis para func\~oes transcendentalistas cont\'inuas, agora perfaz operac\~oes literais fragmentadas lineares (simples somas e clivagens de restricao comparativa). O resultado atesta que o salto heur\'istico proporciona \textit{verificabilidade aut\^entica em tempo real} sem comprometer as margens param\'etricas operacionais do tensor iterado.
+Essa expressao e a tangente de $\sigma$ em $z=0$, com \textit{clipping} em
+$[0,1]$. Ela torna o stub tratavel pelo solver, mas altera a funcao implantada;
+o veredito resultante vale para essa aproximacao e para os bounds declarados.
 
 \begin{figure}[htb]
     \caption{\label{fig:silu_approx}Substituicao Transcendental no ESBMC: SiLU Exata vs Aproximacao SMT Linear.}
     \begin{center}
         \includegraphics[width=0.9\textwidth]{plot_silu_approx.png}
     \end{center}
-    \legend{Fonte: Elaborada pelo autor (Subagente Curvas), 2026.}
+    \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{figure}
 
 \subsubsection{Limitacoes e Por Que Ocorrem}
@@ -151,7 +157,11 @@ esbmc verification/deepseek_mlp_stub.c \
       --overflow-check --no-unwinding-assertions
 \end{lstlisting}
 
-Este resultado demonstra que a verificacao modular de blocos MLP de LLMs \'{e} \textbf{concretamente vi\'{a}vel} com o ESBMC. A chave \'{e} a substituicao de funcoes transcendentais, como $\exp$ e $\sigma$, por aproximacoes lineares conservadoras que o \textit{solver} SMT consegue raciocinar diretamente, sem perda das garantias de seguranca. A mesma metodologia se aplica diretamente ao \textit{logit clamp} final do Llama, \`{a}s camadas de normalizacao RMSNorm e a qualquer componente cr\'{i}tico de modelos quantizados em \texttt{Fixed16}.
+Este resultado mostra que stubs reduzidos de blocos MLP podem ser tratados pelo
+ESBMC quando funcoes transcendentais sao substituidas por aproximacoes ou
+sobreaproximacoes explicitamente documentadas. Cada nova aplicacao --- como
+RMSNorm ou \textit{logit clamp} --- exige validar novamente a aproximacao, os
+bounds e a propriedade; o resultado nao se transfere automaticamente.
 
 
 
@@ -166,40 +176,44 @@ A aplicacao de \texttt{\_\_ESBMC\_assume(seq\_len <= 10)} associado ao fato do a
 
 \subsection{Escalabilidade do GEMM}
 
-Para o kernel de multiplicação de matrizes com \textit{tiling}, foi realizada uma análise de escalabilidade variando a dimensão $N$. Os resultados estao sumarizados na \autoref{tab:gemm_tempo} e visualizados na \autoref{fig:case2_plot}.
+Para o kernel de multiplicação de matrizes com \textit{tiling}, foi realizada uma análise de escalabilidade variando a dimensão $N$. Os resultados estao sumarizados na \autoref{tab:gemm_tempo}.
 
 \begin{table}[htb]
-\caption{Tempo de verificação do kernel GEMM em função da dimensão da matriz.}
+\caption{Tempo de verificação do kernel GEMM em função da dimensão da matriz. Medição direta; ambiente completo em \texttt{results/case2\_ambiente.md}.}
 \label{tab:gemm_tempo}
 \begin{center}
-\begin{tabular}{c|c}
+\begin{tabular}{c|r|l}
 \hline
-\textbf{Dimensão N} & \textbf{Tempo (s)} \\
+\textbf{Dimensão N} & \textbf{Tempo (s)} & \textbf{Veredito} \\
 \hline
-2 & $<$ 1 \\
-3 & $\approx$ 2 \\
-4 & $\approx$ 5 \\
-5 & $\approx$ 8 \\
-6 & $\approx$ 15 \\
+2 & 1,97   & SAFE \\
+3 & 16,83  & SAFE \\
+4 & $>$ 300 & Indeciso (\textit{timeout}) \\
 \hline
 \end{tabular}
 \end{center}
 \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{table}
 
-\begin{figure}[htb]
-    \caption{\label{fig:case2_plot}Tempo de verificação vs dimensão da matriz, GEMM com tiling.}
-    \begin{center}
-        \includegraphics[width=0.98\textwidth]{case2_plot.png}
-    \end{center}
-    \legend{Fonte: Elaborada pelo autor, 2026.}
-\end{figure}
+O crescimento e acentuado: de $N=2$ para $N=3$ o tempo cresce cerca de $8{,}5\times$, e em $N=4$ o \textit{solver} nao decide dentro de 300 segundos. Vale registrar que \textit{timeout} e um resultado \textbf{indeciso} --- nao significa que a propriedade seja falsa, nem que seja verdadeira.
 
-O crescimento exponencial do tempo de verificacao com o tamanho da matriz confirma que a verificacao formal completa \'e inviavel para matrizes de LLMs em escala real (ex.: dimensao 4096) ou at\'e mesmo blocos medianos. A \autoref{fig:case2_plot} projeta a continuidade dessa escala exponencial para matrizes de dimensao $60 \times 60$, na qual o \textit{solver} atinge uma inviabilidade computacional pratica estimando-se tempos imensuraveis sob hardware convencional. Entretanto, a abordagem permanece \textbf{altamente eficaz} para verificar a corretude da l\'ogica, especialmente do algoritmo de \textit{tiling}, em inst\^ancias reduzidas (vide analise da \textit{Small Scope Hypothesis}).
+Neste harness, nesta maquina e com limite de 300\,s, a parede observada aparece em
+$N=4$. Os tres pontos, um deles indeciso, nao sustentam extrapolacao para dimensao
+4096 nem uma lei de crescimento; a conclusao fica restrita ao experimento medido.
+
+A abordagem permanece util para verificar a corretude logica do algoritmo de \textit{tiling} em instancias reduzidas ($N \leq 3$), o que e coerente com a \textit{Small Scope Hypothesis}.
+
+Todos os harnesses citados neste capitulo sao reexecutaveis por
+\texttt{scripts/gerar\_evidencias.py}, que grava a saida bruta do solver em
+\texttt{results/logs/} e consolida os vereditos em \texttt{results/EVIDENCIAS.md}.
+Na execucao registrada, dos 12 harnesses: \textbf{9 provados}, \textbf{3 com
+contra-exemplo}, nenhum indeciso. O \textit{stub} do Transformer, por exemplo,
+gera \textbf{28 condicoes de verificacao} (4 restantes apos simplificacao) e e
+provado em 0,08\,s.
 
 \section{Caso 3 --- Loop Neuro-Simbolico}
 
-O agente simulado executou com sucesso o ciclo completo de 5 iteracoes. Os resultados detalhados sao apresentados na \autoref{fig:case3_plot}.
+O agente executou o ciclo completo em \textbf{duas} iteracoes --- o loop encerra na primeira verificacao bem-sucedida, de modo que cinco iteracoes nao sao alcancaveis com este \textit{mock}. Os dados medidos estao em \texttt{results/case3\_agent\_stats.csv}.
 
 \begin{figure}[htb]
     \caption{\label{fig:case3_plot}Caso~3: Tempo por Iteracao do Loop Agente-ESBMC, com decomposicao entre atraso LLM e verificacao formal, e Overhead do Verificador por iteracao.}
@@ -214,20 +228,29 @@ O agente simulado executou com sucesso o ciclo completo de 5 iteracoes. Os resul
     \begin{center}
         \includegraphics[width=0.95\textwidth]{plot_agent_statemachine.png}
     \end{center}
-    \legend{Fonte: Elaborada pelo autor (Subagente Arquitetural), 2026.}
+    \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{figure}
 
 \begin{alineas}
-    \item \textbf{Iteracao 0}: O ESBMC detectou o \textit{buffer overflow} no c\'{o}digo com \texttt{strcpy}, produzindo um contra-exemplo concreto com o \textit{offset} exato da violacao. O tempo total foi de $\approx\!2{,}0$\,s, dos quais apenas $\approx\!0{,}6$\,s foram do verificador formal e o restante do atraso simulado do LLM;
-    \item \textbf{Iteracoes 1 a 4}: O c\'{o}digo corrigido com \texttt{strncpy} recebeu \texttt{VERIFICATION SUCCESSFUL} consistentemente, com tempo do verificador inferior a 0,65\,s em todas as iteracoes.
+    \item \textbf{Iteracao 0}: o ESBMC detectou o \textit{buffer overflow} no c\'{o}digo com \texttt{strcpy} (\texttt{UNSAFE}), em \textbf{0,13\,s} de verificador;
+    \item \textbf{Iteracao 1}: o c\'{o}digo corrigido com \texttt{strncpy} recebeu \texttt{VERIFICATION SUCCESSFUL} em \textbf{0,11\,s}, encerrando o ciclo.
 \end{alineas}
 
-O painel direito da \autoref{fig:case3_plot} evidencia que o \textit{overhead} do ESBMC \'{e} \textbf{constante e inferior a 1 segundo} para \textit{snippets} de c\'{o}digo gerado por LLMs, independentemente da iteracao. O custo computacional da verificacao formal \'{e} marginal frente ao ganho de seguranca. Neste sistema ag\^entico, O LLM gera naturalmente l\'ogicas reativas, mas o orquestrador Ralph codifica as restric\~oes estritas via \textbf{\textit{\_\_ESBMC\_assume}} e \textbf{\textit{assert}}. Crucialmente, durante o \textit{feedback loop}, o extrator sem\^antico converte a sa\'ida densa e formal nativa do solver (\textit{Trace}: \texttt{Violated property: array `buffer` upper bound}) em uma reinjecao de prompt (\textit{Prompt}: "Fix index-out-of-bounds at line X when input exceeds sizeof(buffer)"). Esta traducao org\^anica da prova mec\^anica em direcionalidade de linguagem natural cristaliza a camada de confianca (\textit{trust layer}) autonoma num rigoroso ciclo neuro-simb\'olico.
+O \textit{overhead} do verificador ficou abaixo de 0,15\,s nas duas iteracoes,
+mas esse numero so foi obtido apos limitar o desenrolamento com
+\texttt{-{}-unwind 32}. Sem esse limite, o modelo de \texttt{strncpy} nao termina;
+com \texttt{-{}-no-unwinding-assertions}, o caso pode se tornar vacuo. O experimento
+usa um \textbf{mock deterministico}, nao um agente LLM real: ele demonstra de forma
+controlada o protocolo de gerar, verificar, extrair o diagnostico e tentar novamente.
+Conclusoes sobre autonomia, qualidade de prompts ou agentes reais exigem um novo
+experimento.
 
 
 \section{Caso 4 --- Controlador PID com Engenharia do Caos e SMT}
 
-O verificador formal comprovou, via \texttt{VERIFICATION SUCCESSFUL}, que o controlador PID mant\'{e}m $T < 150\,^{\circ}$C para todos os 10 passos e para qualquer ru\'{i}do em $[-5, +5]$. A \autoref{fig:case4_plot} apresenta a din\^{a}mica completa simulada com os par\^{a}metros reais do c\'{o}digo, para cinco perfis de ru\'{i}do distintos.
+O verificador formal comprovou, via \texttt{VERIFICATION SUCCESSFUL} em \textbf{217\,s}, que o controlador PID mant\'{e}m $T < 150\,^{\circ}$C para todos os 10 passos e para qualquer ru\'{i}do em $[-5, +5]$ (log bruto em \texttt{results/logs/pid\_controller.log}).
+
+Cabe registrar o custo dessa prova: 217 segundos para dez passos de um controlador PID escalar. Uma primeira medicao com limite de 200\,s havia resultado em \textit{timeout}, o que quase levou a classificar a propriedade como nao verificada --- ela e verdadeira, e o limite e que era curto. \textit{Timeout} nao e veredito: le-lo como "seguro" inventa uma prova, e le-lo como "sem evidencia" descarta uma prova legitima. A \autoref{fig:case4_plot} apresenta a din\^{a}mica completa simulada com os par\^{a}metros reais do c\'{o}digo, para cinco perfis de ru\'{i}do distintos.
 
 \begin{figure}[htb]
     \caption{\label{fig:case4_plot}Caso~4: Evolucao da Temperatura, Sinal de Controle PID e Erro de Rastreamento sob Cinco Perfis de Ru\'{i}do de Sensor.}
@@ -242,71 +265,244 @@ O verificador formal comprovou, via \texttt{VERIFICATION SUCCESSFUL}, que o cont
     \begin{center}
         \includegraphics[width=0.85\textwidth]{plot_pid_phase_portrait.png}
     \end{center}
-    \legend{Fonte: Elaborada pelo autor (Subagente de Controle), 2026.}
+    \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{figure}
 
 \begin{alineas}
-    \item \textbf{Painel inferior direito}: O erro de rastreamento $e(t) = \text{setpoint} - T_{\text{medido}}$ converge para zero em todos os perfis dentro dos 10 passos, comprovando a estabilidade do controlador mesmo sob caos estoc\'{a}stico. Ressalta-se formalmente que este Bounded Model Checking parametrizou o escudo (\textit{shield}) limitando o \textit{Engine} essencialmente nas captac\~oes ruidosas originadas no sensor (\textit{sensor-side}); analises sist\^emicas projetando a modelagem \textit{Chaos Engineering} na perturbacao final dos tuchos e motores atuadores (\textit{actuator-side}) consistem em desenvolvimentos vitais para os trabalhos subsequentes focados em interac\~oes eletromec\^anicas robustas.
+    \item \textbf{Painel inferior direito}: O erro de rastreamento diminui nos cinco perfis simulados ao longo dos 10 passos. Essa observacao finita nao comprova estabilidade assintotica. A prova formal cobre apenas $T<150\,^{\circ}$C por dez passos e ruido de sensor em $[-5,+5]$; perturbacoes no atuador ficam para trabalho futuro.
 \end{alineas}
 
-\subsection{Verificacao de Biblioteca de Controle C++ Famosa (Arduino PID)}
+\subsection{Integracao de Biblioteca de Controle C++ de Terceiros (Arduino PID)}
 
-Para demonstrar a aplicabilidade da abordagem de verificacao formal formal a sistemas de controle reais em producao e consolidar o m\'etodo de Engenharia do Caos, a biblioteca padrao da ind\'ustria \textit{Arduino-PID-Library} (de Brett Beauregard) foi clonada diretamente do reposit\'orio oficial no GitHub. Foi desenvolvido um \textit{harness} em C++ (escrevendo \textit{mock} para as func\~oes temporais em placa, como \texttt{millis()}) que encapsula a inst\^ancia e execucao da classe \texttt{PID} sob a mesma planta t\'ermica e modelo de injecao de ru\'ido sensoriais variando entre $[-5, +5]$.
+Para avaliar a aplicabilidade da abordagem a sistemas de controle reais em producao, a biblioteca \textit{Arduino-PID-Library} (de Brett Beauregard) foi integrada ao repositorio como subm\'odulo Git, fixada no \textit{commit} \texttt{524a4268}. Foi desenvolvido um \textit{harness} (\texttt{verification/verify\_pid.cpp}) que instancia a classe \texttt{PID} sob a mesma planta t\'ermica e o mesmo modelo de ru\'ido sensorial em $[-5, +5]$, com \textit{mock} para \texttt{millis()}.
 
-O orquestrador ESBMC consumiu o c\'odigo C++ limpo (\texttt{PID\_v1.cpp}) sem qualquer modificacao ou \textit{downgrade} pragmatico na abstracao original em objeto. Ap\'os explorar os caminhos por \textit{Bounded Model Checking} (\texttt{-{}-floatbv -{}-unwind~11}), o \textit{solver} emitiu \textbf{VERIFICATION SUCCESSFUL}. O experimento atesta, com endosso formal, que algoritmos famosos \textit{open-source} blindados por invariantes SMT sao robustos o suficiente para integracao direta nos fluxos cr\'iticos.
+\textbf{A verificacao, contudo, nao foi concluida.} Ao executar o \textit{harness} com as flags previstas (\texttt{-{}-floatbv -{}-unwind~11}), foram encontrados tres obstaculos independentes, dois deles ja removidos:
+
+\begin{enumerate}
+  \item O \textit{harness} declarava \texttt{void \_\_ESBMC\_assume(int)}, em conflito com a declaracao \texttt{bool} dos \textit{intrinsics} do ESBMC, e por isso sequer era analisado. \textbf{Corrigido}: o arquivo agora compila.
+  \item A macro \texttt{ARDUINO} nao e definida em nenhum ponto do projeto, de modo que \texttt{PID\_v1.cpp} recai no ramo anterior ao Arduino~1.0 e requer \texttt{WProgram.h}, inexistente. Contornavel com \texttt{-DARDUINO=100} na linha de comando.
+  \item \textbf{Obstaculo remanescente}: \texttt{PID\_v1.cpp} emprega \textbf{construtor delegante}, recurso de C++11, e o ESBMC 6.8.0 nao oferece a opcao \texttt{-{}-std}, introduzida apenas na 8.0.0. O \textit{harness} usa justamente o construtor de sete argumentos, que e o delegante, de modo que o recurso nao pode ser evitado.
+\end{enumerate}
+
+Registra-se, portanto, que a verificacao de bibliotecas C++ de terceiros \textbf{nao e imediata}: a barreira nao esta na complexidade do algoritmo de controle, mas na cobertura do \textit{front-end} C++ do verificador e nas convencoes de compilacao do ecossistema Arduino. Apos as correcoes, resta um unico bloqueio: concluir este experimento exige compilar o ESBMC 8.0.0 e reexecutar com \texttt{-{}-std c++11}. O mesmo defeito de declaracao (\texttt{int} em vez de \texttt{\_Bool}/\texttt{bool}) foi encontrado e corrigido em outros dois arquivos do projeto, entre eles o \textit{stub} do Transformer, que passou a ser verificavel e e provado em 0,08\,s.
 
 
-\section{Caso 5   The Ralph Loop Concept e Validação em Larga Escala}
+\section{Caso 5 --- Verificacao Modular de FFN de LLMs (GPT-2 e LLaMA)}
 
-Para ilustrar a escalabilidade e eficácia formal do verificador acoplado aos orquestradores Python (\textit{Ralph Loops}), reproduzimos as métricas de otimização documentadas na literatura \cite{gopinath2021verifying} aplicadas às nossas suítes de teste de inferência e sistemas de controle.
+Esta secao substitui a versao anterior deste capitulo, que reportava a analise de
+52 topologias com distribuicao de 34 seguras, 15 adversariais e 3 \textit{timeouts}.
+Aqueles numeros nao possuiam artefato de execucao no repositorio: provinham de
+valores fixos nos \textit{scripts} de plotagem, e o orquestrador que os produziria
+--- o \textit{Ralph Loop} --- tem o portao de verificacao comentado, marcando toda
+tarefa como concluida sem invocar o \textit{solver}. Em seu lugar, reportamos o
+subprojeto de verificacao de camadas \textit{feed-forward} de LLMs, cujos
+resultados sao integralmente reproduziveis.
 
-\subsection{Escalabilidade e Distribuição de Resultados}
+\subsection{Dois metodos de codificacao}
 
-Ao analisarmos 52 topologias de código diferentes, observamos a capacidade de identificar instâncias vulneráveis, adversariais na vasta maioria dos ambientes. A \autoref{fig:distribution_plot} ilustra que 34 instâncias puderam ser provadas absolutamente seguras dentro dos limites \textit{Float/Fixed}, enquanto 15 devolveram contra-exemplos SMT diretos, vulneráveis. Apenas 3 extrapolaram o limite de tempo do verificador (\textit{Timeout}).
+O bloco FFN de um \textit{Transformer} foi extraido de modelos ONNX (GPT-2 e
+LLaMA-7B) e quantizado em ponto fixo Q8.8. Dois metodos de codificacao foram
+comparados:
 
-\begin{figure}[htb]
-    \caption{\label{fig:distribution_plot}Distribuição de Casos, Seguros, Adversariais e Timeout.}
-    \begin{center}
-        \includegraphics[width=0.60\textwidth]{distribution_plot.png}
-    \end{center}
-    \legend{Fonte: Elaborada pelo autor, 2026.}
-\end{figure}
+\begin{alineas}
+    \item \textbf{Metodo 1 --- ponto fixo com \textit{proxy} ReLU}: substitui
+    GeLU/SiLU por ReLU. E mais rapido, mas introduz uma aproximacao que compromete
+    a solidez da prova para as ativacoes reais;
+    \item \textbf{Metodo 2 --- ativacao abstrata (estilo QNNVerifier)}: injeta
+    \texttt{\_\_ESBMC\_assume} de intervalo por neuronio no lugar da funcao de
+    ativacao. O resultado e uma \textbf{sobreaproximacao intervalar}, conservadora
+    somente quando os limites fornecidos cobrem todas as saidas alcançaveis; ela
+    nao codifica a relacao exata entre entrada e GeLU/SiLU.
+\end{alineas}
 
-Simultaneamente, o avanço no processamento contínuo das topologias confirma uma disparidade exponencial entre a resolução SMT para matemática em ponto flutuante (\texttt{Float32}) e a aritmética em ponto fixo (\texttt{Fixed32}), cujo espaço de busca reduzido acelera acentuadamente as aprovações nos testes (\autoref{fig:scalability_plot}).
+\subsection{Resultados medidos}
 
-\begin{figure}[htb]
-    \caption{\label{fig:scalability_plot}Escalabilidade SMT: Tempo de Verificação vs Tamanho da Rede Neural.}
-    \begin{center}
-        \includegraphics[width=0.80\textwidth]{scalability_plot.png}
-    \end{center}
-    \legend{Fonte: Elaborada pelo autor, 2026.}
-\end{figure}
+A \autoref{tab:ffn_qnn} apresenta os tempos do Metodo 2, medidos nesta maquina
+com o binario ESBMC~\cite{gadelha2018esbmc} 6.8.0 versionado no repositorio e o
+\textit{solver} Boolector~\cite{niemetz2014boolector}.
+Todos os \textit{harnesses} sao regerados a partir dos geradores em
+\texttt{cases/llm\_ffn\_verification/}, e a regeracao produz arquivos
+\textbf{byte-a-byte identicos} aos versionados --- o mesmo valendo para as tabelas
+de consulta (LUT) de GeLU e SiLU.
 
-\subsection{Eficácia das Otimizações ESBMC}
+\begin{table}[htb]
+\caption{Caso 5: verificacao de FFN com sobreaproximacao intervalar (Metodo 2). Tempos medidos;
+logs brutos em \texttt{results/logs/}.}
+\label{tab:ffn_qnn}
+\begin{center}
+\begin{tabular}{l|c|l|r|l}
+\hline
+\textbf{Harness} & \textbf{Dimensoes} & \textbf{Ativacao} & \textbf{Tempo} & \textbf{Veredito} \\
+\hline
+\texttt{gpt2\_2x4\_qnn}     & $2{\times}4{\times}2$  & intervalo GeLU & 0,24 s  & SUCCESSFUL \\
+\texttt{llama-7b\_4x8\_qnn} & $4{\times}8{\times}4$  & intervalo SiLU & 3,46 s  & SUCCESSFUL \\
+\texttt{gpt2\_4x8\_qnn}     & $4{\times}8{\times}4$  & intervalo GeLU & 4,24 s  & SUCCESSFUL \\
+\texttt{gpt2\_4x16\_qnn}    & $4{\times}16{\times}4$ & intervalo GeLU & 20,10 s & SUCCESSFUL \\
+\hline
+\end{tabular}
+\end{center}
+\legend{Fonte: Elaborada pelo autor, 2026.}
+\end{table}
 
-Adicionalmente, um dos pilares discutidos pelos \textit{Benchmarks} de quantização SMT foi a integração de inferência de análise de intervalos e \textit{slicing} semântico. Quando habilitamos essa restrição direta no manipulador Python, observamos que o tempo das validações foi podado radicalmente, evidenciando as métricas apresentadas na \autoref{fig:optimization_plot}. Sem estas otimizações nativas, modelos como classificadores de imagem e políticas de controle \textit{RL} estouram rapidamente o \textit{Timeout}.
+A documentacao do subprojeto registra um ganho de 18 a 27 vezes do Metodo 2
+otimizado sobre a codificacao inicial, que usava Z3, inteiros de 64 bits e mantinha
+codigo morto de pre-ativacao. Cabe a ressalva de que essa razao nao foi remedida
+neste trabalho: apenas os tempos da \autoref{tab:ffn_qnn} o foram, e eles ficaram
+sistematicamente abaixo dos documentados --- 4,24\,s contra 5,3\,s, 3,46\,s contra
+4,3\,s, 20,10\,s contra 27\,s --- diferenca compativel com variacao de maquina.
 
-\begin{figure}[htb]
-    \caption{\label{fig:optimization_plot}Impacto da Otimização, Slicing e Intervalos no Tempo de Verificação.}
-    \begin{center}
-        \includegraphics[width=0.80\textwidth]{optimization_plot.png}
-    \end{center}
-    \legend{Fonte: Elaborada pelo autor, 2026.}
-\end{figure}
-
+O que a comparacao entre os metodos evidencia e um compromisso pouco discutido na
+literatura de verificacao de redes: \textbf{a codificacao mais rapida nao e a mais
+solida}. O \textit{proxy} ReLU do Metodo 1 verifica um modelo que nao e o modelo
+implantado; o Metodo 2 verifica a propriedade sobre uma relaxacao intervalar. A
+solidez da conclusao para a ativacao real depende de os bounds serem conservadores.
 
 \section{Caso 6   Verificação Formal em Reinforcement Learning, Actor-Critic}
 A verificação sistemática de políticas dinâmicas de \textit{Reinforcement Learning} (RL) destitui o comportamento puramente opaco (\textit{black-box}) destas lógicas de atuação contínua. Formalizando a ação logística ($A = \text{MatMul}(W, S)$), o modelo do caso seis (\texttt{rl\_policy.c}) encapsulou a estática neural dentro de um \textit{Safety Shield} estrutural acionado via motor dinâmico PyTest (\texttt{-{}-floatbv}). 
 
-Em suma, durante a exploração exaustiva promovida pelo solver \textit{Bitwuzla/Z3}, o verificador esmiuçou todo o \textit{Phase Space} dos vetores de estado cinemático possíveis ($S$). A asserção formal delimitou rigidamente que a magnitude da modulação expedida ao volante atuador não poderia transpor os tensores físicos permitidos (fixados pela física no espaço entre $[-1.0, 1.0]$). A descoberta metódica de contra-exemplos SMT operou podando ativamente os impulsos neurais perigosos (aquelas perturbações \textit{out-of-distribution}) provando de forma esmagadora a eficácia arquitetural do modelo ESBMC interceptador em cenários complexos pré-implantação robótica.
+O solver encontrou um \textbf{contraexemplo}: a acao pode ultrapassar o intervalo
+$[-1,1]$ na caixa de estados analisada (log \texttt{results/logs/rl\_policy.log}).
+Assim, o harness detecta a violacao, mas nao demonstra que o \textit{Safety Shield}
+a impeça. O escudo precisa ser corrigido e novamente verificado antes de qualquer
+alegacao de protecao pre-implantacao.
 
 \begin{figure}[htb]
     \caption{\label{fig:rl_shield}Distribuicao SMT: Ac\~oes Permitidas vs Interceptacao do Safety Shield.}
     \begin{center}
         \includegraphics[width=0.9\textwidth]{plot_rl_shield.png}
     \end{center}
-    \legend{Fonte: Elaborada pelo autor (Subagente RL), 2026.}
+    \legend{Fonte: Elaborada pelo autor, 2026.}
 \end{figure}
+
+\section{Caso 7 --- Malha Fechada: Controlador DDPG Quantizado}
+
+O \textit{cart-pole} com controlador DDPG quantizado e o unico caso deste trabalho
+em que a planta e o controlador sao verificados \textbf{acoplados}. E tambem o caso
+em que a limitacao central da abordagem se manifesta de forma mensuravel.
+
+\subsection{Fidelidade da quantizacao}
+
+O ator DDPG~\cite{lillicrap2016ddpg} (arquitetura $4{\to}24{\to}24{\to}1$, 745 parametros) foi quantizado em
+Q8.8. A aritmetica de inferencia esta implementada tres vezes --- em Python, em
+TypeScript para a demonstracao em navegador, e em C para o \textit{harness} de
+verificacao --- e as tres coincidem \textbf{bit a bit}: mesma ordem de operacoes,
+divisao por termo com truncamento em direcao a zero, e a mesma aproximacao linear
+de $\tanh$ em cinco ramos.
+
+\subsection{Propriedades vacuas identificadas e corrigidas}
+
+Duas das tres propriedades originalmente verificadas nao dependiam do controlador:
+
+\begin{alineas}
+    \item a propriedade de seguranca em um passo asseria sobre
+    $\theta_{novo} = \theta + 5\dot{\theta}/256$, valor que nao contem a forca
+    $F$. Executando o mesmo \textit{assert} sem rede alguma e com $F$ arbitraria,
+    o veredito e o contra-exemplo se reproduzem identicos. Os 745 pesos eram
+    \textbf{codigo morto} para a propriedade;
+    \item a propriedade de limite de forca, $|F| \leq 10$\,N, vale por
+    \textbf{construcao} da aproximacao de $\tanh$, que satura em 255 em Q8.8.
+    Substituindo a rede inteira por uma entrada livre, a prova passa em 0,72\,s.
+\end{alineas}
+
+A primeira foi reescrita para dois passos, pois a forca so alcanca $\theta$ atraves
+de $\dot{\theta}$ no passo seguinte; a dependencia foi confirmada observando que o
+contra-exemplo muda com $F$. A segunda foi reclassificada como verificacao de
+sanidade da quantizacao, e uma nova propriedade foi introduzida para cobrir o que
+ela nao podia decidir: na zona de perigo, o controlador deve aplicar forca de
+magnitude minima --- condicao que um controlador inerte viola, e cuja decisao exige
+percorrer os pesos.
+
+\subsection{O envelope de seguranca, e a parede do BMC}
+
+A \autoref{tab:envelope} mostra a caracterizacao da propriedade de dois passos em
+funcao da velocidade angular inicial admitida.
+
+\begin{table}[htb]
+\caption{Caso 7: seguranca em dois passos por limite de $|\dot{\theta}|$.}
+\label{tab:envelope}
+\begin{center}
+\begin{tabular}{r|r|l|r}
+\hline
+$|\dot{\theta}| \leq$ & \textbf{rad/s} & \textbf{Veredito} & \textbf{Tempo} \\
+\hline
+1280 & 5,00 & UNSAFE  & 25,4 s \\
+ 640 & 2,50 & UNSAFE  & 28,8 s \\
+ 320 & 1,25 & Indeciso & $>$300 s \\
+ 160 & 0,62 & Indeciso & $>$300 s \\
+  80 & 0,31 & Indeciso & $>$300 s \\
+\hline
+\end{tabular}
+\end{center}
+\legend{Fonte: Elaborada pelo autor, 2026.}
+\end{table}
+
+O resultado defensavel e, portanto: a seguranca de dois passos e \textbf{violada}
+acima de 2,5\,rad/s e \textbf{indecisa} abaixo disso. Nao se conclui que o
+controlador seja seguro.
+
+O comportamento da tabela merece atencao porque contraria a intuicao: \textbf{reduzir
+a regiao inicial torna o problema mais dificil}. Com uma caixa ampla existe
+contra-exemplo, e encontra-lo e a direcao barata (satisfatibilidade). Nas caixas
+estreitas, nenhum contraexemplo foi encontrado em 300\,s; o veredito permanece
+indeciso, sem autorizar uma conclusao de seguranca.
+
+\subsection{Limite do \textit{Bounded Model Checking} e o caminho indutivo}
+
+A verificacao de malha fechada deste trabalho e de \textbf{um passo}. Um
+\textit{harness} de 50 passos chegou a ser esbocado e nunca foi concluido. A medicao
+explica por que: para uma rede sintetica de 24 neuronios, o custo de provar $K$
+passos cresce de 0,3\,s e 46\,MB em $K{=}1$ para 909\,s e 383\,MB em $K{=}4$.
+A parede nao esta em 50 passos; esta em 4.
+
+A causa e estrutural. O BMC constroi \textbf{uma} formula contendo $K$ copias da
+relacao de transicao. O \textit{model checking} indutivo (IC3~\cite{bradley2011ic3}, na implementacao PDR de~\cite{een2011pdr}) nunca constroi
+essa formula: cada consulta abrange uma unica copia, e o resultado e um
+\textbf{invariante indutivo} --- ``seguro sempre'' --- em lugar de ``seguro ate
+$K$''.
+
+Para avaliar essa alternativa, o sistema acoplado foi exportado como sistema de
+transicao em Verilog, sintetizado com Yosys~\cite{wolf2016yosys} e verificado com
+ABC~\cite{brayton2010abc} (904.242 portas AND, 65 registradores), com o
+\textit{forward} coincidente com a referencia em 12/12 estados amostrados. Esse
+teste diferencial detecta regressao, mas nao prova equivalencia universal. Os
+resultados, resumidos na \autoref{tab:ic3}, sao mistos e devem ser lidos com
+cuidado.
+
+\begin{table}[htb]
+\caption{Caso 7: BMC contra \textit{model checking} indutivo.}
+\label{tab:ic3}
+\begin{center}
+\begin{tabular}{l|l|l|r|r}
+\hline
+\textbf{Metodo} & \textbf{Modelo} & \textbf{Veredito} & \textbf{Tempo} & \textbf{Memoria} \\
+\hline
+BMC (ESBMC) & sintetico, $K{=}4$   & Seguro ate 4 passos   & 909 s  & 383 MB \\
+IC3 (ABC)   & sintetico com batente & \textbf{Provado $\forall t$} & 0,37 s & trivial \\
+IC3 (ABC)   & ator DDPG real        & Nao convergiu         & 1802 s & 708 MB \\
+BMC (ABC)   & ator DDPG real        & 5 \textit{frames}     & 901 s  & 503 MB \\
+\hline
+\end{tabular}
+\end{center}
+\legend{Fonte: Elaborada pelo autor, 2026.}
+\end{table}
+
+No modelo sintetico com batente mecanico, o IC3 produziu prova ilimitada em
+0,37\,s, com invariante de quatro clausulas sobre \textbf{tres dos 65 bits de
+estado} --- ele determinou sozinho que os bits altos de $\theta$ permanecem iguais
+ao sinal, e que as 112 mil portas da rede sao irrelevantes para a prova. Nenhum BMC
+produz esse tipo de resultado.
+
+Sobre o controlador real, contudo, \textbf{nenhum dos dois metodos decide}: o PDR
+foi interrompido em 1802\,s e o BMC alcancou cinco \textit{frames} em 901\,s. O
+stdout bruto daquela execucao PDR nao foi preservado; tempo e RSS sao uma medicao
+historica do wrapper. A semelhanca com a parede observada no ESBMC e sugestiva,
+mas modelos, propriedades, representacoes e solvers diferem. Portanto, ela motiva
+uma hipotese de escalabilidade, sem demonstrar que a causa pertence ao metodo.
+
+A hipotese remanescente e de \textbf{representacao}: converter quatro inteiros em 65
+bits isolados destroi a estrutura sobre a qual o IC3 generaliza clausulas. Verificar
+essa hipotese exige um motor de nivel de palavra sobre BTOR2, o que fica indicado
+como continuidade direta deste trabalho.
 
 \section{Análise Comparativa}
 

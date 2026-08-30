@@ -1,0 +1,31 @@
+# artefatos de verificacao gerados
+*.aig
+*.abc.out
+*.bmc.out
+pid_test_*.c
+_prop_b_tmp.c          # harness temporario de caracteriza_prop_b.py
+cases/control_chaos_testing/pid_test_*.c
+
+# python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# latex
+*.aux
+*.log
+# ...exceto as evidencias de execucao: versiona-las e o ponto do KB-D03,
+# que registrou que nenhum log commitado continha um veredito.
+!results/logs/*.log
+*.nav
+*.out
+*.snm
+*.toc
+*.vrb
+*.fls
+*.fdb_latexmk
+
+# metadados de build
+*.egg-info/

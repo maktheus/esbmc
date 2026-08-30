@@ -35,7 +35,7 @@
 
 /* ESBMC non-determinism */
 float nondet_float();
-void __ESBMC_assume(int cond);
+void __ESBMC_assume(_Bool cond);   /* _Bool, nao int: conflita com esbmc_intrinsics.h */
 
 /* Dimensoes do modelo reduzido (representa um slice do MLP DeepSeek) */
 #define D_IN    4   /* dimensao de entrada (embedding slice) */

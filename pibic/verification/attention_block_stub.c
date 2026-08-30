@@ -20,7 +20,7 @@
 
 /* ESBMC nao-determinismo */
 float nondet_float();
-void __ESBMC_assume(int cond);
+void __ESBMC_assume(_Bool cond);   /* _Bool, nao int: conflita com esbmc_intrinsics.h */
 
 /* Dimensoes do modelo reduzido */
 #define D    4   /* embedding dim */

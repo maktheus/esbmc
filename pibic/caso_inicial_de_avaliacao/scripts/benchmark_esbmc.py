@@ -48,7 +48,7 @@ def run_esbmc_for_size(n):
     with open("../src/verify_esbmc_test.c", "w") as f:
         f.write(c_code)
     
-    esbmc_bin = "/home/uchoa/esbmc/build/src/esbmc/esbmc"
+    esbmc_bin = "build/src/esbmc/esbmc"
     # Removing --floatbv to verify primarily arrays and basic operations for speed
     cmd = [esbmc_bin, "../src/verify_esbmc_test.c", "-DVERIFY_ESBMC", "--function", "main", "--unwind", "257", "--timeout", "120s"]
     

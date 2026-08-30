@@ -22,10 +22,11 @@ int main() {
     float integral = 0.0f;
     float prev_error = 0.0f;
     
-    // Inject mathematical noise limits here
+    // O perfil de caos injetado declara `noise` aqui. Nao ha fallback de
+    // propósito: um `float noise = 0.0f;` como rede de seguranca foi o que
+    // manteve os cinco perfis vacuos: a variavel injetada tinha outro nome e
+    // ficava orfa, e o sistema era verificado sem ruido nenhum.
     // {{NOISE_INJECTION}}
-    // fallback if not injected:
-    float noise = 0.0f;
     
     float measured_sensor = 0.0f + noise;
     

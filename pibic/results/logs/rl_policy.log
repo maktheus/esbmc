@@ -1,0 +1,48 @@
+$ esbmc cases/ai_model_checking/rl_policy.c --floatbv --z3 --unwind 1
+# ESBMC version 6.8.0 64-bit x86_64 linux
+# status=UNSAFE rc=1 tempo=2.58s
+
+ESBMC version 6.8.0 64-bit x86_64 linux
+file /home/user/esbmc/pibic/cases/ai_model_checking/rl_policy.c: Parsing
+Converting
+Generating GOTO Program
+GOTO program creation time: 0.078s
+GOTO program processing time: 0.000s
+Starting Bounded Model Checking
+Symex completed in: 0.001s (21 assignments)
+Slicing time: 0.000s (removed 10 assignments)
+Generated 1 VCC(s), 1 remaining after simplification (11 assignments)
+Encoding remaining VCC(s) using bit-vector/floating-point arithmetic
+Encoding to solver time: 0.000s
+Solving with solver Z3 v4.8.9
+Encoding to solver time: 0.000s
+Runtime decision procedure: 2.493s
+Building error trace
+
+Counterexample:
+
+State 1 file rl_policy.c line 12 function check_rl_policy_safety thread 0
+----------------------------------------------------
+  pos_x = 0.000000f (00000000 00000000 00000000 00000000)
+
+State 2 file rl_policy.c line 13 function check_rl_policy_safety thread 0
+----------------------------------------------------
+  pos_y = 100.000000f (01000010 11001000 00000000 00000000)
+
+State 3 file rl_policy.c line 14 function check_rl_policy_safety thread 0
+----------------------------------------------------
+  velocity = 6.304939e-1f (00111111 00100001 01101000 00001100)
+
+State 7 file rl_policy.c line 24 function check_rl_policy_safety thread 0
+----------------------------------------------------
+  steering_action = 1.031525e+0f (00111111 10000100 00001001 00000000)
+
+State 8 file rl_policy.c line 27 function check_rl_policy_safety thread 0
+----------------------------------------------------
+Violated property:
+  file rl_policy.c line 27 function check_rl_policy_safety
+  RL Policy Action Exceeded Safe Actuator Limits!
+  (_Bool)(steering_action >= -1.000000f && steering_action <= 1.000000f)
+
+
+VERIFICATION FAILED
