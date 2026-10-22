@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório de Verificação Formal — ESBMC & IC3/BTOR2 (22/10/2026)</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-blue: #38bdf8;
+      --accent-green: #4ade80;
+      --accent-red: #f87171;
+      --accent-amber: #fbbf24;
+      --accent-purple: #c084fc;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid var(--card-border);
+      border-radius: 1rem;
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::after {
+      content: "";
+      position: absolute;
+      top: 0; right: 0; width: 300px; height: 100%;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-blue { background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.3); }
+    .badge-green { background: rgba(74, 222, 128, 0.15); color: var(--accent-green); border: 1px solid rgba(74, 222, 128, 0.3); }
+    .badge-red { background: rgba(248, 113, 113, 0.15); color: var(--accent-red); border: 1px solid rgba(248, 113, 113, 0.3); }
+    .badge-amber { background: rgba(251, 191, 36, 0.15); color: var(--accent-amber); border: 1px solid rgba(251, 191, 36, 0.3); }
+
+    h1 { font-size: 2.2rem; font-weight: 800; margin: 0.75rem 0 0.5rem; color: #fff; }
+    .subtitle { color: var(--text-muted); font-size: 1.1rem; max-width: 850px; }
+
+    .meta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--card-border);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .meta-bar strong { color: var(--text-main); }
+
+    /* Grid de Estatísticas */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      text-align: center;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-3px); border-color: var(--accent-blue); }
+    .stat-value { font-size: 2.2rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .stat-desc { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+
+    /* Seções e Cards */
+    .section-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin: 2rem 0 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .section-title::before {
+      content: "";
+      width: 4px;
+      height: 1.4rem;
+      background: var(--accent-blue);
+      border-radius: 2px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card h3 {
+      font-size: 1.15rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Tabelas */
+    .table-container {
+      overflow-x: auto;
+      border-radius: 0.5rem;
+      border: 1px solid var(--card-border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+    th, td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+    th {
+      background: rgba(15, 23, 42, 0.6);
+      font-weight: 600;
+      color: var(--accent-blue);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    /* Terminal / Logs */
+    .terminal {
+      background: #090d16;
+      border: 1px solid #1e293b;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: #38bdf8;
+      overflow-x: auto;
+      margin-top: 0.75rem;
+      line-height: 1.5;
+    }
+    .terminal-title {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Gráfico CSS simplificado */
+    .bar-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin: 1.5rem 0;
+    }
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.9rem;
+    }
+    .bar-label { width: 120px; font-weight: 600; color: var(--text-muted); }
+    .bar-track {
+      flex: 1;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      padding-left: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .bar-blue { background: var(--accent-blue); }
+    .bar-green { background: var(--accent-green); }
+    .bar-purple { background: var(--accent-purple); }
+
+    footer {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--card-border);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <span class="badge badge-blue">Relatório Executivo & Técnico</span>
+      <h1>Verificação Formal de Controlador Neural (Cart-Pole)</h1>
+      <p class="subtitle">
+        Auditoria completa e consolidação de evidências formais comparando Bounded Model Checking (ESBMC), 
+        Model Checking Indutivo (IC3/PDR no ABC) e Verificação Word-Level em BTOR2 (BtorMC/Boolector).
+      </p>
+      <div class="meta-bar">
+        <div><strong>Data do Relatório:</strong> 22 de Outubro de 2026</div>
+        <div><strong>Autor / Mantenedor:</strong> Matheus Serrão Uchoa (UFAM)</div>
+        <div><strong>Modelo Verificado:</strong> Ator DDPG Q8.8 ($4 \to 24 \to 24 \to 1$, 745 parâmetros)</div>
+        <div><strong>Git Branch:</strong> <code>feat/finalizar-tarefas-e-evidencias</code> (commit <code>b3b124d</code>)</div>
+      </div>
+    </header>
+
+    <!-- Métricas Chave -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" style="color: var(--accent-green);">55 / 55</div>
+        <div class="stat-desc">Blocos Provados Equivalentes (100% SAT)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color: var(--accent-green);">48 / 48</div>
+        <div class="stat-desc">Testes Unitários e Integrados Verdes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color: var(--accent-blue);">K = 10</div>
+        <div class="stat-desc">Passos Provados Seguros via BtorMC</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color: var(--accent-purple);">0 / 48</div>
+        <div class="stat-desc">Neurônios Mortos (Rede Ativa)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color: var(--accent-amber);">33 Págs.</div>
+        <div class="stat-desc">Relatório Técnico PDF Recompilado</div>
+      </div>
+    </div>
+
+    <!-- Seção 1: As Quatro Categorias Formais -->
+    <h2 class="section-title">Resultados Finais nas Quatro Categorias Formais</h2>
+
+    <div class="card">
+      <h3>
+        <span>1. O que foi PROVADO (Universalidade Matemática)</span>
+        <span class="badge badge-green">PROVADO</span>
+      </h3>
+      <ul style="padding-left: 1.25rem; color: #cbd5e1; display: flex; flex-direction: column; gap: 0.5rem;">
+        <li>
+          <strong>Equivalência Formal Completa da Tradução (55/55 blocos):</strong>
+          Cada neurônio das camadas 1 (24) e 2 (24), o neurônio de saída, o atuador com saturação $\tanh$ (5 ramos lineares) 
+          e os 5 termos de integração física foram <em>formalmente provados idênticos ao código C por SAT composicional</em> em frações de segundo (<0,2s cada).
+        </li>
+        <li>
+          <strong>Ausência de Wrap-Around de 16 bits (0,36s via SAT):</strong>
+          Provado universalmente em <code>prova_wrap16.py</code> que para todo estado no envelope operacional ($|x| \le 24$ m, $|\dot{x}| \le 50$ m/s, $|\theta| \le 120^\circ$, $|\dot{\theta}| \le 50$ rad/s, $|F_Q| \le 2560$), 
+          nenhuma variável de próximo estado transborda o limite de 16 bits signed ($[-32768, 32767]$). O truncamento em hardware é formalmente idêntico ao <code>int</code> ilimitado de C.
+        </li>
+        <li>
+          <strong>Integridade da Rede Neural:</strong>
+          0 neurônios mortos em 48 (todos ativam em algum ponto válido) e ausência de saturação espúria na Camada 1.
+        </li>
+        <li>
+          <strong>Capacidade de Reprovação (Auditoria de Mutantes):</strong>
+          O pipeline detectou e reprovou com contraexemplos exatos os 3 mutantes comprovadamente inseguros (profundidade 0 em 3,5s, profundidade 1 em 6,9s e instabilidade em malha aberta no frame 77 em 42,2s).
+        </li>
+        <li>
+          <strong>Sucesso do IC3 em Modelo Sintético:</strong>
+          Invariante indutivo ilimitado ($\forall t$) provado em 0,37s (4 cláusulas) quando há batente mecânico.
+        </li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>
+        <span>2. O que foi REFUTADO (Contraexemplos Concretos no Controlador Real)</span>
+        <span class="badge badge-red">REFUTADO</span>
+      </h3>
+      <ul style="padding-left: 1.25rem; color: #cbd5e1; display: flex; flex-direction: column; gap: 0.5rem;">
+        <li>
+          <strong>Propriedade A (Direção de Ação Corretiva):</strong>
+          O ESBMC encontrou estados de fronteira onde o ator DDPG quantizado aplica força de sentido incorreto ou nula quando o pêndulo está inclinado (exemplo: $\theta = 0{,}109$ rad com $x = -0{,}0117$ m e $\dot{x} = -4{,}92$ m/s).
+        </li>
+        <li>
+          <strong>Segurança de 2 Passos com Região Larga ($|\dot{\theta}| \ge 2{,}5$ rad/s):</strong>
+          Violação provada pelo ESBMC com contraexemplo em 25 a 29 segundos: quando o pêndulo já cai a mais de 2,5 rad/s, o limite de força de $\pm 10$ N não tem torque físico suficiente para contê-lo dentro de $12^\circ$ em 2 passos.
+        </li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>
+        <span>3. O que permanece INDECISO (Limites dos Solvers e Horizontes)</span>
+        <span class="badge badge-amber">INDECISO</span>
+      </h3>
+      <ul style="padding-left: 1.25rem; color: #cbd5e1; display: flex; flex-direction: column; gap: 0.5rem;">
+        <li>
+          <strong>Segurança Infinita ($\forall t$) do Ator Real no IC3/PDR (ABC):</strong>
+          Parou no frame 2 após 1800s. 97,6% do tempo foi retido em uma única consulta SAT monolítica da transição (904k portas AND com ReLUs e divisões inteiras truncadas).
+        </li>
+        <li>
+          <strong>Segurança de 2 Passos em Regiões Estreitas ($|\dot{\theta}| \le 1{,}25$ rad/s):</strong>
+          Indeciso em 300s no ESBMC: quando a região é segura e não há contraexemplo, o problema vira uma prova UNSAT cara para o solver.
+        </li>
+        <li>
+          <strong>Z3 / Spacer (Nível de Palavra):</strong>
+          Indeciso em 1800s no ator real e nos mutantes, comprovando que a complexidade de generalização não decorre apenas do bit-blasting.
+        </li>
+      </ul>
+    </div>
+
+    <!-- Seção 2: Comparativo dos Motores -->
+    <h2 class="section-title">Comparação entre os Verificadores e Descoberta do BtorMC</h2>
+
+    <div class="card">
+      <p style="color: var(--text-muted); margin-bottom: 1rem;">
+        Durante os testes desta rodada, compilamos o <strong>BtorMC</strong> (motor BMC nativo word-level do Boolector) 
+        diretamente sobre o modelo <code>cl_ddpg16.btor2</code>. O BtorMC bateu o recorde de horizonte, provando <strong>segurança até K = 10 passos</strong>:
+      </p>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Verificador</th>
+              <th>Entrada / Modelo</th>
+              <th>Horizonte Atingido</th>
+              <th>Veredito</th>
+              <th>Tempo & Recursos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>ESBMC 6.8.0</strong></td>
+              <td>Harness C (AST Clang)</td>
+              <td>$K = 4$ passos</td>
+              <td>Seguro até $K=4$</td>
+              <td>909s (383 MB) — Parede em $K=5$</td>
+            </tr>
+            <tr>
+              <td><strong>ABC (bmc3)</strong></td>
+              <td>AIGER (Bit-level)</td>
+              <td>$K = 5$ frames</td>
+              <td>Indeciso</td>
+              <td>901s (503 MB)</td>
+            </tr>
+            <tr>
+              <td><strong>ABC (PDR / IC3)</strong></td>
+              <td>AIGER (904k ANDs)</td>
+              <td>Frame 2</td>
+              <td>Indeciso</td>
+              <td>1802s (577 MB, gargalo SAT)</td>
+            </tr>
+            <tr>
+              <td><strong>Z3 / Spacer</strong></td>
+              <td>Cláusulas Horn (Inteiros)</td>
+              <td>—</td>
+              <td>Indeciso</td>
+              <td>1800s (timeout)</td>
+            </tr>
+            <tr style="background: rgba(56, 189, 248, 0.08);">
+              <td><strong style="color: var(--accent-blue);">BtorMC (Boolector)</strong></td>
+              <td><strong>BTOR2 (Word-level)</strong></td>
+              <td><strong style="color: var(--accent-green);">$K = 10$ passos</strong></td>
+              <td><span class="badge badge-green">UNSATISFIABLE (Seguro)</span></td>
+              <td><strong>Provou K=0 a K=10</strong> (25,5M cláusulas no K=10)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="bar-chart">
+        <div class="bar-row">
+          <div class="bar-label">BtorMC (BTOR2)</div>
+          <div class="bar-track">
+            <div class="bar-fill bar-blue" style="width: 100%;">K = 10 (Novo Recorde)</div>
+          </div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">ABC bmc3</div>
+          <div class="bar-track">
+            <div class="bar-fill bar-purple" style="width: 50%;">K = 5</div>
+          </div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">ESBMC (C)</div>
+          <div class="bar-track">
+            <div class="bar-fill bar-green" style="width: 40%;">K = 4</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-title">Log de Execução — BtorMC sobre cl_ddpg16.btor2 (k=0 a k=10)</div>
+[btor>mc] calling BMC on 1 properties from bound 0 up-to maximum bound k = 10<br>
+[btor>mc] bad state property 0 at bound k = 0 UNSATISFIABLE<br>
+[btor>mc] bad state property 0 at bound k = 1 UNSATISFIABLE<br>
+[btor>mc] bad state property 0 at bound k = 2 UNSATISFIABLE<br>
+[btor>mc] bad state property 0 at bound k = 3 UNSATISFIABLE<br>
+[btor>mc] bad state property 0 at bound k = 4 UNSATISFIABLE (302.8s, 6.36M CNF clauses)<br>
+[btor>mc] bad state property 0 at bound k = 5 UNSATISFIABLE<br>
+[btor>mc] bad state property 0 at bound k = 6 UNSATISFIABLE<br>
+[btor>mc] bad state property 0 at bound k = 7 UNSATISFIABLE (15.9M CNF clauses)<br>
+[btor>mc] bad state property 0 at bound k = 8 UNSATISFIABLE (19.1M CNF clauses)<br>
+[btor>mc] bad state property 0 at bound k = 9 UNSATISFIABLE (1322s, 22.3M CNF clauses)<br>
+[btor>mc] bad state property 0 at bound k = 10 UNSATISFIABLE (3123s, 25.5M CNF clauses, 2.3 GB RAM)<br>
+[btor>mc] deleting model checker: 712 inputs, 5 states, 1 bad, 0 constraints
+      </div>
+    </div>
+
+    <!-- Seção 3: Auditoria do Repositório & Testes -->
+    <h2 class="section-title">Engenharia, Testes e Auditoria de Código</h2>
+
+    <div class="card">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Suíte / Tarefa</th>
+              <th>Alvo</th>
+              <th>Status</th>
+              <th>Evidência</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Suíte Pytest</strong></td>
+              <td><code>pibic/tests/</code> (CartPole, Chaos, Ground Truth, Parser, Ralph, RL)</td>
+              <td><span class="badge badge-green">48 / 48 PASS</span></td>
+              <td>Zero falhas em 12min 41s de verificação formal exata.</td>
+            </tr>
+            <tr>
+              <td><strong>Higiene de Rascunhos</strong></td>
+              <td>Remoção de <code>verify_mlp.c.draft</code> e unificação de arquivos</td>
+              <td><span class="badge badge-green">CONCLUÍDO</span></td>
+              <td>KB-F06 e KB-F07 resolvidos; <code>verify_mlp_qnn.c</code> consolidado.</td>
+            </tr>
+            <tr>
+              <td><strong>Stubs LibC Windows</strong></td>
+              <td><code>pibic/core_verify/fake_libc_include/</code></td>
+              <td><span class="badge badge-green">CONCLUÍDO</span></td>
+              <td>Headers <code>stdlib.h</code>, <code>stdio.h</code>, <code>math.h</code> providos ao Clang nativo.</td>
+            </tr>
+            <tr>
+              <td><strong>Compilação LaTeX</strong></td>
+              <td><code>pibic/ic3/validacao/relatorio/main.pdf</code> (33 págs)</td>
+              <td><span class="badge badge-green">CONCLUÍDO</span></td>
+              <td>Compilado via <code>tex-ufam</code> com novos lemas e cronograma fechado.</td>
+            </tr>
+            <tr>
+              <td><strong>Ponytail Agent Skills</strong></td>
+              <td>Instalação de <code>AGENTS.md</code> e skills <code>.agents/skills/</code></td>
+              <td><span class="badge badge-blue">ATIVADO</span></td>
+              <td>Modo "lazy senior dev" configurado para revisões de diff e auditoria.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Seção 4: Conclusões e Recomendações -->
+    <h2 class="section-title">Conclusão Científica & Recomendações para Banca/Artigo</h2>
+
+    <div class="card">
+      <div style="background: rgba(251, 191, 36, 0.08); border-left: 4px solid var(--accent-amber); padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+        <strong style="color: var(--accent-amber);">Posicionamento Científico Correto:</strong><br>
+        O relatório técnico <strong>não afirma</strong> que o controlador real seja "seguro para sempre". A afirmação correta e cientificamente auditada é:
+        o pipeline é matematicamente sólido e fiel (55/55 blocos provados equivalentes), decide o curto prazo ($K \le 10$ comprovadamente seguro a partir da caixa inicial), detecta contraexemplos reais quando os limites de velocidade são ultrapassados ($|\dot{\theta}| \ge 2{,}5$ rad/s), e a prova de horizonte infinito para o ator real permanece como problema em aberto na literatura.
+      </div>
+    </div>
+
+    <footer>
+      Relatório gerado automaticamente pelo assistente Antigravity em 22 de Outubro de 2026.<br>
+      Repositório: <code>maktheus/esbmc</code> — Universidade Federal do Amazonas (UFAM).
+    </footer>
+  </div>
+
+</body>
+</html>

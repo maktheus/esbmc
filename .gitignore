@@ -34,3 +34,4 @@ venv/
 
 chat_venv/
 global_esbmc_binary/
+pibic/ic3/validacao/boolector/
