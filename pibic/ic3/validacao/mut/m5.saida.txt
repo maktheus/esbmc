@@ -1,0 +1,14 @@
+=== 1/3 sintetizando m5_init_th_livre.v -> /w/ic3/validacao/mut/m5_init_th_livre.aig
+     $_AND_                     911555
+     $_DFF_P_                       65
+
+=== 2/3 estatisticas do AIG
+ABC command line: "read_aiger "/w/ic3/validacao/mut/m5_init_th_livre.aig"; print_stats".
+
+[1;37m/w/ic3/validacao/mut/m5_init_th_livre:[0m i/o =   65/    1  lat =   65  and = 903934  lev =689
+
+=== 3/3 IC3/PDR (limite 300s)
+    Output 0 of miter "/w/ic3/validacao/mut/m5_init_th_livre" was asserted in frame 1.  Time =     2.36 sec
+
+    status=CONTRAEXEMPLO  tempo=3.5s  pico_RSS=505MB  bruto=/w/ic3/validacao/mut/m5_init_th_livre.abc.out
+exit=1

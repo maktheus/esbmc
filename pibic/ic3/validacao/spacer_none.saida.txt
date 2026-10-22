@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/w/ic3/validacao/spacer_real.py", line 53, in <module>
+    fp.set("timeout", a.timeout * 1000)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/z3/z3.py", line 7427, in query
+    r = Z3_fixedpoint_query(self.ctx.ref(), self.fixedpoint, query.as_ast())
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/z3/z3core.py", line 4303, in Z3_fixedpoint_query
+    _elems.Check(a0)
+  File "/usr/lib/python3/dist-packages/z3/z3core.py", line 1416, in Check
+    raise self.Exception(self.get_error_message(ctx, err))
+z3.z3types.Z3Exception: b'canceled'
+exit=1

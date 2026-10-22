@@ -2,3 +2,4 @@
 *.log
 _fwd_check.v
 cl_ddpg*.v
+cmp_*.v

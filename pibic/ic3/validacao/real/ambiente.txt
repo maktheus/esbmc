@@ -1,0 +1,6 @@
+Yosys 0.33 (git sha1 2584903a060)
+ABC command line: "version".
+28
+Model name:                         Intel(R) Core(TM) i7-14700
+               total        used        free      shared  buff/cache   available
+Mem:           31940       20966         751         313       10986       10974

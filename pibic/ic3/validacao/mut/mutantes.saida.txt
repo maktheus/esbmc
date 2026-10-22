@@ -1,0 +1,60 @@
+### m4_limite_apertado
+=== 1/3 sintetizando m4_limite_apertado.v -> /w/ic3/validacao/mut/m4_limite_apertado.aig
+     $_AND_                     911512
+     $_DFF_P_                       65
+
+=== 2/3 estatisticas do AIG
+ABC command line: "read_aiger "/w/ic3/validacao/mut/m4_limite_apertado.aig"; print_stats".
+
+[1;37m/w/ic3/validacao/mut/m4_limite_apertado:[0m i/o =   65/    1  lat =   65  and = 903921  lev =689
+
+=== 3/3 IC3/PDR (limite 300s)
+    Reached timeout (300 seconds) in frame 2.
+
+    status=INCONCLUSIVO  tempo=307.7s  pico_RSS=504MB  bruto=/w/ic3/validacao/mut/m4_limite_apertado.abc.out
+exit=3
+### m1_init_thd_livre
+=== 1/3 sintetizando m1_init_thd_livre.v -> /w/ic3/validacao/mut/m1_init_thd_livre.aig
+     $_AND_                     911555
+     $_DFF_P_                       65
+
+=== 2/3 estatisticas do AIG
+ABC command line: "read_aiger "/w/ic3/validacao/mut/m1_init_thd_livre.aig"; print_stats".
+
+[1;37m/w/ic3/validacao/mut/m1_init_thd_livre:[0m i/o =   65/    1  lat =   65  and = 903934  lev =689
+
+=== 3/3 IC3/PDR (limite 300s)
+    Output 0 of miter "/w/ic3/validacao/mut/m1_init_thd_livre" was asserted in frame 2.  Time =     5.90 sec
+
+    status=CONTRAEXEMPLO  tempo=6.9s  pico_RSS=499MB  bruto=/w/ic3/validacao/mut/m1_init_thd_livre.abc.out
+exit=1
+### m2_atuador_invertido
+=== 1/3 sintetizando m2_atuador_invertido.v -> /w/ic3/validacao/mut/m2_atuador_invertido.aig
+     $_AND_                     912074
+     $_DFF_P_                       65
+
+=== 2/3 estatisticas do AIG
+ABC command line: "read_aiger "/w/ic3/validacao/mut/m2_atuador_invertido.aig"; print_stats".
+
+[1;37m/w/ic3/validacao/mut/m2_atuador_invertido:[0m i/o =   65/    1  lat =   65  and = 904469  lev =693
+
+=== 3/3 IC3/PDR (limite 300s)
+    Reached timeout (300 seconds) in frame 2.
+
+    status=INCONCLUSIVO  tempo=302.1s  pico_RSS=503MB  bruto=/w/ic3/validacao/mut/m2_atuador_invertido.abc.out
+exit=3
+### m3_controle_desligado
+=== 1/3 sintetizando m3_controle_desligado.v -> /w/ic3/validacao/mut/m3_controle_desligado.aig
+     $_AND_                       3022
+     $_DFF_P_                       33
+
+=== 2/3 estatisticas do AIG
+ABC command line: "read_aiger "/w/ic3/validacao/mut/m3_controle_desligado.aig"; print_stats".
+
+[1;37m/w/ic3/validacao/mut/m3_controle_desligado:[0m i/o =   65/    1  lat =   33  and =   2957  lev = 84
+
+=== 3/3 IC3/PDR (limite 300s)
+    Output 0 of miter "/w/ic3/validacao/mut/m3_controle_desligado" was asserted in frame 77.  Time =    42.18 sec
+
+    status=CONTRAEXEMPLO  tempo=42.2s  pico_RSS=63MB  bruto=/w/ic3/validacao/mut/m3_controle_desligado.abc.out
+exit=1

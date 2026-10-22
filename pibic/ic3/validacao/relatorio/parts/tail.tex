@@ -1,0 +1,79 @@
+\chapter{Entregáveis}\label{cap:entreg}
+
+\begin{enumerate}
+  \item \textbf{Relatório/dissertação} no padrão abnTeX2 da UFAM, com os resultados, as ameaças à validade e os vereditos nas quatro categorias da Seção~\ref{cap:metod}.
+  \item \textbf{Pipeline reprodutível}: geradores de \emph{harness} C e de Verilog, \emph{scripts} de execução (\texttt{run\_pdr.sh}, validação diferencial) e \texttt{Dockerfile} com as versões fixadas das ferramentas.
+  \item \textbf{Conjunto de \emph{benchmarks}}: ator DDPG real, redes aleatórias de largura $H\in\{4,8,12,16\}$ e mutantes com insegurança conhecida (m1, m3, m5) e reclassificados (m2, m4).
+  \item \textbf{Logs brutos versionados} de todas as execuções (PDR, BMC, Spacer, miters).
+  \item \textbf{Provas de validação}: lema da divisão, intervalos de 759 expressões, miter composicional e, a produzir, a equivalência de \texttt{TANH\_DIN} por ramo e a ausência de \emph{wrap} de 16 bits.
+  \item \textbf{Comparação com motor BTOR2} em nível de palavra (btormc, Pono, AVR ou rIC3) sobre o mesmo modelo.
+  \item \textbf{Revisão sistemática} da literatura e comparação com verificadores de redes (Marabou, NNV, $\alpha,\beta$-CROWN).
+  \item \textbf{Artigo} com os resultados, a ser submetido apenas após os itens 5--7.
+\end{enumerate}
+
+\chapter{Metodologia e Cronograma}\label{cap:crono}
+
+\section{Metodologia}
+
+A pesquisa é experimental e quantitativa. Cada experimento fixa a instância, o motor, a versão da ferramenta, o limite de tempo e a máquina, e registra veredito, tempo, memória e log bruto. Os critérios de rigor adotados são:
+\begin{itemize}
+  \item \textbf{isolar a propriedade da rede}: executar o \emph{assert} sem os pesos para detectar vacuidade;
+  \item \textbf{validar o verificador}: usar mutantes de insegurança comprovada, e descartar os mutantes sem verdade conhecida;
+  \item \textbf{comparação controlada}: mesma instância e mesmo limite para todos os motores;
+  \item \textbf{relatar o negativo}: indeciso e \emph{timeout} entram nos resultados com o mesmo peso de uma prova;
+  \item \textbf{nada de generalização sem teste}: afirmações sobre motores não testados são proibidas.
+\end{itemize}
+
+\section{Atividades}
+
+\begin{table}[htb]
+\caption{Atividades planejadas (em ordem de custo--benefício).}\label{tab:ativ}
+\centering
+\begin{tabular}{r|p{8.2cm}|p{3.2cm}}
+\toprule
+\textbf{N.} & \textbf{Atividade} & \textbf{Situação} \\
+\midrule
+A1 & Formalização da malha fechada e propriedades A--D; isolamento de vacuidade & Concluída \\
+A2 & Verificação com ESBMC; envelope de 2 passos; parede em $K{=}4$ & Concluída \\
+A3 & Tradução Verilog/AIGER; PDR no ator real e nos \emph{benchmarks} & Concluída \\
+A4 & Validação: intervalos, miter composicional, mutantes, Spacer & Concluída \\
+A5 & Equivalência de \texttt{TANH\_DIN} dividida por ramo & A fazer \\
+A6 & Prova de ausência de \emph{wrap} de 16 bits (ou guarda de estouro) & A fazer \\
+A7 & Motor BTOR2 em nível de palavra sobre o mesmo modelo & A fazer \\
+A8 & Prova não trivial: invariante sem batente em modelo reduzido & A fazer \\
+A9 & Revisão sistemática e comparação com Marabou/NNV/$\alpha,\beta$-CROWN & A fazer \\
+A10 & Validação da planta linearizada e da região inicial contra a planta não linear & A fazer \\
+A11 & Redação da dissertação e do artigo & Em andamento \\
+\bottomrule
+\end{tabular}
+\legend{Fonte: elaborada pelo autor, 2026.}
+\end{table}
+
+\section{Cronograma}
+
+O cronograma abaixo é uma \textbf{proposta} em meses relativos ao início da etapa restante; as durações são estimativas do autor e devem ser ajustadas com a orientação. As atividades A1--A4 já estão concluídas.
+
+\begin{table}[htb]
+\caption{Cronograma proposto das atividades restantes (``X'' marca o mês de execução).}\label{tab:crono}
+\centering
+\begin{tabular}{l|c|c|c|c|c|c}
+\toprule
+\textbf{Atividade} & \textbf{M1} & \textbf{M2} & \textbf{M3} & \textbf{M4} & \textbf{M5} & \textbf{M6} \\
+\midrule
+A5 \texttt{TANH\_DIN} por ramo  & X & X &   &   &   &   \\
+A6 ausência de \emph{wrap}      & X & X &   &   &   &   \\
+A7 motor BTOR2                  &   & X & X &   &   &   \\
+A8 prova não trivial            &   &   & X & X &   &   \\
+A9 revisão e comparação         & X & X & X & X &   &   \\
+A10 planta não linear           &   &   &   & X & X &   \\
+A11 redação                     &   &   &   & X & X & X \\
+\bottomrule
+\end{tabular}
+\legend{Fonte: elaborada pelo autor, 2026.}
+\end{table}
+
+\chapter{Conclusão}\label{cap:concl}
+
+O ESBMC (BMC) decide propriedades locais e de curto horizonte do controlador DDPG quantizado e produz contraexemplos concretos e reproduzíveis, mas esbarra numa parede estrutural em $K\approx4$ e não decide segurança para horizonte ilimitado. A rota IC3/PDR gera uma prova ilimitada num modelo com batente mecânico, mas não decide o ator real; um motor em nível de palavra (Z3/Spacer) também não. O pipeline foi validado quanto à tradução (intervalos e SAT composicional, 49/50 blocos) e quanto à capacidade de reprovar (três mutantes inseguros detectados), e as lacunas restantes estão enumeradas, com atividades e entregáveis para fechá-las.
+
+O trabalho \textbf{não} afirma que o controlador real seja seguro para sempre, nem que o resultado seja revolucionário. Afirma o que foi provado, o que foi refutado e o que permanece indeciso, e propõe os passos para decidir o restante.

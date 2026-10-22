@@ -1,0 +1,37 @@
+\chapter{Introdução}
+
+\section{Contexto}
+
+Redes neurais profundas passaram a atuar como controladores em sistemas físicos: um agente de aprendizado por reforço (por exemplo, DDPG; LILLICRAP et al., 2016) lê o estado da planta e produz diretamente a ação de controle. Em sistemas embarcados, a rede é executada em aritmética de ponto fixo inteira, o que reduz custo e latência, mas introduz truncamentos e saturações que não existem no modelo em ponto flutuante usado no treinamento.
+
+O problema clássico usado como \emph{benchmark} neste trabalho é o pêndulo invertido sobre carro (\emph{cart-pole}; BARTO; SUTTON; ANDERSON, 1983). O estado é $\mathbf{s}=[x,\dot x,\theta,\dot\theta]^\top$ (posição e velocidade do carro, ângulo e velocidade angular do pêndulo) e a ação é uma força horizontal limitada a $\pm10$~N. A operação é considerada segura enquanto $|\theta|\le12^\circ$ (e $|x|\le2{,}4$~m).
+
+\section{Problema}
+
+A pergunta de segurança é universal: \emph{para todo estado inicial admissível, e para todo instante $t$, o controlador neural quantizado em malha fechada mantém $|\theta|\le12^\circ$?} Simulação e teste só cobrem trajetórias amostradas e não respondem a essa pergunta. Verificação formal pode responder, mas enfrenta dois obstáculos neste caso:
+\begin{enumerate}
+  \item o \emph{Bounded Model Checking} (BMC) prova segurança apenas até um horizonte $K$, e seu custo cresce rapidamente com $K$ (medido aqui: 0,3~s em $K{=}1$ e 909~s em $K{=}4$);
+  \item o \emph{model checking} indutivo (IC3/PDR) pode provar segurança sem horizonte, mas não é sabido se converge para uma rede com 745 parâmetros e aritmética inteira truncada.
+\end{enumerate}
+O problema de pesquisa é, portanto, determinar \emph{até onde} BMC e IC3/PDR decidem a segurança do controlador real e como tornar essa conclusão confiável (tradução fiel, propriedades não vazias, capacidade de reprovar).
+
+\section{Motivação (Justificativas)}
+
+Uma prova de segurança só vale se (i) a propriedade depende de fato do controlador, (ii) o modelo verificado é equivalente ao artefato executado e (iii) o verificador é capaz de reprovar modelos inseguros. Os resultados preliminares mostram que esses três pontos não são triviais: duas das três provas originais do BMC eram vazias (não dependiam dos pesos da rede); a tradução para o sistema de transição tem uma divergência (divisão de $-2^{31}$) e lacunas de equivalência declaradas; e a rota IC3 só produziu uma prova ilimitada num modelo com batente mecânico, não no controlador real. Documentar e fechar essas lacunas é necessário antes de qualquer afirmação de segurança, e o registro honesto de resultados negativos é, ele próprio, útil a quem pretenda verificar redes quantizadas em malha fechada.
+
+\section{Objetivos}
+
+\subsection{Objetivo geral}
+
+Avaliar, de forma reproduzível e auditável, a capacidade do BMC (ESBMC) e do IC3/PDR de verificar a segurança de um controlador neural quantizado (ator DDPG, Q8.8) em malha fechada no \emph{cart-pole}, e estabelecer o que está provado, refutado e indeciso.
+
+\subsection{Objetivos específicos}
+
+\begin{enumerate}
+  \item Formalizar a malha fechada (rede quantizada, $\tanh$ por partes e dinâmica linearizada) e as propriedades de segurança, isolando propriedades vacuas.
+  \item Verificar propriedades locais e de curto horizonte com ESBMC e caracterizar o custo do BMC em função do horizonte.
+  \item Traduzir a malha fechada para um sistema de transição (Verilog $\to$ AIGER) e aplicar IC3/PDR, comparando-o com BMC e com um motor em nível de palavra.
+  \item Validar o pipeline: fidelidade da tradução (intervalos e equivalência por SAT) e capacidade de reprovar (mutantes de insegurança conhecida).
+  \item Fechar as lacunas restantes: equivalência de \texttt{TANH\_DIN}, ausência de \emph{wrap} de 16 bits e validação da planta linearizada.
+  \item Posicionar o trabalho frente à literatura de verificação de redes neurais.
+\end{enumerate}

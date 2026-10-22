@@ -1,0 +1,12 @@
+z3 abortou: b'canceled'
+mut=thd_livre init_bnd=5 z3=4.8.12 resultado=unknown tempo=403.6s
+INDECISO: ok
+z3 abortou: b'canceled'
+mut=controle_desligado init_bnd=5 z3=4.8.12 resultado=unknown tempo=400.1s
+INDECISO: ok
+z3 abortou: b'canceled'
+mut=limite_apertado init_bnd=5 z3=4.8.12 resultado=unknown tempo=402.3s
+INDECISO: ok
+z3 abortou: b'canceled'
+mut=atuador_invertido init_bnd=5 z3=4.8.12 resultado=unknown tempo=406.6s
+INDECISO: ok

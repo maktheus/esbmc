@@ -143,6 +143,9 @@ def build_esbmc_cmd(filepath, esbmc_bin=None, **kwargs):
     negativas, mapeadas aqui como `no_bounds_check` / `no_pointer_check`.
     """
     cmd = [esbmc_bin or ESBMC_BIN, filepath]
+    fake_inc = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fake_libc_include")
+    if os.path.isdir(fake_inc):
+        cmd.extend(["-I", fake_inc])
 
     for key, flag in (
         # solvers

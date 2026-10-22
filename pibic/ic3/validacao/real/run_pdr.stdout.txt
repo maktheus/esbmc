@@ -1,0 +1,14 @@
+=== 1/3 sintetizando cl_ddpg16.v -> /w/ic3/validacao/real/cl_ddpg16.aig
+     $_AND_                     911793
+     $_DFF_P_                       65
+
+=== 2/3 estatisticas do AIG
+ABC command line: "read_aiger "/w/ic3/validacao/real/cl_ddpg16.aig"; print_stats".
+
+[1;37m/w/ic3/validacao/real/cl_ddpg16:[0m i/o =   65/    1  lat =   65  and = 904242  lev =689
+
+=== 3/3 IC3/PDR (limite 1800s)
+    Reached timeout (1800 seconds) in frame 2.
+
+    status=INCONCLUSIVO  tempo=1802.6s  pico_RSS=577MB  bruto=/w/ic3/validacao/real/cl_ddpg16.abc.out
+exit=3

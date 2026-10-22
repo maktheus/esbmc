@@ -23,6 +23,36 @@ SOLVER = "--z3"  # Boolector não está compilado no executável Windows dispon�
 TIMEOUT = int(os.environ.get("PIBITI_ESBMC_TIMEOUT", "8"))
 SCALE = 256
 X_BND, XD_BND, TH_BND, THD_BND = 614, 1280, 53, 1280
+PTH = HERE / "ddpg_actor_best.pth"
+
+
+def q(v: float) -> int:
+    return int(round(v * SCALE))
+
+
+def c_div(a: int, b: int) -> int:
+    return int(a / b)
+
+
+def interval_propagate_layer(qw, qb, in_lo, in_hi):
+    lo_pre, hi_pre = [], []
+    for i in range(len(qb)):
+        lo, hi = qb[i], qb[i]
+        for k in range(len(in_lo)):
+            w = qw[i][k]
+            if w >= 0:
+                lo += c_div(in_lo[k] * w, SCALE)
+                hi += c_div(in_hi[k] * w, SCALE)
+            else:
+                lo += c_div(in_hi[k] * w, SCALE)
+                hi += c_div(in_lo[k] * w, SCALE)
+        lo_pre.append(lo)
+        hi_pre.append(hi)
+    return lo_pre, hi_pre
+
+
+def relu_bounds(lo_pre, hi_pre):
+    return [max(0, lo) for lo in lo_pre], [max(0, hi) for hi in hi_pre]
 
 
 def load_weights() -> dict:

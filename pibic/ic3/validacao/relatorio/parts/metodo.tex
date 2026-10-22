@@ -1,0 +1,24 @@
+\chapter{Método Proposto}\label{cap:metod}
+
+\section{Visão geral}
+
+O método proposto é um \emph{pipeline} em quatro etapas, executado com as mesmas instâncias nas duas rotas de verificação (Figura~\ref{fig:rotas}):
+\begin{enumerate}
+  \item \textbf{Especificação:} controlador quantizado em Q8.8, $\tanh$ por partes, dinâmica linearizada, região inicial e propriedades (A--D);
+  \item \textbf{Rota BMC:} \emph{harness} em C e ESBMC, para contraexemplos e prova até o horizonte $K$;
+  \item \textbf{Rota indutiva:} sistema de transição em Verilog, AIGER (Yosys) e IC3/PDR (ABC), com motores alternativos (BMC do ABC, Z3/Spacer, e BTOR2 em nível de palavra, planejado);
+  \item \textbf{Validação:} intervalos, equivalência por SAT, mutantes de insegurança conhecida e isolamento de propriedades vacuas.
+\end{enumerate}
+As seções seguintes descrevem cada etapa e apresentam os \textbf{resultados preliminares} já obtidos com ela. A etapa de BTOR2 e as demais lacunas são tratadas como trabalho proposto na Seção~\ref{sec:discpre} e no Capítulo~\ref{cap:crono}.
+
+\section{Convenção de vereditos}
+
+Todo resultado cai em exatamente uma de quatro categorias, e nenhuma é substituída por outra:
+\begin{itemize}
+  \item \textbf{Provado}: o motor concluiu que a propriedade vale (no escopo e na codificação declarados);
+  \item \textbf{Contraexemplo}: o motor exibiu uma execução concreta que viola a propriedade;
+  \item \textbf{Indeciso}: o motor excedeu o limite de tempo ou de memória. \textbf{Indeciso não é seguro e não é inseguro};
+  \item \textbf{Modelo não validado}: o resultado vale para o modelo traduzido; a equivalência com o artefato real tem lacunas declaradas.
+\end{itemize}
+
+\paragraph{Ambiente.} As medições da validação e as reexecuções da rota indutiva usaram Yosys 0.33 (ABC embutido), Z3 4.8.12, contêiner Ubuntu 24.04, Intel i7-14700 (28 \emph{threads}) e 32~GB de RAM. As medições do ESBMC 6.8.0 são as registradas no repositório do projeto; tempos absolutos entre os dois conjuntos não são comparáveis.

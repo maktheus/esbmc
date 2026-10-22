@@ -29,3 +29,5 @@ venv/
 
 # metadados de build
 *.egg-info/
+*.lof
+*.lot

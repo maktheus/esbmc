@@ -1,0 +1,11 @@
+### H=8
+    AIG: [1;37mn8                            :[0m i/o =   65/    1  lat =   65  and = 143721  lev =508
+  -- PDR (ABC)
+    wall=300.23s rss=113428KB
+  -- BMC (ABC bmc3)
+Params: FramesMax = 60. Start = 0. ConfLimit = 0. TimeOut = 300. SolveAll = 0.
+No output asserted in 5 frames. Resource limit reached (timeout 300 sec). Time =   300.53 sec
+    wall=300.73s rss=98236KB
+  -- Spacer (Z3, nivel de palavra)
+mut=none init_bnd=5 z3=4.8.12 resultado=unknown tempo=300.6s
+INDECISO: ok

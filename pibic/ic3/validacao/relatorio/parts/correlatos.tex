@@ -1,0 +1,23 @@
+\chapter{Trabalhos Correlatos}\label{cap:corr}
+
+\textbf{Aviso metodológico.} Esta seção é um levantamento preliminar. Parte das referências foi identificada apenas por título e resumo, \textbf{sem leitura integral}; os dados bibliográficos marcados com ``(a conferir)'' devem ser verificados antes da versão final. Uma revisão sistemática é uma atividade do cronograma (Capítulo~\ref{cap:metod}).
+
+\section{Verificação de redes neurais por SMT, MILP e alcançabilidade}
+
+O \emph{Reluplex} (KATZ et al., 2017) estendeu o simplex para tratar ReLU e verificar propriedades de redes; seu sucessor, o \emph{Marabou} (KATZ et al., 2019), é um \emph{framework} de SMT para redes. O \emph{NNV} (TRAN et al., 2020) usa alcançabilidade com conjuntos do tipo estrela. O $\alpha,\beta$-CROWN (WANG et al., 2021) combina propagação de limites com \emph{branch-and-bound} e lidera competições de verificação. Esses verificadores tratam a rede \emph{isolada} (propriedade entrada--saída), em geral em ponto flutuante; a malha fechada com dinâmica discreta e aritmética inteira truncada por termo não é o seu foco.
+
+\section{Redes quantizadas}
+
+A verificação de redes quantizadas por SMT/BMC é tratada, por exemplo, em arXiv:2106.05997 (autoria a conferir), e formulações em programação linear inteira para redes quantizadas (QVIP, a conferir). Esses trabalhos tratam a semântica de bit-vetores da rede, que é a mesma preocupação deste trabalho, mas, pelo que foi levantado, sem a planta em malha fechada.
+
+\section{\emph{Model checking} de controladores neurais}
+
+Trabalhos recentes aplicam \emph{model checking} a sistemas com componentes neurais (por exemplo, Giacobbe et al., NeurIPS 2024, a conferir). Em verificação de software, o ESBMC (GADELHA et al., 2018) é usado para programas C, inclusive código gerado de redes; e a verificação de C via BTOR2 com IC3/PDR é uma rota estabelecida.
+
+\section{IC3/PDR e motores indutivos}
+
+O IC3 (BRADLEY, 2011) e a implementação PDR do ABC (EÉN; MISHCHENKO; BRAYTON, 2011) são a base dos \emph{model checkers} de \emph{hardware}; o Spacer (KOMURAVELLI; GURFINKEL; CHAKI, 2014) generaliza a ideia para cláusulas de Horn no Z3. Motores em nível de palavra para BTOR2 (btormc, Pono, AVR, rIC3) preservam a estrutura aritmética e são a alternativa natural ao \emph{bit-blasting}.
+
+\section{Lacuna e posicionamento}
+
+Numa busca curta não encontrei o uso de IC3/PDR sobre a malha fechada planta mais rede neural quantizada em ponto fixo, com validação por mutantes. Isso \textbf{não} equivale a ausência na literatura; a revisão sistemática planejada deve confirmá-lo ou refutá-lo. A contribuição defensável até aqui é metodológica: detecção de propriedades vacuas, cadeia de validação e registro de resultados negativos.

@@ -1,0 +1,24 @@
+Import proof-constraint: \ok = 1'1
+Final proof equation: \ok = 1'1
+Import show expression: { \v \a \b }
+
+Solving problem with 9489 variables and 28077 clauses..
+SAT proof finished - model found: FAIL!
+
+   ______                   ___       ___       _ _            _ _ 
+  (_____ \                 / __)     / __)     (_) |          | | |
+   _____) )___ ___   ___ _| |__    _| |__ _____ _| | _____  __| | |
+  |  ____/ ___) _ \ / _ (_   __)  (_   __|____ | | || ___ |/ _  |_|
+  | |   | |  | |_| | |_| || |       | |  / ___ | | || ____( (_| |_ 
+  |_|   |_|   \___/ \___/ |_|       |_|  \_____|_|\_)_____)\____|_|
+
+
+  Signal Name             Dec       Hex                                 Bin
+  --------------- ----------- --------- -----------------------------------
+  \a                  8388608    800000    00000000100000000000000000000000
+  \b                 -8388608  ff800000    11111111100000000000000000000000
+  \v              -2147483648  80000000    10000000000000000000000000000000
+
+End of script. Logfile hash: a1e7b26353, CPU: user 0.06s system 0.01s, MEM: 18.47 MB peak
+Yosys 0.33 (git sha1 2584903a060)
+Time spent: 85% 1x sat (0 sec), 4% 5x opt_expr (0 sec), ...
