@@ -440,6 +440,81 @@
       </div>
     </div>
 
+    <!-- Seção Multi-Core: Saturação 100% de Hardware no Windows -->
+    <h2 class="section-title">Avaliação Paralela Nativa no Windows — 100% do Hardware (28 Threads / 64 GB RAM)</h2>
+
+    <div class="card">
+      <p style="margin-bottom: 1rem;">
+        Execução direta sobre o sistema operacional anfitrião (Windows 11 nativo, sem camadas de virtualização intermediárias),
+        explorando <strong>todos os 28 processadores lógicos</strong> do processador <strong>Intel Core i7-14700</strong> e seus <strong>64 GB de RAM</strong>.
+        Ao todo, foram orquestradas <strong>43 tarefas formais simultâneas</strong> divididas em três baterias.
+      </p>
+
+      <div class="metrics-grid" style="margin-bottom: 1.5rem;">
+        <div class="metric-card">
+          <div class="metric-val" style="color: var(--accent-blue);">28</div>
+          <div class="metric-label">Threads Concorrentes</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" style="color: var(--accent-green);">10.19x</div>
+          <div class="metric-label">Speedup Global</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" style="color: var(--accent-purple);">4.562s</div>
+          <div class="metric-label">Trabalho de CPU (~76 min)</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" style="color: var(--accent-amber);">447s</div>
+          <div class="metric-label">Tempo Real (~7.4 min)</div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Bateria de Teste</th>
+              <th>Estratégia & Hardware</th>
+              <th>Tarefas</th>
+              <th>Tempo Real (Wall)</th>
+              <th>CPU Somado</th>
+              <th>Speedup</th>
+              <th>Descoberta Científica</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Bateria 1: Propriedades ESBMC</strong></td>
+              <td>Concorrência de Processos (5 núcleos P-core)</td>
+              <td>5 propriedades</td>
+              <td>90.64s</td>
+              <td>365.26s</td>
+              <td><span class="badge badge-green">4.03x</span></td>
+              <td>PropC provada SAFE em 3.47s; demais sofrem timeout de 90s na AST do C.</td>
+            </tr>
+            <tr>
+              <td><strong>Bateria 2: Domain Slicing (28 Cores)</strong></td>
+              <td>Particionamento do Espaço em 28 caixas disjuntas</td>
+              <td>28 fatias</td>
+              <td>93.13s</td>
+              <td>2.252.70s</td>
+              <td><span class="badge badge-green">24.19x</span></td>
+              <td><strong>Quebrou a cegueira do timeout!</strong> 6 fatias encontraram contraexemplos exatos em 23s a 65s onde a análise global travava.</td>
+            </tr>
+            <tr>
+              <td><strong>Bateria 3: Word-Level BMC (Z3 BV)</strong></td>
+              <td>Horizontes K=1 a K=10 concorrentes</td>
+              <td>10 horizontes</td>
+              <td>263.72s</td>
+              <td>1.944.12s</td>
+              <td><span class="badge badge-green">7.37x</span></td>
+              <td>K=1 provado UNSAT em 0.15s; confirma que a arquitetura do BtorMC (Boolector) é superior a solvers gerais (Z3) para BMC profundo.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- Seção 3: Auditoria do Repositório & Testes -->
     <h2 class="section-title">Engenharia, Testes e Auditoria de Código</h2>
 

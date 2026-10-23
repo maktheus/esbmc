@@ -1,0 +1,331 @@
+{
+  "hardware": {
+    "cpus": 28,
+    "memory_gb": 63.70188522338867
+  },
+  "fase1_properties": [
+    {
+      "task_id": 4,
+      "name": "PropC_Bounds",
+      "desc": "Propriedade C \u2014 Sanidade Quantizacao (|F| <= 10N)",
+      "status": "SAFE",
+      "time": 3.468109369277954,
+      "rc": 0
+    },
+    {
+      "task_id": 2,
+      "name": "PropA_Left",
+      "desc": "Propriedade A \u2014 Direcao Negativa (th < -25 -> F < 0)",
+      "status": "TIMEOUT",
+      "time": 90.43995881080627,
+      "rc": null
+    },
+    {
+      "task_id": 3,
+      "name": "PropB_2step",
+      "desc": "Propriedade B \u2014 Seguranca Malha Fechada 2 Passos",
+      "status": "TIMEOUT",
+      "time": 90.43623447418213,
+      "rc": null
+    },
+    {
+      "task_id": 1,
+      "name": "PropA_Right",
+      "desc": "Propriedade A \u2014 Direcao Positiva (th > 25 -> F > 0)",
+      "status": "TIMEOUT",
+      "time": 90.47414541244507,
+      "rc": null
+    },
+    {
+      "task_id": 5,
+      "name": "PropD_Danger",
+      "desc": "Propriedade D \u2014 Forca Minima na Zona de Perigo",
+      "status": "TIMEOUT",
+      "time": 90.44144105911255,
+      "rc": null
+    }
+  ],
+  "fase2_domain_slicing": [
+    {
+      "task_id": 5,
+      "name": "Slice_05",
+      "desc": "Fatia 5/28",
+      "status": "UNSAFE",
+      "time": 23.94289207458496,
+      "rc": 1
+    },
+    {
+      "task_id": 23,
+      "name": "Slice_23",
+      "desc": "Fatia 23/28",
+      "status": "UNSAFE",
+      "time": 31.77563786506653,
+      "rc": 1
+    },
+    {
+      "task_id": 4,
+      "name": "Slice_04",
+      "desc": "Fatia 4/28",
+      "status": "UNSAFE",
+      "time": 34.505820751190186,
+      "rc": 1
+    },
+    {
+      "task_id": 21,
+      "name": "Slice_21",
+      "desc": "Fatia 21/28",
+      "status": "UNSAFE",
+      "time": 48.99261426925659,
+      "rc": 1
+    },
+    {
+      "task_id": 9,
+      "name": "Slice_09",
+      "desc": "Fatia 9/28",
+      "status": "UNSAFE",
+      "time": 53.176931619644165,
+      "rc": 1
+    },
+    {
+      "task_id": 28,
+      "name": "Slice_28",
+      "desc": "Fatia 28/28",
+      "status": "UNSAFE",
+      "time": 65.1007559299469,
+      "rc": 1
+    },
+    {
+      "task_id": 1,
+      "name": "Slice_01",
+      "desc": "Fatia 1/28",
+      "status": "TIMEOUT",
+      "time": 90.79005599021912,
+      "rc": null
+    },
+    {
+      "task_id": 3,
+      "name": "Slice_03",
+      "desc": "Fatia 3/28",
+      "status": "TIMEOUT",
+      "time": 90.7823543548584,
+      "rc": null
+    },
+    {
+      "task_id": 8,
+      "name": "Slice_08",
+      "desc": "Fatia 8/28",
+      "status": "TIMEOUT",
+      "time": 90.72021865844727,
+      "rc": null
+    },
+    {
+      "task_id": 2,
+      "name": "Slice_02",
+      "desc": "Fatia 2/28",
+      "status": "TIMEOUT",
+      "time": 90.8496150970459,
+      "rc": null
+    },
+    {
+      "task_id": 6,
+      "name": "Slice_06",
+      "desc": "Fatia 6/28",
+      "status": "TIMEOUT",
+      "time": 90.76469850540161,
+      "rc": null
+    },
+    {
+      "task_id": 10,
+      "name": "Slice_10",
+      "desc": "Fatia 10/28",
+      "status": "TIMEOUT",
+      "time": 90.7098000049591,
+      "rc": null
+    },
+    {
+      "task_id": 11,
+      "name": "Slice_11",
+      "desc": "Fatia 11/28",
+      "status": "TIMEOUT",
+      "time": 90.66770648956299,
+      "rc": null
+    },
+    {
+      "task_id": 7,
+      "name": "Slice_07",
+      "desc": "Fatia 7/28",
+      "status": "TIMEOUT",
+      "time": 91.00794506072998,
+      "rc": null
+    },
+    {
+      "task_id": 12,
+      "name": "Slice_12",
+      "desc": "Fatia 12/28",
+      "status": "TIMEOUT",
+      "time": 90.69219088554382,
+      "rc": null
+    },
+    {
+      "task_id": 13,
+      "name": "Slice_13",
+      "desc": "Fatia 13/28",
+      "status": "TIMEOUT",
+      "time": 90.81857967376709,
+      "rc": null
+    },
+    {
+      "task_id": 14,
+      "name": "Slice_14",
+      "desc": "Fatia 14/28",
+      "status": "TIMEOUT",
+      "time": 90.8103494644165,
+      "rc": null
+    },
+    {
+      "task_id": 15,
+      "name": "Slice_15",
+      "desc": "Fatia 15/28",
+      "status": "TIMEOUT",
+      "time": 90.81920099258423,
+      "rc": null
+    },
+    {
+      "task_id": 16,
+      "name": "Slice_16",
+      "desc": "Fatia 16/28",
+      "status": "TIMEOUT",
+      "time": 90.80856418609619,
+      "rc": null
+    },
+    {
+      "task_id": 17,
+      "name": "Slice_17",
+      "desc": "Fatia 17/28",
+      "status": "TIMEOUT",
+      "time": 90.58045482635498,
+      "rc": null
+    },
+    {
+      "task_id": 18,
+      "name": "Slice_18",
+      "desc": "Fatia 18/28",
+      "status": "TIMEOUT",
+      "time": 90.57153248786926,
+      "rc": null
+    },
+    {
+      "task_id": 20,
+      "name": "Slice_20",
+      "desc": "Fatia 20/28",
+      "status": "TIMEOUT",
+      "time": 90.57396793365479,
+      "rc": null
+    },
+    {
+      "task_id": 19,
+      "name": "Slice_19",
+      "desc": "Fatia 19/28",
+      "status": "TIMEOUT",
+      "time": 90.64494967460632,
+      "rc": null
+    },
+    {
+      "task_id": 22,
+      "name": "Slice_22",
+      "desc": "Fatia 22/28",
+      "status": "TIMEOUT",
+      "time": 90.53571152687073,
+      "rc": null
+    },
+    {
+      "task_id": 24,
+      "name": "Slice_24",
+      "desc": "Fatia 24/28",
+      "status": "TIMEOUT",
+      "time": 90.57114148139954,
+      "rc": null
+    },
+    {
+      "task_id": 25,
+      "name": "Slice_25",
+      "desc": "Fatia 25/28",
+      "status": "TIMEOUT",
+      "time": 90.56575608253479,
+      "rc": null
+    },
+    {
+      "task_id": 26,
+      "name": "Slice_26",
+      "desc": "Fatia 26/28",
+      "status": "TIMEOUT",
+      "time": 90.42216300964355,
+      "rc": null
+    },
+    {
+      "task_id": 27,
+      "name": "Slice_27",
+      "desc": "Fatia 27/28",
+      "status": "TIMEOUT",
+      "time": 90.50238251686096,
+      "rc": null
+    }
+  ],
+  "fase3_word_level_bmc": [
+    {
+      "k": 1,
+      "status": "SAFE (UNSAT)",
+      "time": 0.1534593105316162
+    },
+    {
+      "k": 2,
+      "status": "TIMEOUT/UNKNOWN",
+      "time": 180.7799015045166
+    },
+    {
+      "k": 5,
+      "status": "TIMEOUT/UNKNOWN",
+      "time": 183.56619024276733
+    },
+    {
+      "k": 6,
+      "status": "TIMEOUT/UNKNOWN",
+      "time": 185.21921730041504
+    },
+    {
+      "k": 3,
+      "status": "TIMEOUT/UNKNOWN",
+      "time": 201.93281078338623
+    },
+    {
+      "k": 7,
+      "status": "TIMEOUT/UNKNOWN",
+      "time": 218.80334448814392
+    },
+    {
+      "k": 4,
+      "status": "TIMEOUT/UNKNOWN",
+      "time": 224.0386619567871
+    },
+    {
+      "k": 10,
+      "status": "TIMEOUT/UNKNOWN",
+      "time": 226.53982210159302
+    },
+    {
+      "k": 9,
+      "status": "TIMEOUT/UNKNOWN",
+      "time": 261.431355714798
+    },
+    {
+      "k": 8,
+      "status": "TIMEOUT/UNKNOWN",
+      "time": 261.6552414894104
+    }
+  ],
+  "metrics": {
+    "wall_time": 447.4879629611969,
+    "cpu_time": 4562.08388543129,
+    "speedup": 10.194875087236442
+  }
+}

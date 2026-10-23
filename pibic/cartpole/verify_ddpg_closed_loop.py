@@ -337,23 +337,39 @@ def run_esbmc(c_file, timeout=TIMEOUT):
 # ─── Main ────────────────────────────────────────────────────────────────────
 
 def main():
-    from ddpg_weight_extractor import extract_ddpg_weights
+    json_path = os.path.join(HERE, "webapp", "public", "ddpg_weights_q88.json")
+    if os.path.exists(json_path):
+        with open(json_path, "r") as f:
+            w = json.load(f)
+        qw1 = w["w1"]
+        qb1 = w["b1"]
+        qw2 = w["w2"]
+        qb2 = w["b2"]
+        qw_out = w["w_out"]
+        qb_out = w["b_out"]
+    else:
+        from ddpg_weight_extractor import extract_ddpg_weights
+        w = extract_ddpg_weights(PTH)
+        qw1 = [[q(v) for v in row] for row in w["w1"]]
+        qb1 = [q(v) for v in w["b1"]]
+        qw2 = [[q(v) for v in row] for row in w["w2"]]
+        qb2 = [q(v) for v in w["b2"]]
+        qw_out = [[q(v) for v in row] for row in w["w_out"]]
+        qb_out = [q(v) for v in w["b_out"]]
+
+    if hasattr(sys.stdout, "reconfigure"):
+        try:
+            sys.stdout.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
 
     print("=" * 65)
-    print("Verificação em Malha Fechada — DDPG Actor")
-    print(f"Domínio Q8.8 (scale={SCALE}): x∈[±{X_BND}] xd∈[±{XD_BND}]"
-          f" th∈[±{TH_BND}] thd∈[±{THD_BND}]")
-    print(f"Limiar de perigo (Property A): |θ| > {DANGER_TH}/256"
-          f" ≈ {DANGER_TH / SCALE * 180 / math.pi:.1f}°")
+    print("Verificacao em Malha Fechada -- DDPG Actor")
+    print(f"Dominio Q8.8 (scale={SCALE}): x in [+-{X_BND}] xd in [+-{XD_BND}]"
+          f" th in [+-{TH_BND}] thd in [+-{THD_BND}]")
+    print(f"Limiar de perigo (Property A): |th| > {DANGER_TH}/256"
+          f" ~ {DANGER_TH / SCALE * 180 / math.pi:.1f} deg")
     print("=" * 65)
-
-    w = extract_ddpg_weights(PTH)
-    qw1 = [[q(v) for v in row] for row in w["w1"]]
-    qb1 = [q(v) for v in w["b1"]]
-    qw2 = [[q(v) for v in row] for row in w["w2"]]
-    qb2 = [q(v) for v in w["b2"]]
-    qw_out = [[q(v) for v in row] for row in w["w_out"]]
-    qb_out = [q(v) for v in w["b_out"]]
 
     in_lo = [-X_BND, -XD_BND, -TH_BND, -THD_BND]
     in_hi = [X_BND, XD_BND, TH_BND, THD_BND]
@@ -386,7 +402,7 @@ def main():
         print(f"{'─' * 65}")
 
         c_file = os.path.join(tempfile.gettempdir(), f"ddpg_cl_{key}.c")
-        with open(c_file, "w") as f:
+        with open(c_file, "w", encoding="utf-8") as f:
             f.write(src)
         print(f"Harness: {c_file}")
         print(f"Executando ESBMC (timeout={TIMEOUT}s)...")
