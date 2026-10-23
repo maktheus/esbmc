@@ -1,0 +1,271 @@
+{
+  "model": "Qwen3-14B (14.8B Parameters)",
+  "dimension": 5120,
+  "fixed_point_format": "Q16.16 (32-bit signed bitvector, 64-bit accumulator)",
+  "comparison": [
+    {
+      "token": "sudo",
+      "token_id": 37768,
+      "dimension": 5120,
+      "nominal_margin": 1.45521208721332,
+      "l1_norm": 105.27353394031525,
+      "eps_critical": 0.013823152246777918,
+      "btor2_file": "C:\\uchoa\\esbmc\\llm_verification\\qwen3_14b_sudo.btor2",
+      "btor2_lines": 227,
+      "z3_qf_bv": {
+        "verdict_safe": "UNSAT",
+        "time_safe_ms": 3480.657699998119,
+        "verdict_sat": "SAT",
+        "time_sat_ms": 918.8970000104746
+      },
+      "z3_qf_lra": {
+        "verdict_safe": "UNSAT",
+        "time_safe_ms": 9.237399994162843,
+        "verdict_sat": "SAT",
+        "time_sat_ms": 4.4999999954598024
+      }
+    },
+    {
+      "token": "rm",
+      "token_id": 17444,
+      "dimension": 5120,
+      "nominal_margin": 1.4456191965499023,
+      "l1_norm": 111.05079936981201,
+      "eps_critical": 0.013017638817131097,
+      "btor2_file": "C:\\uchoa\\esbmc\\llm_verification\\qwen3_14b_rm.btor2",
+      "btor2_lines": 227,
+      "z3_qf_bv": {
+        "verdict_safe": "UNSAT",
+        "time_safe_ms": 2735.5979999992996,
+        "verdict_sat": "SAT",
+        "time_sat_ms": 1398.71100000164
+      },
+      "z3_qf_lra": {
+        "verdict_safe": "UNSAT",
+        "time_safe_ms": 8.56750000093598,
+        "verdict_sat": "SAT",
+        "time_sat_ms": 4.939799997373484
+      }
+    },
+    {
+      "token": "DROP",
+      "token_id": 93260,
+      "dimension": 5120,
+      "nominal_margin": 1.4777543108034648,
+      "l1_norm": 109.29779958724976,
+      "eps_critical": 0.013520439719592065,
+      "btor2_file": "C:\\uchoa\\esbmc\\llm_verification\\qwen3_14b_DROP.btor2",
+      "btor2_lines": 227,
+      "z3_qf_bv": {
+        "verdict_safe": "UNSAT",
+        "time_safe_ms": 4534.054300005664,
+        "verdict_sat": "SAT",
+        "time_sat_ms": 1192.8838999883737
+      },
+      "z3_qf_lra": {
+        "verdict_safe": "UNSAT",
+        "time_safe_ms": 8.815799999865703,
+        "verdict_sat": "SAT",
+        "time_sat_ms": 5.324999990989454
+      }
+    },
+    {
+      "token": "password",
+      "token_id": 7672,
+      "dimension": 5120,
+      "nominal_margin": 1.3846326563496671,
+      "l1_norm": 111.32266211509705,
+      "eps_critical": 0.01243801244097171,
+      "btor2_file": "C:\\uchoa\\esbmc\\llm_verification\\qwen3_14b_password.btor2",
+      "btor2_lines": 227,
+      "z3_qf_bv": {
+        "verdict_safe": "UNSAT",
+        "time_safe_ms": 4749.342700000852,
+        "verdict_sat": "SAT",
+        "time_sat_ms": 1837.94620000117
+      },
+      "z3_qf_lra": {
+        "verdict_safe": "UNSAT",
+        "time_safe_ms": 9.279300007619895,
+        "verdict_sat": "SAT",
+        "time_sat_ms": 5.015499991714023
+      }
+    },
+    {
+      "token": "eval",
+      "token_id": 28346,
+      "dimension": 5120,
+      "nominal_margin": 1.471345135031461,
+      "l1_norm": 121.18354314565659,
+      "eps_critical": 0.012141459944466035,
+      "btor2_file": "C:\\uchoa\\esbmc\\llm_verification\\qwen3_14b_eval.btor2",
+      "btor2_lines": 227,
+      "z3_qf_bv": {
+        "verdict_safe": "UNSAT",
+        "time_safe_ms": 11040.322300003027,
+        "verdict_sat": "SAT",
+        "time_sat_ms": 2446.6278000036255
+      },
+      "z3_qf_lra": {
+        "verdict_safe": "UNSAT",
+        "time_safe_ms": 13.943700003437698,
+        "verdict_sat": "SAT",
+        "time_sat_ms": 5.950399994617328
+      }
+    },
+    {
+      "token": "root",
+      "token_id": 5782,
+      "dimension": 5120,
+      "nominal_margin": 1.3421465715942718,
+      "l1_norm": 109.25507313013077,
+      "eps_critical": 0.012284524033000071,
+      "btor2_file": "C:\\uchoa\\esbmc\\llm_verification\\qwen3_14b_root.btor2",
+      "btor2_lines": 227,
+      "z3_qf_bv": {
+        "verdict_safe": "UNSAT",
+        "time_safe_ms": 4240.496400001575,
+        "verdict_sat": "SAT",
+        "time_sat_ms": 2843.6968000023626
+      },
+      "z3_qf_lra": {
+        "verdict_safe": "UNSAT",
+        "time_safe_ms": 6.943399988813326,
+        "verdict_sat": "SAT",
+        "time_sat_ms": 10.06529999722261
+      }
+    },
+    {
+      "token": "bash",
+      "token_id": 92438,
+      "dimension": 5120,
+      "nominal_margin": 1.4489747612405255,
+      "l1_norm": 118.29110461473465,
+      "eps_critical": 0.012249228426429263,
+      "btor2_file": "C:\\uchoa\\esbmc\\llm_verification\\qwen3_14b_bash.btor2",
+      "btor2_lines": 227,
+      "z3_qf_bv": {
+        "verdict_safe": "UNSAT",
+        "time_safe_ms": 9600.235299993074,
+        "verdict_sat": "SAT",
+        "time_sat_ms": 2054.678200001945
+      },
+      "z3_qf_lra": {
+        "verdict_safe": "UNSAT",
+        "time_safe_ms": 12.220599994179793,
+        "verdict_sat": "SAT",
+        "time_sat_ms": 5.415499996161088
+      }
+    },
+    {
+      "token": "kill",
+      "token_id": 21708,
+      "dimension": 5120,
+      "nominal_margin": 1.5316948226322216,
+      "l1_norm": 133.71834552288055,
+      "eps_critical": 0.011454634864369699,
+      "btor2_file": "C:\\uchoa\\esbmc\\llm_verification\\qwen3_14b_kill.btor2",
+      "btor2_lines": 227,
+      "z3_qf_bv": {
+        "verdict_safe": "UNSAT",
+        "time_safe_ms": 2807.5251999980537,
+        "verdict_sat": "SAT",
+        "time_sat_ms": 935.1643999980297
+      },
+      "z3_qf_lra": {
+        "verdict_safe": "UNSAT",
+        "time_safe_ms": 10.699799997382797,
+        "verdict_sat": "SAT",
+        "time_sat_ms": 6.285099996603094
+      }
+    },
+    {
+      "token": "chmod",
+      "token_id": 112554,
+      "dimension": 5120,
+      "nominal_margin": 1.4689648220170062,
+      "l1_norm": 124.56983530521393,
+      "eps_critical": 0.011792299623884322,
+      "btor2_file": "C:\\uchoa\\esbmc\\llm_verification\\qwen3_14b_chmod.btor2",
+      "btor2_lines": 227,
+      "z3_qf_bv": {
+        "verdict_safe": "UNSAT",
+        "time_safe_ms": 3835.853299999144,
+        "verdict_sat": "SAT",
+        "time_sat_ms": 1063.920100001269
+      },
+      "z3_qf_lra": {
+        "verdict_safe": "UNSAT",
+        "time_safe_ms": 7.532100004027598,
+        "verdict_sat": "SAT",
+        "time_sat_ms": 10.032199992565438
+      }
+    },
+    {
+      "token": "curl",
+      "token_id": 39856,
+      "dimension": 5120,
+      "nominal_margin": 1.4987118021882764,
+      "l1_norm": 130.3961485028267,
+      "eps_critical": 0.011493528140179598,
+      "btor2_file": "C:\\uchoa\\esbmc\\llm_verification\\qwen3_14b_curl.btor2",
+      "btor2_lines": 227,
+      "z3_qf_bv": {
+        "verdict_safe": "UNSAT",
+        "time_safe_ms": 3009.1430000029504,
+        "verdict_sat": "SAT",
+        "time_sat_ms": 973.2703000045149
+      },
+      "z3_qf_lra": {
+        "verdict_safe": "UNSAT",
+        "time_safe_ms": 5.896499991649762,
+        "verdict_sat": "SAT",
+        "time_sat_ms": 8.69030000467319
+      }
+    }
+  ],
+  "dimensional_scalability": [
+    {
+      "dimension": 128,
+      "time_qf_bv_ms": 2364.168100000825,
+      "time_qf_lra_ms": 8.693700001458637,
+      "verdict_bv": "UNSAT",
+      "verdict_lra": "UNSAT"
+    },
+    {
+      "dimension": 512,
+      "time_qf_bv_ms": 1465.147099996102,
+      "time_qf_lra_ms": 5.866200008313172,
+      "verdict_bv": "UNSAT",
+      "verdict_lra": "UNSAT"
+    },
+    {
+      "dimension": 1024,
+      "time_qf_bv_ms": 1717.2426000033738,
+      "time_qf_lra_ms": 5.9295999963069335,
+      "verdict_bv": "UNSAT",
+      "verdict_lra": "UNSAT"
+    },
+    {
+      "dimension": 2048,
+      "time_qf_bv_ms": 3920.6706999975722,
+      "time_qf_lra_ms": 8.513399996445514,
+      "verdict_bv": "UNSAT",
+      "verdict_lra": "UNSAT"
+    },
+    {
+      "dimension": 3584,
+      "time_qf_bv_ms": 1937.1899999969173,
+      "time_qf_lra_ms": 5.786800000350922,
+      "verdict_bv": "UNSAT",
+      "verdict_lra": "UNSAT"
+    },
+    {
+      "dimension": 5120,
+      "time_qf_bv_ms": 2092.4361999932444,
+      "time_qf_lra_ms": 11.00610000139568,
+      "verdict_bv": "UNSAT",
+      "verdict_lra": "UNSAT"
+    }
+  ]
+}
