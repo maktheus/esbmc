@@ -1,0 +1,210 @@
+{
+  "model": "Qwen2.5-7B",
+  "num_layers": 28,
+  "latent_dim": 3584,
+  "cumulative_gain_28layers": 3.2558828177278825,
+  "output_norm_scale": 3.8387837409973145,
+  "eps_star_layer28": 0.017067551699085786,
+  "eps_star_input_certified": 0.001365553798079235,
+  "verdict_safe": "unsat",
+  "verdict_unsafe": "sat",
+  "smt_time_sec": 0.015844199995626695,
+  "layers": [
+    {
+      "layer": 0,
+      "attn_norm_mean": 0.28355029225349426,
+      "ffn_norm_mean": 0.27222082018852234,
+      "layer_gain": 1.0138942778110505,
+      "cumulative_gain": 1.0138942778110505
+    },
+    {
+      "layer": 1,
+      "attn_norm_mean": 0.0919312909245491,
+      "ffn_norm_mean": 0.716825008392334,
+      "layer_gain": 1.020218907482922,
+      "cumulative_gain": 1.034394112411576
+    },
+    {
+      "layer": 2,
+      "attn_norm_mean": 0.3647302985191345,
+      "ffn_norm_mean": 0.7603852152824402,
+      "layer_gain": 1.0281278878450393,
+      "cumulative_gain": 1.0634894339930578
+    },
+    {
+      "layer": 3,
+      "attn_norm_mean": 0.33979660272598267,
+      "ffn_norm_mean": 1.0742918252944946,
+      "layer_gain": 1.035352210700512,
+      "cumulative_gain": 1.1010861365413487
+    },
+    {
+      "layer": 4,
+      "attn_norm_mean": 0.4006374180316925,
+      "ffn_norm_mean": 1.0470044612884521,
+      "layer_gain": 1.0361910469830036,
+      "cumulative_gain": 1.1409355966412504
+    },
+    {
+      "layer": 5,
+      "attn_norm_mean": 0.5402097702026367,
+      "ffn_norm_mean": 1.2240965366363525,
+      "layer_gain": 1.0441076576709747,
+      "cumulative_gain": 1.191259593362532
+    },
+    {
+      "layer": 6,
+      "attn_norm_mean": 0.4796740412712097,
+      "ffn_norm_mean": 0.6979818344116211,
+      "layer_gain": 1.0294413968920708,
+      "cumulative_gain": 1.2263319398522052
+    },
+    {
+      "layer": 7,
+      "attn_norm_mean": 0.5853515863418579,
+      "ffn_norm_mean": 0.6502461433410645,
+      "layer_gain": 1.030889943242073,
+      "cumulative_gain": 1.2642132638701813
+    },
+    {
+      "layer": 8,
+      "attn_norm_mean": 0.6216241717338562,
+      "ffn_norm_mean": 0.6963653564453125,
+      "layer_gain": 1.0329497382044792,
+      "cumulative_gain": 1.305868759949334
+    },
+    {
+      "layer": 9,
+      "attn_norm_mean": 0.6988812685012817,
+      "ffn_norm_mean": 1.0422827005386353,
+      "layer_gain": 1.043529099225998,
+      "cumulative_gain": 1.3627120507772994
+    },
+    {
+      "layer": 10,
+      "attn_norm_mean": 0.645874559879303,
+      "ffn_norm_mean": 0.7836775183677673,
+      "layer_gain": 1.0357388019561768,
+      "cumulative_gain": 1.411413746883325
+    },
+    {
+      "layer": 11,
+      "attn_norm_mean": 0.6919805407524109,
+      "ffn_norm_mean": 0.7841987013816833,
+      "layer_gain": 1.0369044810533523,
+      "cumulative_gain": 1.4635012387636217
+    },
+    {
+      "layer": 12,
+      "attn_norm_mean": 0.7779396176338196,
+      "ffn_norm_mean": 0.766819417476654,
+      "layer_gain": 1.0386189758777618,
+      "cumulative_gain": 1.5200201578005084
+    },
+    {
+      "layer": 13,
+      "attn_norm_mean": 0.8344146609306335,
+      "ffn_norm_mean": 0.7689042687416077,
+      "layer_gain": 1.040082973241806,
+      "cumulative_gain": 1.580947085112632
+    },
+    {
+      "layer": 14,
+      "attn_norm_mean": 0.898955762386322,
+      "ffn_norm_mean": 0.7950349450111389,
+      "layer_gain": 1.0423497676849365,
+      "cumulative_gain": 1.6478998268893295
+    },
+    {
+      "layer": 15,
+      "attn_norm_mean": 0.7596419453620911,
+      "ffn_norm_mean": 0.7993548512458801,
+      "layer_gain": 1.0389749199151992,
+      "cumulative_gain": 1.7121265906706118
+    },
+    {
+      "layer": 16,
+      "attn_norm_mean": 0.9459725618362427,
+      "ffn_norm_mean": 0.8222679495811462,
+      "layer_gain": 1.0442060127854347,
+      "cumulative_gain": 1.7878128806280795
+    },
+    {
+      "layer": 17,
+      "attn_norm_mean": 0.9767297506332397,
+      "ffn_norm_mean": 0.8506396412849426,
+      "layer_gain": 1.0456842347979545,
+      "cumulative_gain": 1.8694877440415
+    },
+    {
+      "layer": 18,
+      "attn_norm_mean": 0.9300813674926758,
+      "ffn_norm_mean": 0.8704376220703125,
+      "layer_gain": 1.0450129747390746,
+      "cumulative_gain": 1.9536389486390497
+    },
+    {
+      "layer": 19,
+      "attn_norm_mean": 0.9897364377975464,
+      "ffn_norm_mean": 0.9278932213783264,
+      "layer_gain": 1.0479407414793969,
+      "cumulative_gain": 2.047297848419835
+    },
+    {
+      "layer": 20,
+      "attn_norm_mean": 0.9843788146972656,
+      "ffn_norm_mean": 0.9842095971107483,
+      "layer_gain": 1.0492147102952003,
+      "cumulative_gain": 2.1480550189178045
+    },
+    {
+      "layer": 21,
+      "attn_norm_mean": 0.9652256369590759,
+      "ffn_norm_mean": 1.0899410247802734,
+      "layer_gain": 1.0513791665434837,
+      "cumulative_gain": 2.2584202954793486
+    },
+    {
+      "layer": 22,
+      "attn_norm_mean": 1.0073673725128174,
+      "ffn_norm_mean": 1.2069547176361084,
+      "layer_gain": 1.0553580522537231,
+      "cumulative_gain": 2.383442044207363
+    },
+    {
+      "layer": 23,
+      "attn_norm_mean": 0.9269583821296692,
+      "ffn_norm_mean": 1.4001439809799194,
+      "layer_gain": 1.0581775590777398,
+      "cumulative_gain": 2.522104884542606
+    },
+    {
+      "layer": 24,
+      "attn_norm_mean": 0.9879215955734253,
+      "ffn_norm_mean": 1.4558002948760986,
+      "layer_gain": 1.061093047261238,
+      "cumulative_gain": 2.676187957451767
+    },
+    {
+      "layer": 25,
+      "attn_norm_mean": 0.9589328765869141,
+      "ffn_norm_mean": 1.5999088287353516,
+      "layer_gain": 1.0639710426330566,
+      "cumulative_gain": 2.8473864913719864
+    },
+    {
+      "layer": 26,
+      "attn_norm_mean": 0.9232732057571411,
+      "ffn_norm_mean": 1.5960055589675903,
+      "layer_gain": 1.0629819691181184,
+      "cumulative_gain": 3.026720499438924
+    },
+    {
+      "layer": 27,
+      "attn_norm_mean": 0.8961365818977356,
+      "ffn_norm_mean": 2.1323864459991455,
+      "layer_gain": 1.075713075697422,
+      "cumulative_gain": 3.2558828177278825
+    }
+  ]
+}
