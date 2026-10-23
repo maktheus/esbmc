@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-10-22 22:43:07",
+  "total_states": 14641,
+  "threshold_53_failures": 1075,
+  "threshold_53_safety_rate": 0.9265760535482549,
+  "threshold_55_failures": 1075,
+  "threshold_55_safety_rate": 0.9265760535482549,
+  "max_theta_observed": 54,
+  "max_theta_degrees": 12.085838699512031,
+  "max_x_observed": 615,
+  "max_x_meters": 2.40234375,
+  "limit_cycle": {
+    "exists": true,
+    "start_step": 397,
+    "period_steps": 1316,
+    "period_seconds": 26.32,
+    "attractor_bounds": {
+      "x_min_m": -2.32421875,
+      "x_max_m": 2.06640625,
+      "th_min_deg": -11.414403216205807,
+      "th_max_deg": 8.057225799674688
+    }
+  }
+}
