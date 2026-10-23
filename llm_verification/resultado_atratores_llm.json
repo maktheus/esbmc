@@ -1,0 +1,36 @@
+[
+  {
+    "name": "Regime 1: Estabilidade Homeostática (Ponto Fixo EOS)",
+    "prompt": "What is the capital of France? Answer in one word.",
+    "eval_count": 2,
+    "has_cycle": false,
+    "period": null,
+    "capture_k": null,
+    "cycle_tokens": null,
+    "generated_text": "Paris"
+  },
+  {
+    "name": "Regime 2: Indução de Ciclo Limite (Prompt Degenerado Periódico)",
+    "prompt": "Repeat the sequence: alpha beta gamma alpha beta gamma alpha beta gamma",
+    "eval_count": 10,
+    "has_cycle": true,
+    "period": 3,
+    "capture_k": 2,
+    "cycle_tokens": [
+      13440,
+      21619,
+      8287
+    ],
+    "generated_text": "alpha beta gamma alpha beta gamma alpha beta gamma"
+  },
+  {
+    "name": "Regime 3: Armadilha Autoregressiva de Eco",
+    "prompt": "Echo loop: [A -> B][B -> A][A -> B][B -> A][A -> B]",
+    "eval_count": 70,
+    "has_cycle": false,
+    "period": null,
+    "capture_k": null,
+    "cycle_tokens": null,
+    "generated_text": "Echo loop you've described, `[A -> B][B -> A][A -> B][B -> A][A -> B]`, suggests a back-and-forth pattern between two points, A and B. This kind of loop can be visualized as follows:\n\n1. A sends a message to B.\n2. B receives the message and"
+  }
+]
