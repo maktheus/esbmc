@@ -1,0 +1,270 @@
+{
+  "timestamp": "2026-10-22 21:10:58",
+  "hardware_threads": 28,
+  "metrics_z3": {
+    "wall_time": 95.54767847061157,
+    "cpu_time": 1960.069626569748,
+    "speedup": 20.514047624638245,
+    "solved_count": 10,
+    "timeout_count": 18
+  },
+  "score": {
+    "z3_wins": 8,
+    "esbmc_wins": 4,
+    "ties": 16
+  },
+  "slices": [
+    {
+      "slice": "Slice_01",
+      "range": "[-53, -49]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.79005599021912,
+      "z3_status": "TIMEOUT",
+      "z3_time": 94.7079484462738,
+      "winner": "Empate (Ambos Timeout)"
+    },
+    {
+      "slice": "Slice_02",
+      "range": "[-49, -45]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.8496150970459,
+      "z3_status": "TIMEOUT",
+      "z3_time": 90.67753195762634,
+      "winner": "Empate (Ambos Timeout)"
+    },
+    {
+      "slice": "Slice_03",
+      "range": "[-45, -41]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.7823543548584,
+      "z3_status": "UNSAFE",
+      "z3_time": 33.763813734054565,
+      "winner": "Z3 (Resolveu vs Timeout)"
+    },
+    {
+      "slice": "Slice_04",
+      "range": "[-41, -37]",
+      "esbmc_status": "UNSAFE",
+      "esbmc_time": 34.505820751190186,
+      "z3_status": "UNSAFE",
+      "z3_time": 42.95235347747803,
+      "winner": "ESBMC (1.2x mais rapido)"
+    },
+    {
+      "slice": "Slice_05",
+      "range": "[-37, -34]",
+      "esbmc_status": "UNSAFE",
+      "esbmc_time": 23.94289207458496,
+      "z3_status": "UNSAFE",
+      "z3_time": 35.82392406463623,
+      "winner": "ESBMC (1.5x mais rapido)"
+    },
+    {
+      "slice": "Slice_06",
+      "range": "[-34, -30]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.76469850540161,
+      "z3_status": "UNSAFE",
+      "z3_time": 25.880220890045166,
+      "winner": "Z3 (Resolveu vs Timeout)"
+    },
+    {
+      "slice": "Slice_07",
+      "range": "[-30, -26]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 91.00794506072998,
+      "z3_status": "TIMEOUT",
+      "z3_time": 90.57204484939575,
+      "winner": "Empate (Ambos Timeout)"
+    },
+    {
+      "slice": "Slice_08",
+      "range": "[-26, -22]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.72021865844727,
+      "z3_status": "UNSAFE",
+      "z3_time": 21.037895917892456,
+      "winner": "Z3 (Resolveu vs Timeout)"
+    },
+    {
+      "slice": "Slice_09",
+      "range": "[-22, -18]",
+      "esbmc_status": "UNSAFE",
+      "esbmc_time": 53.176931619644165,
+      "z3_status": "TIMEOUT",
+      "z3_time": 94.69461584091187,
+      "winner": "ESBMC (Resolveu vs Timeout)"
+    },
+    {
+      "slice": "Slice_10",
+      "range": "[-18, -15]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.7098000049591,
+      "z3_status": "TIMEOUT",
+      "z3_time": 90.61696791648865,
+      "winner": "Empate (Ambos Timeout)"
+    },
+    {
+      "slice": "Slice_11",
+      "range": "[-15, -11]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.66770648956299,
+      "z3_status": "TIMEOUT",
+      "z3_time": 94.7334508895874,
+      "winner": "Empate (Ambos Timeout)"
+    },
+    {
+      "slice": "Slice_12",
+      "range": "[-11, -7]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.69219088554382,
+      "z3_status": "TIMEOUT",
+      "z3_time": 90.63013768196106,
+      "winner": "Empate (Ambos Timeout)"
+    },
+    {
+      "slice": "Slice_13",
+      "range": "[-7, -3]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.81857967376709,
+      "z3_status": "TIMEOUT",
+      "z3_time": 90.59605956077576,
+      "winner": "Empate (Ambos Timeout)"
+    },
+    {
+      "slice": "Slice_14",
+      "range": "[-3, 0]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.8103494644165,
+      "z3_status": "TIMEOUT",
+      "z3_time": 90.61665892601013,
+      "winner": "Empate (Ambos Timeout)"
+    },
+    {
+      "slice": "Slice_15",
+      "range": "[0, 3]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.81920099258423,
+      "z3_status": "TIMEOUT",
+      "z3_time": 90.54965686798096,
+      "winner": "Empate (Ambos Timeout)"
+    },
+    {
+      "slice": "Slice_16",
+      "range": "[3, 7]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.80856418609619,
+      "z3_status": "TIMEOUT",
+      "z3_time": 90.53910493850708,
+      "winner": "Empate (Ambos Timeout)"
+    },
+    {
+      "slice": "Slice_17",
+      "range": "[7, 11]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.58045482635498,
+      "z3_status": "TIMEOUT",
+      "z3_time": 90.56723546981812,
+      "winner": "Empate (Ambos Timeout)"
+    },
+    {
+      "slice": "Slice_18",
+      "range": "[11, 15]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.57153248786926,
+      "z3_status": "TIMEOUT",
+      "z3_time": 90.63078165054321,
+      "winner": "Empate (Ambos Timeout)"
+    },
+    {
+      "slice": "Slice_19",
+      "range": "[15, 18]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.64494967460632,
+      "z3_status": "TIMEOUT",
+      "z3_time": 94.76702046394348,
+      "winner": "Empate (Ambos Timeout)"
+    },
+    {
+      "slice": "Slice_20",
+      "range": "[18, 22]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.57396793365479,
+      "z3_status": "TIMEOUT",
+      "z3_time": 94.70100235939026,
+      "winner": "Empate (Ambos Timeout)"
+    },
+    {
+      "slice": "Slice_21",
+      "range": "[22, 26]",
+      "esbmc_status": "UNSAFE",
+      "esbmc_time": 48.99261426925659,
+      "z3_status": "TIMEOUT",
+      "z3_time": 94.70324397087097,
+      "winner": "ESBMC (Resolveu vs Timeout)"
+    },
+    {
+      "slice": "Slice_22",
+      "range": "[26, 30]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.53571152687073,
+      "z3_status": "TIMEOUT",
+      "z3_time": 94.66634726524353,
+      "winner": "Empate (Ambos Timeout)"
+    },
+    {
+      "slice": "Slice_23",
+      "range": "[30, 34]",
+      "esbmc_status": "UNSAFE",
+      "esbmc_time": 31.77563786506653,
+      "z3_status": "UNSAFE",
+      "z3_time": 23.799080848693848,
+      "winner": "Z3 (1.3x mais rapido)"
+    },
+    {
+      "slice": "Slice_24",
+      "range": "[34, 37]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.57114148139954,
+      "z3_status": "UNSAFE",
+      "z3_time": 31.868544578552246,
+      "winner": "Z3 (Resolveu vs Timeout)"
+    },
+    {
+      "slice": "Slice_25",
+      "range": "[37, 41]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.56575608253479,
+      "z3_status": "UNSAFE",
+      "z3_time": 30.64288353919983,
+      "winner": "Z3 (Resolveu vs Timeout)"
+    },
+    {
+      "slice": "Slice_26",
+      "range": "[41, 45]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.42216300964355,
+      "z3_status": "TIMEOUT",
+      "z3_time": 90.72952795028687,
+      "winner": "Empate (Ambos Timeout)"
+    },
+    {
+      "slice": "Slice_27",
+      "range": "[45, 49]",
+      "esbmc_status": "TIMEOUT",
+      "esbmc_time": 90.50238251686096,
+      "z3_status": "UNSAFE",
+      "z3_time": 28.729429721832275,
+      "winner": "Z3 (Resolveu vs Timeout)"
+    },
+    {
+      "slice": "Slice_28",
+      "range": "[49, 53]",
+      "esbmc_status": "UNSAFE",
+      "esbmc_time": 65.1007559299469,
+      "z3_status": "UNSAFE",
+      "z3_time": 25.872142791748047,
+      "winner": "Z3 (2.5x mais rapido)"
+    }
+  ]
+}

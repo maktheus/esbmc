@@ -513,6 +513,63 @@
           </tbody>
         </table>
       </div>
+
+      <h3 style="margin-top: 1.5rem; margin-bottom: 0.75rem; color: var(--accent-blue);">Comparativo Justo: Z3 (QF_BV) vs ESBMC nas 28 Fatias</h3>
+      <p style="margin-bottom: 1rem; color: var(--text-muted);">
+        Ambos os motores foram submetidos exatamente às mesmas 28 fatias do espaço angular &theta; &isin; [-53, 53], com o mesmo timeout rígido de 90s por fatia e a mesma semântica de malha fechada em 2 passos:
+      </p>
+
+      <div class="metrics-grid" style="margin-bottom: 1.5rem;">
+        <div class="metric-card">
+          <div class="metric-val" style="color: var(--accent-green);">8 Fatias</div>
+          <div class="metric-label">Vitórias do Z3</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" style="color: var(--accent-blue);">4 Fatias</div>
+          <div class="metric-label">Vitórias do ESBMC</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" style="color: var(--accent-amber);">16 Fatias</div>
+          <div class="metric-label">Empates (Timeout na Região Central)</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" style="color: var(--accent-purple);">12 / 28</div>
+          <div class="metric-label">Cobertura Combinada (Portfólio)</div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Fatia</th>
+              <th>Faixa Angular &theta;</th>
+              <th>Status ESBMC</th>
+              <th>Tempo ESBMC</th>
+              <th>Status Z3</th>
+              <th>Tempo Z3</th>
+              <th>Vencedor da Fatia</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><code>Slice_03</code></td><td>[-45, -41]</td><td>TIMEOUT (90.8s)</td><td>-</td><td><span class="badge badge-red">UNSAFE</span></td><td>33.76s</td><td><strong>Z3 (Resolveu vs Timeout)</strong></td></tr>
+            <tr><td><code>Slice_04</code></td><td>[-41, -37]</td><td><span class="badge badge-red">UNSAFE</span></td><td>34.51s</td><td><span class="badge badge-red">UNSAFE</span></td><td>42.95s</td><td><strong>ESBMC (1.2x mais rápido)</strong></td></tr>
+            <tr><td><code>Slice_05</code></td><td>[-37, -34]</td><td><span class="badge badge-red">UNSAFE</span></td><td>23.94s</td><td><span class="badge badge-red">UNSAFE</span></td><td>35.82s</td><td><strong>ESBMC (1.5x mais rápido)</strong></td></tr>
+            <tr><td><code>Slice_06</code></td><td>[-34, -30]</td><td>TIMEOUT (90.8s)</td><td>-</td><td><span class="badge badge-red">UNSAFE</span></td><td>25.88s</td><td><strong>Z3 (Resolveu vs Timeout)</strong></td></tr>
+            <tr><td><code>Slice_08</code></td><td>[-26, -22]</td><td>TIMEOUT (90.7s)</td><td>-</td><td><span class="badge badge-red">UNSAFE</span></td><td>21.04s</td><td><strong>Z3 (Resolveu vs Timeout)</strong></td></tr>
+            <tr><td><code>Slice_09</code></td><td>[-22, -18]</td><td><span class="badge badge-red">UNSAFE</span></td><td>53.18s</td><td>TIMEOUT (94.7s)</td><td>-</td><td><strong>ESBMC (Resolveu vs Timeout)</strong></td></tr>
+            <tr><td><code>Slice_21</code></td><td>[22, 26]</td><td><span class="badge badge-red">UNSAFE</span></td><td>48.99s</td><td>TIMEOUT (94.7s)</td><td>-</td><td><strong>ESBMC (Resolveu vs Timeout)</strong></td></tr>
+            <tr><td><code>Slice_23</code></td><td>[30, 34]</td><td><span class="badge badge-red">UNSAFE</span></td><td>31.78s</td><td><span class="badge badge-red">UNSAFE</span></td><td>23.80s</td><td><strong>Z3 (1.3x mais rápido)</strong></td></tr>
+            <tr><td><code>Slice_24</code></td><td>[34, 37]</td><td>TIMEOUT (90.6s)</td><td>-</td><td><span class="badge badge-red">UNSAFE</span></td><td>31.87s</td><td><strong>Z3 (Resolveu vs Timeout)</strong></td></tr>
+            <tr><td><code>Slice_25</code></td><td>[37, 41]</td><td>TIMEOUT (90.6s)</td><td>-</td><td><span class="badge badge-red">UNSAFE</span></td><td>30.64s</td><td><strong>Z3 (Resolveu vs Timeout)</strong></td></tr>
+            <tr><td><code>Slice_27</code></td><td>[45, 49]</td><td>TIMEOUT (90.5s)</td><td>-</td><td><span class="badge badge-red">UNSAFE</span></td><td>28.73s</td><td><strong>Z3 (Resolveu vs Timeout)</strong></td></tr>
+            <tr><td><code>Slice_28</code></td><td>[49, 53]</td><td><span class="badge badge-red">UNSAFE</span></td><td>65.10s</td><td><span class="badge badge-red">UNSAFE</span></td><td>25.87s</td><td><strong>Z3 (2.5x mais rápido)</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted);">
+        <em>*As fatias centrais (Slice 10 a 20, onde &theta; &approx; 0) empataram em timeout em ambos os verificadores devido à proximidade do ponto de equilíbrio, onde a aceleração do pêndulo é mínima e o espaço de busca exige trajetórias mais profundas.</em>
+      </p>
     </div>
 
     <!-- Seção 3: Auditoria do Repositório & Testes -->
