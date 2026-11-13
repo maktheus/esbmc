@@ -1,0 +1,224 @@
+{
+  "local_venv_executable": "C:\\uchoa\\esbmc\\llm_verification\\venv_local_flaw_check\\Scripts\\python.exe",
+  "local_venv_prefix": "C:\\uchoa\\esbmc\\llm_verification\\venv_local_flaw_check",
+  "local_base_prefix": "C:\\Users\\Administrador\\AppData\\Local\\Programs\\Python\\Python312",
+  "is_isolated_venv": true,
+  "remote_venv_executable": "C:\\Users\\msuchoa_local\\esbmc_llm_27b\\venv_flaw_audit\\Scripts\\python.exe",
+  "model": "Qwen 3.8 27B (qwen35, 65 layers)",
+  "verified_flaws": [
+    {
+      "flaw_id": "FLAW-01",
+      "name": "Colapso de Posto (Rank Collapse) e Envenenamento de Denominador RMS por Pesos Exatamente Zero (0x00000000)",
+      "z3_qf_fp_status": "sat",
+      "remote_z3_status": "sat",
+      "coordinates": [
+        {
+          "tensor": "blk.43.attn_k_norm.weight",
+          "shape": [
+            256
+          ],
+          "channel_index": 32,
+          "exact_float32_value": 0.0,
+          " exact_hex_bits": "0x0",
+          "layer_max_weight": 3.140625,
+          "layer_mean_weight": 1.6243715286254883
+        },
+        {
+          "tensor": "blk.59.attn_q_norm.weight",
+          "shape": [
+            256
+          ],
+          "channel_index": 1,
+          "exact_float32_value": 0.0,
+          " exact_hex_bits": "0x0",
+          "layer_max_weight": 2.328125,
+          "layer_mean_weight": 1.5146923065185547
+        },
+        {
+          "tensor": "blk.7.post_attention_norm.weight",
+          "shape": [
+            5120
+          ],
+          "channel_index": 3994,
+          "exact_float32_value": 0.0,
+          " exact_hex_bits": "0x0",
+          "layer_max_weight": 1.06689453125,
+          "layer_mean_weight": 0.9427224397659302
+        }
+      ],
+      "rms_normal_d256": 0.998045,
+      "rms_poisoned_z500_d256": 31.265933,
+      "active_channel_retention_ratio": 0.031921,
+      "active_channel_suppression_pct": 96.81
+    },
+    {
+      "flaw_id": "FLAW-02",
+      "name": "Inversao Antipodal de Sinal (180 graus) no QK-Norm sobre Planos Primarios RoPE (Canais 0 e 32)",
+      "z3_qf_fp_status": "sat",
+      "remote_z3_status": "sat",
+      "counterexample_q0": "1.124114990234375*(2**3)",
+      "counterexample_dot_contrib": "-1.12542450428009033203125*(2**-2)",
+      "coordinates": [
+        {
+          "tensor": "blk.31.attn_k_norm.weight",
+          "shape": [
+            256
+          ],
+          "channel_index": 0,
+          "negative_weight": -0.1484375,
+          "paired_q_norm_weight": 0.0234375,
+          "product_q_k_scale": -0.00347900390625,
+          "layer_max_weight": 2.890625
+        },
+        {
+          "tensor": "blk.47.attn_k_norm.weight",
+          "shape": [
+            256
+          ],
+          "channel_index": 0,
+          "negative_weight": -0.0390625,
+          "paired_q_norm_weight": 0.00390625,
+          "product_q_k_scale": -0.000152587890625,
+          "layer_max_weight": 3.21875
+        },
+        {
+          "tensor": "blk.59.attn_k_norm.weight",
+          "shape": [
+            256
+          ],
+          "channel_index": 32,
+          "negative_weight": -0.0078125,
+          "paired_q_norm_weight": 0.2109375,
+          "product_q_k_scale": -0.00164794921875,
+          "layer_max_weight": 2.609375
+        }
+      ]
+    },
+    {
+      "flaw_id": "FLAW-03",
+      "name": "Violacao do Horizonte Exponencial IEEE-754 Float32 (|ssm_a| > 88.7228) e Regime Subnormal/Underflow em blk.12.ssm_a",
+      "remote_z3_status": "sat",
+      "head_41": {
+        "ssm_a": -139.4212646484375,
+        "ssm_a_hex_fp32": "0xC30B6BD8",
+        "exp_neg_a_fp32": "inf",
+        "exp_pos_a_fp32": 0.0,
+        "exp_pos_a_hex_fp32": "0x00000000",
+        "is_total_fp32_underflow": true,
+        "single_step_state_loss_pct": 99.81
+      },
+      "head_9": {
+        "ssm_a": -102.00277709960938,
+        "ssm_a_hex_fp32": "0xC2CC016C",
+        "exp_neg_a_fp32": "inf",
+        "exp_pos_a_fp32": 5.605193857299268e-45,
+        "exp_pos_a_hex_fp32": "0x00000004",
+        "biased_exponent_bits": 0,
+        "mantissa_bits": 4,
+        "is_ieee754_subnormal_denormal": true
+      },
+      "all_stiff_modes": [
+        {
+          "tensor": "blk.12.ssm_a",
+          "head_index": 9,
+          "ssm_a_value": -102.00277709960938,
+          "ssm_dt_bias": -3.390625,
+          "dt_softplus": 0.03313261782871205,
+          "exceeds_fp32_exp_limit_88_72": true,
+          "fp32_exp_neg_a_overflow": "inf",
+          "fp32_exp_a_underflow": 5.605193857299268e-45,
+          "effective_step_decay_bar_A": 0.03406042822677412
+        },
+        {
+          "tensor": "blk.12.ssm_a",
+          "head_index": 41,
+          "ssm_a_value": -139.4212646484375,
+          "ssm_dt_bias": -3.078125,
+          "dt_softplus": 0.04501687434586297,
+          "exceeds_fp32_exp_limit_88_72": true,
+          "fp32_exp_neg_a_overflow": "inf",
+          "fp32_exp_a_underflow": 0.0,
+          "effective_step_decay_bar_A": 0.0018803270550469323
+        },
+        {
+          "tensor": "blk.2.ssm_a",
+          "head_index": 31,
+          "ssm_a_value": -59.96433639526367,
+          "ssm_dt_bias": -4.53125,
+          "dt_softplus": 0.010709655014929017,
+          "exceeds_fp32_exp_limit_88_72": false,
+          "fp32_exp_neg_a_overflow": "1.1019968695146422e+26",
+          "fp32_exp_a_underflow": 9.07443493384845e-27,
+          "effective_step_decay_bar_A": 0.5261350469257761
+        },
+        {
+          "tensor": "blk.28.ssm_a",
+          "head_index": 9,
+          "ssm_a_value": -63.831703186035156,
+          "ssm_dt_bias": -3.9375,
+          "dt_softplus": 0.01930926650453863,
+          "exceeds_fp32_exp_limit_88_72": false,
+          "fp32_exp_neg_a_overflow": "5.269343435185177e+27",
+          "fp32_exp_a_underflow": 1.8977698393347564e-28,
+          "effective_step_decay_bar_A": 0.291550114595561
+        },
+        {
+          "tensor": "blk.28.ssm_a",
+          "head_index": 41,
+          "ssm_a_value": -81.96153259277344,
+          "ssm_dt_bias": -3.625,
+          "dt_softplus": 0.026300195186875295,
+          "exceeds_fp32_exp_limit_88_72": false,
+          "fp32_exp_neg_a_overflow": "3.939501934918835e+35",
+          "fp32_exp_a_underflow": 2.5383919459216033e-36,
+          "effective_step_decay_bar_A": 0.11583317089341591
+        },
+        {
+          "tensor": "blk.44.ssm_a",
+          "head_index": 9,
+          "ssm_a_value": -81.96153259277344,
+          "ssm_dt_bias": -3.640625,
+          "dt_softplus": 0.02589768266708968,
+          "exceeds_fp32_exp_limit_88_72": false,
+          "fp32_exp_neg_a_overflow": "3.939501934918835e+35",
+          "fp32_exp_a_underflow": 2.5383919459216033e-36,
+          "effective_step_decay_bar_A": 0.11971830405869162
+        },
+        {
+          "tensor": "blk.44.ssm_a",
+          "head_index": 41,
+          "ssm_a_value": -67.94849395751953,
+          "ssm_dt_bias": -3.8125,
+          "dt_softplus": 0.021852365993874755,
+          "exceeds_fp32_exp_limit_88_72": false,
+          "fp32_exp_neg_a_overflow": "3.233374485464674e+29",
+          "fp32_exp_a_underflow": 3.0927444449230516e-30,
+          "effective_step_decay_bar_A": 0.2265396353880747
+        },
+        {
+          "tensor": "blk.6.ssm_a",
+          "head_index": 26,
+          "ssm_a_value": -52.09791946411133,
+          "ssm_dt_bias": -2.703125,
+          "dt_softplus": 0.06484705790033145,
+          "exceeds_fp32_exp_limit_88_72": false,
+          "fp32_exp_neg_a_overflow": "4.225119094052079e+22",
+          "fp32_exp_a_underflow": 2.3667971280570745e-23,
+          "effective_step_decay_bar_A": 0.034102083393478734
+        }
+      ]
+    },
+    {
+      "flaw_id": "FLAW-04",
+      "name": "Violacao Deterministica de Liveness (Output Starvation) no Chat Template via reasoning_effort='xhigh'",
+      "z3_qf_lia_status": "sat",
+      "template_default_reasoning_effort": "xhigh",
+      "empirical_validation_64_tokens": {
+        "response_Default_xhigh": "",
+        "visible_chars_Default": 0,
+        "thinking_chars_consumed": 203,
+        "response_Mitigated_think_false": "4"
+      }
+    }
+  ]
+}

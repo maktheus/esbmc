@@ -1,0 +1,295 @@
+{
+  "sanitizer_version": "1.0.0-PPGEE-UFAM",
+  "model_target": "Qwen 3.8 27B (qwen3.8:27b, qwen35 hybrid 65 blocks, 16.81 GB GGUF)",
+  "isolated_venv_executable": "C:\\uchoa\\esbmc\\llm_verification\\venv_local_flaw_check\\Scripts\\python.exe",
+  "is_isolated_venv": true,
+  "patches": [
+    {
+      "patch_id": "PATCH-01",
+      "target_flaw": "FLAW-01 (Zero-Weight Rank Collapse & RMS Denominator Poisoning)",
+      "tensors_patched": [
+        {
+          "tensor": "blk.7.post_attention_norm.weight",
+          "index": 3994,
+          "before": {
+            "float32": 0.0,
+            "hex_be": "0x00000000",
+            "le_bytes_patch": "00000000",
+            "sign_bit": 0,
+            "biased_exponent": 0,
+            "mantissa_bits": 0,
+            "ieee754_class": "EXACT_ZERO"
+          },
+          "after": {
+            "float32": 0.125,
+            "hex_be": "0x3E000000",
+            "le_bytes_patch": "0000003E",
+            "sign_bit": 0,
+            "biased_exponent": 124,
+            "mantissa_bits": 0,
+            "ieee754_class": "IEEE754_NORMAL"
+          }
+        },
+        {
+          "tensor": "blk.43.attn_k_norm.weight",
+          "index": 32,
+          "before": {
+            "float32": 0.0,
+            "hex_be": "0x00000000",
+            "le_bytes_patch": "00000000",
+            "sign_bit": 0,
+            "biased_exponent": 0,
+            "mantissa_bits": 0,
+            "ieee754_class": "EXACT_ZERO"
+          },
+          "after": {
+            "float32": 0.125,
+            "hex_be": "0x3E000000",
+            "le_bytes_patch": "0000003E",
+            "sign_bit": 0,
+            "biased_exponent": 124,
+            "mantissa_bits": 0,
+            "ieee754_class": "IEEE754_NORMAL"
+          }
+        },
+        {
+          "tensor": "blk.59.attn_q_norm.weight",
+          "index": 1,
+          "before": {
+            "float32": 0.0,
+            "hex_be": "0x00000000",
+            "le_bytes_patch": "00000000",
+            "sign_bit": 0,
+            "biased_exponent": 0,
+            "mantissa_bits": 0,
+            "ieee754_class": "EXACT_ZERO"
+          },
+          "after": {
+            "float32": 0.125,
+            "hex_be": "0x3E000000",
+            "le_bytes_patch": "0000003E",
+            "sign_bit": 0,
+            "biased_exponent": 124,
+            "mantissa_bits": 0,
+            "ieee754_class": "IEEE754_NORMAL"
+          }
+        }
+      ],
+      "z3_pre_patch_status": "SAT",
+      "z3_post_patch_rank_collapse_status": "UNSAT",
+      "z3_post_patch_rms_poison_status": "UNSAT",
+      "active_channel_retention_before_pct": 3.19,
+      "active_channel_retention_after_pct": 70.64
+    },
+    {
+      "patch_id": "PATCH-02",
+      "target_flaw": "FLAW-02 (Antipodal 180-Degree Phase Inversion in QK-Norm RoPE Channels 0 & 32)",
+      "tensors_patched": [
+        {
+          "tensor": "blk.31.attn_k_norm.weight",
+          "rope_channel": 0,
+          "paired_q_norm_weight": 0.0234375,
+          "before": {
+            "float32": -0.1484375,
+            "hex_be": "0xBE180000",
+            "le_bytes_patch": "000018BE",
+            "sign_bit": 1,
+            "biased_exponent": 124,
+            "mantissa_bits": 1572864,
+            "ieee754_class": "IEEE754_NORMAL"
+          },
+          "after": {
+            "float32": 0.1484375,
+            "hex_be": "0x3E180000",
+            "le_bytes_patch": "0000183E",
+            "sign_bit": 0,
+            "biased_exponent": 124,
+            "mantissa_bits": 1572864,
+            "ieee754_class": "IEEE754_NORMAL"
+          },
+          "dot_contrib_at_q8_99_before": -0.281356,
+          "dot_contrib_at_q8_99_after": 0.281356,
+          "z3_pre_patch": "SAT",
+          "z3_post_patch": "UNSAT"
+        },
+        {
+          "tensor": "blk.47.attn_k_norm.weight",
+          "rope_channel": 0,
+          "paired_q_norm_weight": 0.00390625,
+          "before": {
+            "float32": -0.0390625,
+            "hex_be": "0xBD200000",
+            "le_bytes_patch": "000020BD",
+            "sign_bit": 1,
+            "biased_exponent": 122,
+            "mantissa_bits": 2097152,
+            "ieee754_class": "IEEE754_NORMAL"
+          },
+          "after": {
+            "float32": 0.0390625,
+            "hex_be": "0x3D200000",
+            "le_bytes_patch": "0000203D",
+            "sign_bit": 0,
+            "biased_exponent": 122,
+            "mantissa_bits": 2097152,
+            "ieee754_class": "IEEE754_NORMAL"
+          },
+          "dot_contrib_at_q8_99_before": -0.01234,
+          "dot_contrib_at_q8_99_after": 0.01234,
+          "z3_pre_patch": "SAT",
+          "z3_post_patch": "UNSAT"
+        },
+        {
+          "tensor": "blk.59.attn_k_norm.weight",
+          "rope_channel": 32,
+          "paired_q_norm_weight": 0.2109375,
+          "before": {
+            "float32": -0.0078125,
+            "hex_be": "0xBC000000",
+            "le_bytes_patch": "000000BC",
+            "sign_bit": 1,
+            "biased_exponent": 120,
+            "mantissa_bits": 0,
+            "ieee754_class": "IEEE754_NORMAL"
+          },
+          "after": {
+            "float32": 0.0078125,
+            "hex_be": "0x3C000000",
+            "le_bytes_patch": "0000003C",
+            "sign_bit": 0,
+            "biased_exponent": 120,
+            "mantissa_bits": 0,
+            "ieee754_class": "IEEE754_NORMAL"
+          },
+          "dot_contrib_at_q8_99_before": -0.133274,
+          "dot_contrib_at_q8_99_after": 0.133274,
+          "z3_pre_patch": "SAT",
+          "z3_post_patch": "UNSAT"
+        }
+      ],
+      "z3_pre_patch_status": "SAT",
+      "z3_post_patch_status": "UNSAT"
+    },
+    {
+      "patch_id": "PATCH-03",
+      "target_flaw": "FLAW-03 (IEEE-754 Float32 Exponential Horizon Violation & Subnormal/Underflow in blk.12.ssm_a)",
+      "tensors_patched": [
+        {
+          "tensor": "blk.12.ssm_a",
+          "head_index": 41,
+          "dt_softplus": 0.045017,
+          "ssm_a_before": {
+            "float32": -139.4212646484375,
+            "hex_be": "0xC30B6BD8",
+            "le_bytes_patch": "D86B0BC3",
+            "sign_bit": 1,
+            "biased_exponent": 134,
+            "mantissa_bits": 748504,
+            "ieee754_class": "IEEE754_NORMAL"
+          },
+          "ssm_a_after": {
+            "float32": -20.0,
+            "hex_be": "0xC1A00000",
+            "le_bytes_patch": "0000A0C1",
+            "sign_bit": 1,
+            "biased_exponent": 131,
+            "mantissa_bits": 2097152,
+            "ieee754_class": "IEEE754_NORMAL"
+          },
+          "exp_a_fp32_before": {
+            "float32": 0.0,
+            "hex_be": "0x00000000",
+            "le_bytes_patch": "00000000",
+            "sign_bit": 0,
+            "biased_exponent": 0,
+            "mantissa_bits": 0,
+            "ieee754_class": "EXACT_ZERO"
+          },
+          "exp_a_fp32_after": {
+            "float32": 2.06115369216775e-09,
+            "hex_be": "0x310DA433",
+            "le_bytes_patch": "33A40D31",
+            "sign_bit": 0,
+            "biased_exponent": 98,
+            "mantissa_bits": 894003,
+            "ieee754_class": "IEEE754_NORMAL"
+          },
+          "step1_retention_pct_before": 0.188,
+          "step1_retention_pct_after": 40.64,
+          "step16_retention_fp32_before": 2.382207389352189e-44,
+          "step16_retention_fp32_after": 5.5e-07
+        },
+        {
+          "tensor": "blk.12.ssm_a",
+          "head_index": 9,
+          "dt_softplus": 0.033133,
+          "ssm_a_before": {
+            "float32": -102.00277709960938,
+            "hex_be": "0xC2CC016C",
+            "le_bytes_patch": "6C01CCC2",
+            "sign_bit": 1,
+            "biased_exponent": 133,
+            "mantissa_bits": 4981100,
+            "ieee754_class": "IEEE754_NORMAL"
+          },
+          "ssm_a_after": {
+            "float32": -20.0,
+            "hex_be": "0xC1A00000",
+            "le_bytes_patch": "0000A0C1",
+            "sign_bit": 1,
+            "biased_exponent": 131,
+            "mantissa_bits": 2097152,
+            "ieee754_class": "IEEE754_NORMAL"
+          },
+          "exp_a_fp32_before": {
+            "float32": 5.605193857299268e-45,
+            "hex_be": "0x00000004",
+            "le_bytes_patch": "04000000",
+            "sign_bit": 0,
+            "biased_exponent": 0,
+            "mantissa_bits": 4,
+            "ieee754_class": "SUBNORMAL_DENORMAL"
+          },
+          "exp_a_fp32_after": {
+            "float32": 2.06115369216775e-09,
+            "hex_be": "0x310DA433",
+            "le_bytes_patch": "33A40D31",
+            "sign_bit": 0,
+            "biased_exponent": 98,
+            "mantissa_bits": 894003,
+            "ieee754_class": "IEEE754_NORMAL"
+          },
+          "step1_retention_pct_before": 3.406,
+          "step1_retention_pct_after": 51.55,
+          "step16_retention_fp32_before": 3.28096795698372e-24,
+          "step16_retention_fp32_after": 2.486e-05
+        }
+      ],
+      "z3_pre_patch_status": "SAT",
+      "z3_post_patch_lra_status": "UNSAT",
+      "z3_post_patch_qf_fp_subnormal_status": "UNSAT"
+    },
+    {
+      "patch_id": "PATCH-04",
+      "target_flaw": "FLAW-04 (Deterministic Liveness Starvation via default('xhigh') in tokenizer.chat_template)",
+      "template_line_82_before": "{%- set resolved_reasoning_effort = reasoning_effort|default('xhigh') %}",
+      "template_line_82_after": "{%- set resolved_reasoning_effort = reasoning_effort|default('none') %}",
+      "z3_pre_patch_status": "SAT",
+      "z3_post_patch_status": "UNSAT",
+      "visible_budget_at_B64_before": 0,
+      "visible_budget_at_B64_after": 64
+    }
+  ],
+  "summary_verdicts": {
+    "FLAW_01_before": "SAT (Vulneravel)",
+    "FLAW_01_after": "UNSAT / UNSAT (100% Seguro)",
+    "FLAW_02_before": "SAT (Vulneravel)",
+    "FLAW_02_after": "UNSAT (100% Seguro)",
+    "FLAW_03_before": "SAT (Vulneravel)",
+    "FLAW_03_after": "UNSAT / UNSAT (100% Seguro)",
+    "FLAW_04_before": "SAT (Vulneravel)",
+    "FLAW_04_after": "UNSAT (100% Seguro)",
+    "all_4_flaws_eliminated_unsat": true,
+    "verification_time_ms": 1003.35
+  }
+}

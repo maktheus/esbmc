@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mestrado PPGEE/UFAM — Verificação Formal e Certificação Simbólica de LLMs (Entregas Separadas & Foco Qwen)</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #cbd5e1;
+      --accent-blue: #38bdf8;
+      --accent-green: #34d399;
+      --accent-red: #f87171;
+      --accent-amber: #fbbf24;
+      --accent-purple: #c084fc;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.65;
+      padding: 2rem 1.25rem;
+    }
+    .container { max-width: 1280px; margin: 0 auto; }
+    header {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid var(--card-border);
+      border-radius: 1rem;
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.8rem;
+    }
+    .badge-primary { background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.35); }
+    .badge-success { background: rgba(52, 211, 153, 0.2); color: var(--accent-green); border: 1px solid rgba(52, 211, 153, 0.35); }
+    .badge-purple { background: rgba(192, 132, 252, 0.2); color: var(--accent-purple); border: 1px solid rgba(192, 132, 252, 0.35); }
+    h1 { font-size: 2.05rem; font-weight: 800; margin-bottom: 0.75rem; color: #fff; }
+    .subtitle { color: var(--text-muted); font-size: 1.05rem; max-width: 1080px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; }
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .card h3 { font-size: 1.15rem; color: var(--accent-blue); margin-bottom: 0.75rem; border-bottom: 1px solid var(--card-border); padding-bottom: 0.5rem; }
+    .stat-val { font-size: 1.85rem; font-weight: 800; color: #fff; margin-bottom: 0.25rem; font-family: var(--font-mono); }
+    .stat-desc { font-size: 0.85rem; color: var(--text-muted); }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.85rem; }
+    th, td { padding: 0.7rem 0.9rem; text-align: left; border-bottom: 1px solid var(--card-border); }
+    th { background: rgba(15, 23, 42, 0.8); color: var(--accent-blue); font-weight: 600; }
+    tr:hover { background: rgba(51, 65, 85, 0.4); }
+    .tag-unsat { color: var(--accent-green); font-weight: 700; font-family: var(--font-mono); }
+    .chart-container { margin: 2rem 0; text-align: center; }
+    .chart-container img { max-width: 100%; border-radius: 0.75rem; border: 1px solid var(--card-border); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+    .btn-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.4rem; }
+    .btn-pdf {
+      display: inline-block;
+      padding: 0.8rem 1.4rem;
+      color: #fff;
+      font-weight: 700;
+      text-decoration: none;
+      border-radius: 0.5rem;
+      font-size: 0.92rem;
+    }
+    .btn-1 { background: linear-gradient(135deg, #7c3aed, #4f46e5); box-shadow: 0 4px 12px rgba(124,58,237,0.4); }
+    .btn-2 { background: linear-gradient(135deg, #059669, #0284c7); box-shadow: 0 4px 12px rgba(5,150,105,0.4); }
+    .btn-3 { background: linear-gradient(135deg, #1d4ed8, #1e40af); box-shadow: 0 4px 12px rgba(29,78,216,0.4); }
+    code { font-family: var(--font-mono); background: rgba(15,23,42,0.7); padding: 0.15rem 0.4rem; border-radius: 0.25rem; color: var(--accent-amber); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <span class="badge badge-primary">Mestrado em Engenharia Elétrica — PPGEE / FT / UFAM</span>
+        <span class="badge badge-success">Estrutura Científica Canônica (IMRaD) &bull; Rigor Internacional (CAV / IEEE TSE)</span>
+        <span class="badge badge-purple">Entregas Separadas &bull; Foco Especial na Família Qwen (7,6B &rarr; 14,8B &rarr; 27,3B)</span>
+      </div>
+      <h1>Verificação Formal e Certificação Simbólica de Grandes Modelos de Linguagem via Propagação Lipschitz e Satisfatibilidade Módulo Teorias</h1>
+      <p class="subtitle">
+        Portal de Entregas Científicas do <strong>Mestrado Acadêmico em Engenharia Elétrica (PPGEE/UFAM)</strong>. As entregas foram organizadas em relatórios independentes seguidos do volume consolidado, adotando a estrutura IMRaD clássica (<em>Introdução &rarr; Fundamentação Teórica &rarr; Metodologia &rarr; Resultados e Discussão &rarr; Ameaças à Validade &rarr; Conclusões</em>).
+      </p>
+      <div class="btn-row">
+        <a class="btn-pdf btn-1" href="relatorio_1_comparativo_qwen7b_vs_nimble9b.pdf" target="_blank">
+          📘 Entrega I (PDF): Comparativo Qwen2.5-7B vs. Bespoke-Nimble-9B &amp; Figura 5
+        </a>
+        <a class="btn-pdf btn-2" href="relatorio_2_foco_especial_qwen_14b_27b_integral.pdf" target="_blank">
+          📗 Entrega II (PDF — Foco Qwen): Qwen3-14B &amp; Qwen 3.8 27B Integral (65 Camadas / 248.320 Saídas)
+        </a>
+        <a class="btn-pdf" style="background: linear-gradient(135deg, #dc2626, #991b1b); box-shadow: 0 4px 12px rgba(220,38,38,0.4);" href="relatorio_3_falhas_intrinsecas_qwen38_27b.pdf" target="_blank">
+          📕 Entrega III (PDF — Auditoria de Falhas): 4 Falhas Intrínsecas Descobertas no Qwen 3.8 27B (Z3 SAT &amp; Venvs Isolados)
+        </a>
+        <a class="btn-pdf" style="background: linear-gradient(135deg, #16a34a, #15803d); box-shadow: 0 4px 12px rgba(22,163,74,0.4);" href="relatorio_4_reparo_cirurgico_formal_sanitizer_qwen38_27b.pdf" target="_blank">
+          🛠️ Entrega IV (PDF — Formal Weight Sanitizer): Reparo Cirúrgico Formal, Exemplos Reais de Prompts &amp; Prova Z3 UNSAT (4/4 Eliminadas)
+        </a>
+        <a class="btn-pdf btn-3" href="relatorio_consolidado_descobertas_llm_verificacao.pdf" target="_blank">
+          📄 Volume Consolidado (PDF): Dissertação / Relatório Completo PPGEE/UFAM
+        </a>
+      </div>
+    </header>
+
+    <div class="card" style="border-color: rgba(52, 211, 153, 0.65); background: linear-gradient(180deg, rgba(20,40,38,0.96) 0%, rgba(15,23,42,0.98) 100%);">
+      <h3 style="color: var(--accent-green);">🛠️ Entrega IV — Reparo Cirúrgico Formal (<em>Formal Weight Sanitizer</em>) &amp; Prova Z3 <code>UNSAT</code> Pós-Reparo (4/4 Vulnerabilidades Eliminadas em 1.003,35 ms)</h3>
+      <p style="color: var(--text-muted); margin-bottom: 1rem;">
+        O script <code>formal_weight_sanitizer_qwen38.py</code> (executado no ambiente virtual isolado <code>venv_local_flaw_check</code>) aplica as <strong>4 correções matemáticas cirúrgicas diretamente nos bytes IEEE-754 e no template Jinja2</strong> sem necessidade de retreinamento e prova no solucionador <strong>Z3 SMT</strong> (<code>QF_FP</code> <code>FPSort(8,24)</code>, <code>QF_NRA</code>, <code>QF_LRA</code> e <code>QF_LIA</code>) que <strong>todas as 4 vulnerabilidades deixam matematicamente de existir (transição completa de <code>4/4 SAT</code> para <code>4/4 UNSAT</code>)</strong>:
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Patch Formal</th>
+            <th>Alvo Cirúrgico no GGUF</th>
+            <th>Antes (Hex IEEE-754 / LE)</th>
+            <th>Depois (Hex IEEE-754 / LE)</th>
+            <th>Z3 Antes</th>
+            <th>Z3 Depois</th>
+            <th>Efeito Prático nos Prompts Reais</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>PATCH-01</strong></td>
+            <td><code>blk.7.post_attn_norm[3994]</code><br><code>blk.43.attn_k_norm[32]</code><br><code>blk.59.attn_q_norm[1]</code></td>
+            <td><code>0x00000000</code> (<code>00000000</code>)<br>(Zero Exato)</td>
+            <td><code>0x3E000000</code> (<code>0000003E</code>)<br>(<code>+0,125</code> + Clip <code>&le;16</code>)</td>
+            <td style="color: var(--accent-red); font-weight:700;">SAT</td>
+            <td class="tag-unsat">UNSAT</td>
+            <td>Restaura o posto do Jacobiano (<code>det J &gt; 0</code>) e eleva a retenção mínima dos 255 canais ativos de <strong>3,19%</strong> para <strong>70,64%</strong> sob entradas multimodais/RAG adversariais.</td>
+          </tr>
+          <tr>
+            <td><strong>PATCH-02</strong></td>
+            <td><code>blk.31.attn_k_norm[0]</code><br><code>blk.47.attn_k_norm[0]</code><br><code>blk.59.attn_k_norm[32]</code></td>
+            <td><code>0xBE180000</code> (<code>-0,1484</code>)<br><code>0xBD200000</code> (<code>-0,0391</code>)<br><code>0xBC000000</code> (<code>-0,0078</code>)</td>
+            <td><code>0x3E180000</code> (<code>+0,1484</code>)<br><code>0x3D200000</code> (<code>+0,0391</code>)<br><code>0x3C000000</code> (<code>+0,0078</code>)</td>
+            <td style="color: var(--accent-red); font-weight:700;">SAT</td>
+            <td class="tag-unsat">UNSAT</td>
+            <td>Zera o bit de sinal IEEE-754 (<code>bit 31 &rarr; 0</code>): prompts com variáveis repetidas lado a lado (<code>x_0 == x_0</code>) passam de repulsão negativa (<code>-0,2814</code>) para autoatenção positiva (<strong><code>+0,2814</code></strong>).</td>
+          </tr>
+          <tr>
+            <td><strong>PATCH-03</strong></td>
+            <td><code>blk.12.ssm_a[41]</code><br><code>blk.12.ssm_a[9]</code></td>
+            <td><code>0xC30B6BD8</code> (<code>-139,42</code>)<br><code>0xC2CC016C</code> (<code>-102,00</code>)</td>
+            <td><code>0xC1A00000</code> (<code>-20,00</code>)<br><code>0xC1A00000</code> (<code>-20,00</code>)</td>
+            <td style="color: var(--accent-red); font-weight:700;">SAT</td>
+            <td class="tag-unsat">UNSAT</td>
+            <td>Elimina o <em>underflow</em> total (<code>0x00000000</code>) e o estado subnormal (<code>0x00000004</code>); a retenção por palavra da Cabeça 41 em prompts longos sobe de <strong>0,19%</strong> para <strong>40,64%</strong> (24-bit Normal FP32).</td>
+          </tr>
+          <tr>
+            <td><strong>PATCH-04</strong></td>
+            <td><code>tokenizer.chat_template</code><br>(Linha 82)</td>
+            <td><code>default('xhigh')</code></td>
+            <td><code>default('none')</code></td>
+            <td style="color: var(--accent-red); font-weight:700;">SAT</td>
+            <td class="tag-unsat">UNSAT</td>
+            <td>Elimina o <em>Output Starvation</em>: prompts de guardrail (<code>"rm -rf /"</code>) e JSON com <code>B=64</code> passam de <code>response=""</code> (0 visíveis) para <strong>64 tokens visíveis garantidos</strong>.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="chart-container" style="margin: 1.25rem 0 0.5rem 0;">
+        <img src="assets/fig12_reparo_cirurgico_formal_antes_depois.png" alt="Figura 12 — Reparo Cirúrgico Formal Antes (Z3 SAT) vs Depois (Z3 UNSAT)">
+      </div>
+    </div>
+
+    <div class="card" style="border-color: rgba(248, 113, 113, 0.55); background: linear-gradient(180deg, rgba(30,41,59,0.98) 0%, rgba(15,23,42,0.98) 100%);">
+      <h3 style="color: var(--accent-red);">📕 Entrega III — Descoberta e Validação Formal em Duplo Ambiente Virtual Isolado de 4 Falhas Intrínsecas no Qwen 3.8 27B</h3>
+      <p style="color: var(--text-muted); margin-bottom: 1rem;">
+        Através de inspeção microscópica bit-a-bit dos 863 tensores e metadados do binário GGUF de <strong>16,81 GB</strong> do <code>qwen3.8:27b</code> e validação cruzada em <strong>dois ambientes virtuais Python estritamente isolados</strong> (<code>venv_flaw_audit</code> no servidor HPC e <code>venv_local_flaw_check</code> na estação de confirmação) utilizando <strong>Z3 SMT</strong> (lógicas <code>QF_FP</code> IEEE-754 <code>FPSort(8,24)</code>, <code>QF_NRA</code> e <code>QF_LIA</code>), descobrimos e provamos formalmente (<strong><code>SAT</code></strong>) <strong>4 falhas intrínsecas reais</strong> na própria estrutura do modelo:
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>ID da Falha</th>
+            <th>Tensor / Metadado GGUF Exato</th>
+            <th>Coordenada / Valor Hex IEEE-754</th>
+            <th>Veredito Z3 (Duplo Venv)</th>
+            <th>Impacto Estrutural / Numérico Provado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>FLAW-01</strong></td>
+            <td><code>blk.7.post_attention_norm[3994]</code><br><code>blk.43.attn_k_norm.weight[32]</code><br><code>blk.59.attn_q_norm.weight[1]</code></td>
+            <td><code>0.0</code> exato (<code>0x00000000</code>)<br>(enquanto média da camada é 0,94 a 1,62)</td>
+            <td style="color: var(--accent-red); font-weight:700; font-family: var(--font-mono);">SAT (QF_FP / QF_NRA)</td>
+            <td><strong>Colapso de Posto (<code>det J = 0</code>) e Envenenamento RMS:</strong> Uma excitação <code>|z_dead| = 500</code> no canal morto gera saída zero no próprio canal, mas infla o denominador RMS para <code>31,27</code>, <strong>suprimindo 96,81% do ganho dos outros 255 canais ativos!</strong></td>
+          </tr>
+          <tr>
+            <td><strong>FLAW-02</strong></td>
+            <td><code>blk.31.attn_k_norm.weight[0]</code><br><code>blk.47.attn_k_norm.weight[0]</code><br><code>blk.59.attn_k_norm.weight[32]</code></td>
+            <td><code>-0,1484375</code> (vs <code>q = +0,0234</code>)<br><code>-0,0390625</code> (vs <code>q = +0,0039</code>)<br><code>-0,0078125</code> (vs <code>q = +0,2109</code>)</td>
+            <td style="color: var(--accent-red); font-weight:700; font-family: var(--font-mono);">SAT (QF_FP)</td>
+            <td><strong>Inversão Antipodal de Fase (180&deg;) nos Planos Primários RoPE (Canais 0 e 32):</strong> Como <code>&gamma;<sub>q</sub> &middot; &gamma;<sub>k</sub> &lt; 0</code>, vetores idênticos (<code>q_i = k_i &ne; 0</code> em <code>&Delta;pos = 0</code>) sofrem penalização negativa no produto escalar de atenção.</td>
+          </tr>
+          <tr>
+            <td><strong>FLAW-03</strong></td>
+            <td><code>blk.12.ssm_a[41]</code> (Mamba-2)<br><code>blk.12.ssm_a[9]</code> (Mamba-2)</td>
+            <td>Cabeça 41: <code>-139,4213</code> (<code>0xC30B6BD8</code>)<br>Cabeça 9: <code>-102,0028</code> (<code>0xC2CC016C</code>)</td>
+            <td style="color: var(--accent-red); font-weight:700; font-family: var(--font-mono);">SAT (IEEE-754 FP32)</td>
+            <td><strong>Violação do Horizonte Exponencial FP32 (<code>|a| &gt; 88,7228</code>) e Regime Subnormal:</strong> Na Cabeça 41, <code>exp(-a) = +Inf</code>, <code>exp(a) = 0x00000000</code> (underflow total) e 99,81% da memória é perdida em 1 passo; na Cabeça 9, <code>exp(a) = 5,605&times;10<sup>-45</sup></code> (<code>0x00000004</code>) cai no <strong>regime subnormal IEEE-754</strong> (perda de 21/24 bits de mantissa).</td>
+          </tr>
+          <tr>
+            <td><strong>FLAW-04</strong></td>
+            <td><code>tokenizer.chat_template</code><br>(Linha 82 do GGUF)</td>
+            <td><code>reasoning_effort | default('xhigh')</code></td>
+            <td style="color: var(--accent-red); font-weight:700; font-family: var(--font-mono);">SAT (QF_LIA + Ollama)</td>
+            <td><strong>Violação Determinística de Liveness (Output Starvation):</strong> Sem <code>think=false</code>, o modo <code>xhigh</code> consome 100% do orçamento em <code>&lt;think&gt;</code> para <code>B_max &le; 128</code> e retorna saída visível vazia (<code>response = ""</code>).</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="chart-container" style="margin: 1.25rem 0 0.5rem 0;">
+        <img src="assets/fig10_qwen38_27b_flaws_audit.png" alt="Figura 10 — Auditoria Formal das 4 Falhas Intrínsecas Descobertas no Qwen 3.8 27B">
+      </div>
+      <h3 style="color: var(--accent-amber); margin-top: 1.5rem;">🏗️ Macro-Arquitetura (Passo a Passo) &amp; Que Tipo de Prompt ou Entrada Ocasiona Cada Falha na Prática?</h3>
+      <p style="color: var(--text-muted); margin-bottom: 1rem;">
+        A <strong>Figura 11</strong> abaixo documenta a <strong>Macro-Arquitetura em 6 Estágios</strong> utilizada para chegar às descobertas (Parte I) e responde detalhadamente <strong>que tipo de prompt ou entrada real ocasiona cada uma das 4 falhas</strong> (Parte II):
+      </p>
+      <div class="chart-container" style="margin: 1rem 0 0.5rem 0;">
+        <img src="assets/fig11_macro_arquitetura_auditoria_prompts.png" alt="Figura 11 — Macro-Arquitetura de Descoberta Formal e Mapa de Gatilhos de Entrada/Prompts no Qwen 3.8 27B">
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📘 Entrega I — O que é o Bespoke-Nimble-9B, por que ele difere do Qwen2.5-7B e Figura 5 com Legenda Embutida</h3>
+      <p style="color: var(--text-muted); margin-bottom: 1rem;">
+        A <strong>Entrega I</strong> investiga como o regime de treinamento e a fidelidade de quantização alteram a constante de Lipschitz acumulada:
+      </p>
+      <ul style="padding-left: 1.5rem; color: var(--text-muted); line-height: 1.8; margin-bottom: 1rem;">
+        <li><strong>Qwen2.5-7B (Azul Safira — <code>#1d4ed8</code> / <code>#3b82f6</code>):</strong> Modelo gerador autorregressivo tradicional (7,61B parâmetros, 28 camadas, <code>d = 3584</code>) comprimido em <strong>4 bits (<code>Q4_K_M</code>, 4,68 GB)</strong>. Por gerar texto livre passo a passo, está sujeito a ciclos limite periódicos (<code>P = 3</code>) e apresenta maior ganho de compensação no RMSNorm de saída (<code>&gamma;<sub>out</sub> = 3,8388</code>), elevando o fator de expansão global para <strong>&mathcal;G;<sub>total</sub> = 12,4986&times;</strong> e raio médio <strong>&epsilon;&#772;<sub>in</sub>* = 1,25 &times; 10<sup>-3</sup></strong>.</li>
+        <li><strong>Bespoke-Nimble-9B (Roxo Imperial — <code>#7c3aed</code> / <code>#a855f7</code>):</strong> <strong>Modelo de Decisão "System One" estilo Jev (<code>/v1/systemone</code>)</strong> desenvolvido pela Bespoke Labs sobre a arquitetura <strong>Qwen3.5</strong> (8,98B parâmetros, 32 camadas, <code>d = 4096</code>, vocabulário de 248.320 tokens, quantizado em <strong>8 bits lineares <code>Q8_0</code>, 9,54 GB</strong>). Em vez de gerar texto conversacional livre ou cadeias de pensamento, avalia um estado textual contra um esquema de perguntas tipadas (booleano, múltipla escolha, rubricas de segurança como <em>"Could this shell command cause harm?"</em>) em <strong>um único passo direto (<em>single forward pass</em> &lt; 100 ms)</strong>. Por não ter realimentação autorregressiva, é <strong>estruturalmente imune a ciclos limite (<code>P = 3</code>)</strong>, reduz a amplificação global em <strong>34,1% (&mathcal;G;<sub>total</sub> = 8,2338&times;)</strong> e aumenta a robustez certificada em <strong>+33,6% (&epsilon;&#772;<sub>in</sub>* = 1,67 &times; 10<sup>-3</sup>)</strong>.</li>
+      </ul>
+      <div class="chart-container" style="margin: 1rem 0;">
+        <img src="assets/fig5_comparativo_modelos_locais_7b_9b.png" alt="Figura 5 com Guia Semântico de Cores Integrado à Imagem">
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📗 Entrega II — Foco Especial na Família Qwen (Qwen2.5-7B &rarr; Qwen3-14B &rarr; Qwen 3.8 27B Integral)</h3>
+      <p style="color: var(--text-muted); margin-bottom: 1rem;">
+        A <strong>Entrega II</strong> dedica-se exclusivamente à análise matemática e experimental da família <strong>Qwen</strong>, culminando na certificação completa do <strong>Qwen 3.8 27B (27.320.697.856 parâmetros, arquitetura híbrida <code>qwen35</code>)</strong> no servidor HPC de GPU dedicada:
+      </p>
+      <div class="grid" style="margin-top: 1rem; margin-bottom: 1rem;">
+        <div class="card" style="margin-bottom:0; background:#0f172a;">
+          <h3>Topologia Híbrida 3:1 (qwen35)</h3>
+          <div class="stat-val">65 Camadas</div>
+          <div class="stat-desc">49 Blocos Atenção Softmax + 16 Blocos Mamba-2 SSM Hurwitz-estáveis (863 tensores, 0 NaN/Inf)</div>
+        </div>
+        <div class="card" style="margin-bottom:0; background:#0f172a;">
+          <h3>Certificação de Todas as Saídas</h3>
+          <div class="stat-val">248.320 / 248.320</div>
+          <div class="stat-desc">100,0% do vocabulário certificado em 44,02 s via streaming em 50 lotes (204,80 MB RAM/lote)</div>
+        </div>
+        <div class="card" style="margin-bottom:0; background:#0f172a;">
+          <h3>Pior Caso Global (ID 3966)</h3>
+          <div class="stat-val">UNSAT (22,38 ms)</div>
+          <div class="stat-desc">Token mais vulnerável de todo o modelo (<code>Ġsol</code>, &epsilon;<sub>global</sub>* = 5,0010&times;10<sup>-4</sup>) provado no Z3</div>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <img src="assets/fig9_qwen38_27b_full_model_all_outputs.png" alt="Certificação Formal Integral do Modelo Inteiro Qwen 3.8 27B">
+      </div>
+
+      <h3 style="margin-top: 1.5rem;">Benchmark Head-to-Head Btor2 (Q16.16, BV64) vs. Z3 Simplex (QF_LRA) no Qwen 3.8 27B</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Token Alvo (ID)</th>
+            <th>Raio Crítico &epsilon;<sub>L</sub>*</th>
+            <th>Circuito Btor2</th>
+            <th>Z3 BV Safe (ms)</th>
+            <th>Z3 BV SAT (ms)</th>
+            <th>Z3 LRA Safe (ms)</th>
+            <th>Z3 LRA SAT (ms)</th>
+            <th>Veredito Formal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>sudo</code> (36628)</td><td>0,012813</td><td>302 linhas</td><td>1.065,74 ms</td><td>4.973,33 ms</td><td>10,51 ms</td><td>7,90 ms</td><td class="tag-unsat">UNSAT / SAT (100%)</td></tr>
+          <tr><td><code>rm</code> (16914)</td><td>0,014784</td><td>302 linhas</td><td>1.028,46 ms</td><td>2.717,06 ms</td><td>10,41 ms</td><td>7,83 ms</td><td class="tag-unsat">UNSAT / SAT (100%)</td></tr>
+          <tr><td><code>DROP</code> (90144)</td><td>0,012161</td><td>302 linhas</td><td>1.306,46 ms</td><td>1.467,68 ms</td><td>10,58 ms</td><td>8,06 ms</td><td class="tag-unsat">UNSAT / SAT (100%)</td></tr>
+          <tr><td><code>password</code> (7416)</td><td>0,012887</td><td>302 linhas</td><td>1.572,94 ms</td><td>2.550,80 ms</td><td>10,29 ms</td><td>8,30 ms</td><td class="tag-unsat">UNSAT / SAT (100%)</td></tr>
+          <tr><td><code>eval</code> (27534)</td><td>0,013251</td><td>302 linhas</td><td>987,71 ms</td><td>1.507,57 ms</td><td>11,03 ms</td><td>10,47 ms</td><td class="tag-unsat">UNSAT / SAT (100%)</td></tr>
+          <tr><td><code>root</code> (5594)</td><td>0,013310</td><td>302 linhas</td><td>1.045,31 ms</td><td>1.058,25 ms</td><td>10,91 ms</td><td>8,00 ms</td><td class="tag-unsat">UNSAT / SAT (100%)</td></tr>
+          <tr><td><code>bash</code> (89356)</td><td>0,012786</td><td>302 linhas</td><td>1.202,46 ms</td><td>1.533,97 ms</td><td>11,01 ms</td><td>8,03 ms</td><td class="tag-unsat">UNSAT / SAT (100%)</td></tr>
+          <tr><td><code>kill</code> (21074)</td><td>0,011293</td><td>302 linhas</td><td>1.132,35 ms</td><td>1.507,26 ms</td><td>10,61 ms</td><td>8,13 ms</td><td class="tag-unsat">UNSAT / SAT (100%)</td></tr>
+          <tr><td><code>chmod</code> (108772)</td><td>0,012459</td><td>302 linhas</td><td>1.148,69 ms</td><td>1.334,56 ms</td><td>11,36 ms</td><td>8,04 ms</td><td class="tag-unsat">UNSAT / SAT (100%)</td></tr>
+          <tr><td><code>curl</code> (38642)</td><td>0,013044</td><td>302 linhas</td><td>1.118,01 ms</td><td>2.808,57 ms</td><td>11,79 ms</td><td>8,10 ms</td><td class="tag-unsat">UNSAT / SAT (100%)</td></tr>
+          <tr style="font-weight:700; background: rgba(56,189,248,0.12);">
+            <td>MÉDIA EXATA</td><td>0,012879</td><td>302 linhas</td><td>1.160,81 ms</td><td>2.145,91 ms</td><td>10,85 ms</td><td>8,29 ms</td><td class="tag-unsat">20/20 (100% Paridade)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="chart-container">
+        <img src="assets/fig8_qwen38_27b_benchmark_e2e.png" alt="Paridade Btor2 vs Z3 SMT no Qwen 3.8 27B">
+      </div>
+    </div>
+  </div>
+</body>
+</html>
