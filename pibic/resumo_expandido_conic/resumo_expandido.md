@@ -29,7 +29,7 @@ Estudo de caso experimental e reprodutível em quatro etapas: (i) identificaçã
 
 **Verificação formal.** O harness curto canônico para o limite de força |F| ≤ 10 N terminou `SUCCESSFUL` com Z3 em 3,5 s: é uma prova do programa quantizado e do domínio codificado, não do controlador Float32 nem da dinâmica não linear completa. O contraexemplo de segurança em um passo foi reproduzido como estado fixo, o que confirma a consistência do replay, mas não refuta sozinho a propriedade universal. A propriedade direcional ficou **inconclusiva** (*timeout* de 12 s com Z3; Boolector indisponível no executável utilizado).
 
-**Estrutura neural.** Registros históricos indicam 24 neurônios vivos em cada camada oculta; entretanto, a auditoria identificou limites artificiais e independência indevida entre camadas, de modo que esse resultado é indicativo, não prova universal.
+**Estrutura neural.** Na rodada estrutural corrigida (grafo completo da rede, sem ativações independentes entre camadas), o Z3 encontrou, para cada neurônio da camada 1, uma entrada que o ativa (24/24); na camada 2 foram 17/24, e os 7 casos restantes terminaram em *timeout*, sendo inconclusivos. Na análise de saturação foram 24/24 e 22/24, com 2 *timeouts*. Assim, não há base para afirmar nada universal sobre os 48 neurônios, e a afirmação histórica de "24 neurônios vivos por camada" não é sustentada. A propriedade conjunta de saída também permaneceu inconclusiva.
 
 # 5. Conclusão
 
