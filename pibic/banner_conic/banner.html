@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>Banner CONIC 25/26</title>
+<style>
+/* Slide equivalente: 11,25" x 20" (1080x1920 px a 96 dpi). 1 pt = 1,333 px */
+:root{--ink:#10282c;--teal:#0f8b8d;--red:#d62839;--amber:#e8962e;--green:#5b9a3c;--bg:#ffffff;--soft:#eef6f6}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;background:var(--bg)}
+body{font-family:Arial,"Liberation Sans",Helvetica,sans-serif;color:var(--ink);position:relative;overflow:hidden}
+.safe>*{flex-shrink:0}
+.safe{position:absolute;left:60px;top:60px;right:60px;bottom:60px;display:flex;flex-direction:column}
+.top{font-size:26px;font-weight:700;letter-spacing:.06em;color:var(--teal);display:flex;gap:10px;align-items:center}
+.top i{display:inline-block;width:34px;height:6px;border-radius:3px}
+h1{font-size:66px;line-height:1.05;margin:16px 0 16px;letter-spacing:-.01em}
+.auth{font-size:30px;line-height:1.3;border-left:8px solid var(--teal);padding-left:20px}
+.auth b{font-size:34px}
+h2{font-size:42px;margin:20px 0 6px;color:var(--teal);display:flex;align-items:center;gap:14px}
+h2:before{content:"";width:14px;height:42px;background:var(--red);border-radius:4px}
+p,li{font-size:32px;line-height:1.28}
+ul{list-style:none}
+li{padding-left:34px;position:relative;margin:4px 0}
+li:before{content:"";position:absolute;left:4px;top:15px;width:14px;height:14px;border-radius:50%;background:var(--amber)}
+.flow{display:flex;gap:10px;margin:14px 0 6px;align-items:stretch}
+.box{flex:1;background:var(--soft);border:3px solid var(--teal);border-radius:12px;padding:8px 6px;text-align:center;font-size:28px;line-height:1.15;font-weight:700}
+.box small{display:block;font-weight:400;font-size:24px;margin-top:4px}
+.arr{align-self:center;font-size:36px;color:var(--teal);font-weight:700}
+.chips{display:flex;gap:12px;margin-top:10px}
+.chip{flex:1;border-radius:12px;padding:12px 14px;font-size:28px;line-height:1.15;font-weight:700;color:#fff}
+.chip small{display:block;font-weight:400;font-size:24px;margin-top:4px}
+.ok{background:var(--green)}.rep{background:var(--amber)}.unk{background:var(--red)}
+.bottom{margin-top:auto;display:flex;gap:28px;align-items:flex-end}
+.refs{flex:1;font-size:24px;line-height:1.25}
+.refs b{font-size:28px;display:block;color:var(--teal);margin-bottom:4px}
+.qrbox{width:270px;flex:none;text-align:center;font-size:24px;font-weight:700}
+.qrframe{width:270px;height:270px;background:#fff;border:3px solid var(--ink);padding:8px;display:flex;align-items:center;justify-content:center;margin-bottom:0}
+.qrframe img{width:250px;height:250px;display:block}
+.qrph{display:none;width:240px;height:240px;border:4px dashed var(--red);color:var(--red);align-items:center;justify-content:center;font-size:26px;line-height:1.2}
+svg text{font-family:Arial,"Liberation Sans",Helvetica,sans-serif}
+</style></head><body>
+<div class="safe">
+  <div class="top"><i style="background:var(--red)"></i><i style="background:var(--amber)"></i><i style="background:var(--green)"></i><i style="background:var(--teal)"></i>XXXV CONIC 25/26 · PIBITI 2025/2026 · UFAM</div>
+  <h1>Verificação Formal de Sistemas de Inteligência Artificial Generativa e Controladores Neurais utilizando ESBMC</h1>
+  <div class="auth"><b>Matheus Serrão Uchôa</b><br>Orientador: Prof. Dr. Iury Valente de Bessa<br>UFAM · Faculdade de Tecnologia · Eng. da Computação</div>
+
+  <h2>Introdução</h2>
+  <p>Um controlador neural pode passar nos testes e falhar em estados nunca amostrados. O que o verificador consegue <b>provar</b>, e sob quais hipóteses?</p>
+
+  <h2>Metodologia</h2>
+  <div class="flow">
+    <div class="box">DDPG<small>4–24–24–1</small></div><div class="arr">→</div>
+    <div class="box">Q8.8<small>ponto fixo</small></div><div class="arr">→</div>
+    <div class="box">Harness C<small>propriedades</small></div><div class="arr">→</div>
+    <div class="box">ESBMC<small>Z3 (SMT)</small></div>
+  </div>
+  <p>Cart-Pole · Float32 × Q8.8 em 10.000 estados</p>
+
+  <h2>Resultados</h2>
+  <svg id="chart" width="960" height="220" viewBox="0 0 960 220"></svg>
+  <div class="chips">
+    <div class="chip ok">PROVADO<small>|F| ≤ 10 N · Z3 · 3,5 s</small></div>
+    <div class="chip rep">REPRODUZIDO<small>contraexemplo 1 passo</small></div>
+    <div class="chip unk">INCONCLUSIVO<small>direção · timeout</small></div>
+  </div>
+
+  <h2>Conclusão</h2>
+  <ul>
+    <li>Q8.8 ≠ Float32: a ação pode <b>inverter o sinal</b>.</li>
+    <li>Prova <b>delimitada</b> ao domínio e ao horizonte.</li>
+  </ul>
+
+  <div class="bottom">
+    <div class="refs"><b>Referências</b>GOPINATH, D. et al. Verifying Quantized Neural Networks using SMT-Based Model Checking. ASE, 2021.<br>MENG, K. et al. QNNVerifier. ICSE Companion, 2022.</div>
+    <div class="qrbox"><div class="qrframe"><img id="qr" src="qr.png" alt=""><div class="qrph" id="ph">QR CODE<br>do resumo<br>expandido</div></div></div>
+  </div>
+</div>
+<script>
+const q=document.getElementById('qr');
+q.onerror=()=>{q.style.display='none';document.getElementById('ph').style.display='flex'};
+const d=[["Erro médio",0.0778],["Percentil 95",0.2262],["Percentil 99",1.0927],["Erro máximo",7.7589]];
+const cols=["#0f8b8d","#5b9a3c","#e8962e","#d62839"];
+const x0=250,W=620,lo=Math.log10(0.05),hi=Math.log10(10);
+let s=`<text x="0" y="28" font-size="28" font-weight="700" fill="#10282c">Erro |Float32 − Q8.8| na saída (N), escala log</text>`;
+d.forEach(([n,v],i)=>{const y=44+i*44,w=(Math.log10(v)-lo)/(hi-lo)*W;
+s+=`<text x="0" y="${y+28}" font-size="26" fill="#10282c">${n}</text><rect x="${x0}" y="${y}" width="${w}" height="36" rx="6" fill="${cols[i]}"/><text x="${x0+w+10}" y="${y+28}" font-size="26" font-weight="700" fill="#10282c">${v.toFixed(4).replace('.',',')} N</text>`});
+document.getElementById('chart').innerHTML=s;
+</script>
+</body></html>
