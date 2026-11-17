@@ -89,9 +89,8 @@ set_text(find("Padronizar o formato"),
  "ferramenta QNNVerifier, que automatiza essa análise. Este trabalho complementa essa linha ao tratar um controlador neural em malha "
  "fechada (DDPG aplicado ao Cart-Pole) e ao tornar explícita a cadeia entre quantização, domínio, horizonte, veredicto e contraexemplo.")
 set_text(find("O trabalho que não for"),
- "Pergunta de pesquisa: que garantias o ESBMC consegue produzir para um controlador DDPG quantizado em Q8.8, e sob quais hipóteses? "
- "Hipótese: a quantização Q8.8 preserva o comportamento do controlador Float32 no domínio analisado, e o ESBMC consegue provar "
- "propriedades de segurança da malha fechada dentro do horizonte verificado. Seguem objetivo, metodologia, resultados e conclusões.")
+ "Pergunta de pesquisa: que garantias o ESBMC consegue produzir para um controlador DDPG quantizado em Q8.8, e sob quais hipóteses "
+ "do modelo? Seguem objetivo, metodologia, resultados e conclusões.")
 p = find("Lembre-se que a introdução"); p._p.getparent().remove(p._p)
 
 set_text(find("O objetivo geral em um Resumo"),
@@ -158,12 +157,11 @@ set_text(p3,
 
 set_text(find("Neste capítulo devem"),
  "Retomando a pergunta, o ESBMC produziu uma prova delimitada (|F| ≤ 10 N) e a reprodução de contraexemplos, mas não uma certificação "
- "global. A hipótese foi parcialmente refutada: Q8.8 não preservou o comportamento em todos os estados (inversão de sinal e erro "
- "máximo de 7,7589 N), e a prova vale apenas no domínio e no horizonte do harness; a propriedade direcional e parte da análise "
- "estrutural permaneceram inconclusivas. A contribuição é um fluxo rastreável que distingue prova, refutação, reprodução e "
- "inconclusão. Limitações: dinâmica linearizada, horizonte de um passo, domínio finito, dependência do solver e do tempo-limite, e "
- "pesos ainda não confirmados no checkpoint PyTorch. Trabalhos futuros: validar o checkpoint, particionar o "
- "domínio, avaliar horizontes maiores e comparar a dinâmica linearizada com a não linear.")
+ "global. A quantização Q8.8 pode inverter a ação em casos extremos (erro máximo de 7,7589 N), e a prova vale apenas no domínio e no "
+ "horizonte do harness; a propriedade direcional e parte da análise estrutural permaneceram inconclusivas. A contribuição é um fluxo "
+ "rastreável que distingue prova, reprodução e inconclusão. Limitações: dinâmica linearizada, horizonte de um passo, domínio finito, "
+ "dependência do solver e do tempo-limite, e pesos ainda não confirmados no checkpoint PyTorch. Trabalhos futuros: validar o checkpoint, "
+ "particionar o domínio, avaliar horizontes maiores e comparar a dinâmica linearizada com a não linear.")
 
 ref = find("As referências devem")
 set_text(ref, "GOPINATH, D.; MENG, K.; PASAREANU, C. S.; ZHANG, Y.; BESSA, I.; CORDEIRO, L. C. Verifying Quantized Neural Networks using "

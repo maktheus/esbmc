@@ -145,7 +145,7 @@ def fig_pipeline(path, W=COL_W, H=180):
     # linha inferior: casos + rota ilimitada
     y2 = y + bh + 8
     T(d, (4, y2), "7 casos:", 12.5, True)
-    T(d, (66, y2), "MLP/QNN · kernels GEMM · agente neuro-simbólico · PID sob caos", 12)
+    T(d, (66, y2), "MLP/QNN · kernels GEMM · loop neuro-simbólico · PID sob caos", 12)
     T(d, (66, y2 + 16), "FFN de GPT-2 e LLaMA-7B · política RL · Cart-Pole DDPG acoplado", 12)
     y3 = y2 + 36
     rbox(d, (4, y3, W - 4, y3 + 44), "#fff6ea", ORANGE)
@@ -158,7 +158,7 @@ def fig_pipeline(path, W=COL_W, H=180):
 CASOS = [
     ("1", "Redes neurais (MLP XOR, QNN; stub de Transformer)", [("SAFE", GREEN, "0,08 s"), ("UNSAFE", RED, "198 s, propriedade violada")]),
     ("2", "Kernels de inferência (GEMM com tiling, atenção)", [("SAFE", GREEN, "N≤3, 17 s"), ("INDECISO", AMBER, "N=4, >300 s")]),
-    ("3", "Agente neuro-simbólico (mock): gera → verifica → corrige", [("UNSAFE→SAFE", GREEN, "2 iterações, <0,15 s")]),
+    ("3", "Loop neuro-simbólico: gera código → verifica → corrige", [("UNSAFE→SAFE", GREEN, "2 iterações, <0,15 s")]),
     ("4", "PID sob caos: ruído ±5 no sensor, 10 passos", [("SAFE", GREEN, "T < 150 °C, 217 s")]),
     ("5", "FFN de LLM: GPT-2 e LLaMA-7B (fatias 4×8, 4×16)", [("SAFE", GREEN, "0,24–20 s, abstração intervalar")]),
     ("6", "Política RL actor-critic: ação em [−1, 1]", [("UNSAFE", RED, "contraexemplo em 2,6 s")]),
