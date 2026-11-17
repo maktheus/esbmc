@@ -28,39 +28,39 @@ LR = "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"
 A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
 
 XL, XR, COL_W, FULL_W = 73, 546, 462, 935
-INS = 4
-HDR_H, HDR_GAP, GAP = 49, 5, 8
+INS = 10            # respiro interno das caixas de texto (px)
+HDR_H, HDR_GAP, GAP = 49, 8, 10
 BOTTOM = 1792            # logos do rodape comecam em 1807
 INK, TEAL, ORANGE = "#10282c", "#27b5b7", "#f0922b"
 GREEN, RED, AMBER, GREY = "#3f8f3a", "#c9263a", "#e08a1e", "#5f6b6e"
 
 # ------------------------------------------------------------------ conteudo
 TITULO = "Verificação Formal de Sistemas de Inteligência Artificial Generativa e Controladores Neurais utilizando ESBMC"
-AUTORES = [("¹Matheus Serrão Uchôa – Bolsa CNPq", True),
-           ("²Prof. Dr. Iury Valente de Bessa (Orientador) – UFAM", True),
-           ("¹matheus.uchoa@ufam.edu.br – ²iurybessa@ufam.edu.br", False)]
+AUTORES = [("¹Matheus Serrão Uchôa – Bolsa CNPq – matheus.uchoa@ufam.edu.br", True),
+           ("²Prof. Dr. Iury Valente de Bessa (Orientador) – UFAM – iurybessa@ufam.edu.br", True)]
 
 INTRO = [
-    "Redes neurais hoje chegam a kernels de inferência, a agentes que escrevem código e a controladores físicos. Testes cobrem só as execuções escolhidas: a rede pode acertar nelas e falhar num estado nunca amostrado, e a precisão reduzida (Q8.8) desloca a fronteira entre ações.",
+    "Redes neurais hoje chegam a kernels de inferência, a agentes que escrevem código e a controladores físicos. Testes cobrem só as execuções escolhidas, e a precisão reduzida (Q8.8) desloca a fronteira entre ações.",
     "**Pergunta:** o que um verificador formal (ESBMC, *bounded model checking* sobre SMT) consegue **provar** em sistemas de IA generativa e de controle, a que custo, e onde ele para?",
-    "**Objetivo:** aplicar o ESBMC a sete casos, do neurônio ao sistema acoplado, com domínio, horizonte e hipóteses explícitos.",
+    "**Objetivo:** aplicá-lo a sete casos, do neurônio ao sistema acoplado, com domínio e horizonte explícitos.",
 ]
 METOD_CAP = [
-    "**Figura 1:** cada caso vira um harness em C com propriedade e domínio; o veredito é tri-estado. **Setup:** ESBMC 6.8.0 (Z3, Boolector), yosys 0.33 + ABC; 10.000 estados, RandomState(42).",
+    "**Figura 1:** fluxo de verificação. ESBMC 6.8.0 (Z3, Boolector); yosys 0.33 + ABC. Fonte: autores.",
 ]
-RES_CAP_A = "**Figura 2:** os sete casos, com veredito e tempo de solver; cada veredito aponta para um log bruto versionado. Fonte: autores."
-RES_CAP_B = "**Figura 3:** a parede do BMC está em K=4, não em 50; o IC3 prova ∀t no modelo sintético, mas não decide o ator real."
-RES_CAP_C = "**Figura 4:** Q8.8 no ator DDPG: erro pequeno na média, mas no pior estado a ação **inverte o sinal**."
+RES_CAP_A = "**Figura 2:** os sete casos, veredito e tempo de solver; cada veredito aponta para um log bruto versionado. Fonte: autores."
+RES_CAP_B = "**Figura 3:** a parede do BMC está em K=4; o IC3 prova ∀t no sintético, mas não decide o ator real. Fonte: autores."
+RES_CAP_C = "**Figura 4:** Q8.8 no ator DDPG: erro médio pequeno, mas no pior estado a ação **inverte o sinal**. Fonte: autores."
 CONCL = [
-    "**1. O ESBMC prova em todas as camadas**, do neurônio (MLP, FFN de GPT-2 e LLaMA) ao kernel, ao agente e ao controlador em malha fechada; mas toda prova vale só no domínio, horizonte e representação do harness.",
-    "**2. A parede é estrutural:** 4 passos na malha fechada e N=4 no GEMM. O IC3 prova ∀t em 0,37 s no modelo sintético, mas não decide o ator real; a hipótese é a representação bit a bit (próximo passo: BTOR2).",
-    "**3. Contribuição:** fluxo rastreável modelo → harness → veredito → log; duas propriedades vácuas foram achadas e reescritas, e TIMEOUT nunca vira \"seguro\".",
+    "**1. O ESBMC prova propriedades delimitadas em todas as camadas**, do neurônio (MLP, FFN de GPT-2 e LLaMA) ao kernel, ao agente e à malha fechada; cada prova vale só no domínio e horizonte do harness.",
+    "**2. A parede é estrutural:** K=4 na malha fechada e N=4 no GEMM. O IC3 prova ∀t em 0,37 s no sintético, mas não decide o ator real; hipótese: representação bit a bit (próximo passo: BTOR2).",
+    "**3. Contribuição:** fluxo rastreável modelo → harness → veredito → log; propriedades vácuas reescritas; TIMEOUT nunca vira \"seguro\".",
 ]
-AGRAD = ["Ao CNPq, pela bolsa PIBITI; ao orientador, Prof. Dr. Iury Valente de Bessa; e à UFAM."]
+AGRAD = ["Ao CNPq (bolsa PIBITI), ao Prof. Iury Bessa e à UFAM."]
 REFS = [
     "BRADLEY, A. R. SAT-based model checking without unrolling. VMCAI, 2011.",
-    "GOPINATH, D. et al. Verifying Quantized Neural Networks using SMT-Based Model Checking. ASE, 2021.",
-    "MENG, K. et al. QNNVerifier: a tool for verifying neural networks using SMT-based model checking. ICSE Companion, 2022.",
+    "GADELHA, M. R. et al. ESBMC 5.0: an industrial-strength C model checker. ASE, 2018.",
+    "GOPINATH, D. et al. Verifying quantized neural networks using SMT-based model checking. ASE, 2021.",
+    "MENG, K. et al. QNNVerifier: a tool for verifying neural networks using SMT-based model checking. ICSE, 2022.",
 ]
 
 # ------------------------------------------------------------------ medicao de texto
@@ -121,10 +121,10 @@ def wrap(d, txt, px, width, bold=False):
     if cur: lines.append(cur)
     return lines
 
-def fig_pipeline(path, W=COL_W, H=190):
+def fig_pipeline(path, W=COL_W, H=180):
     im, d = canvas(W, H)
-    bw, bh, y = 104, 66, 6
-    xs = [4, 4 + bw + 18, 4 + 2 * (bw + 18)]
+    bw, bh, y = 106, 64, 4
+    xs = [4, 4 + bw + 16, 4 + 2 * (bw + 16)]
     boxes = [("Modelo de IA", ["PyTorch · ONNX", "pesos Q8.8", "planta / kernel"]),
              ("Harness em C", ["propriedade", "domínio (assume)", "sem loops: linear"]),
              ("ESBMC", ["GOTO → symex", "fórmula SMT", "Z3 / Boolector"])]
@@ -132,98 +132,99 @@ def fig_pipeline(path, W=COL_W, H=190):
         rbox(d, (x, y, x + bw, y + bh), "#eef8f8", TEAL)
         T(d, (x + bw / 2, y + 16), t, 15, True, anchor="mm")
         for i, l in enumerate(ls):
-            T(d, (x + bw / 2, y + 31 + i * 13), l, 11, anchor="mm", fill=GREY)
+            T(d, (x + bw / 2, y + 31 + i * 13.5), l, 11.5, anchor="mm", fill=GREY)
     for x in xs[:2]:
-        arrow(d, (x + bw + 2, y + bh / 2), (x + bw + 16, y + bh / 2), TEAL)
+        arrow(d, (x + bw + 2, y + bh / 2), (x + bw + 14, y + bh / 2), TEAL)
     # vereditos (tri-estado)
-    vx = xs[2] + bw + 18; vw = W - vx - 4
+    vx = xs[2] + bw + 16; vw = W - vx - 4
     for i, (lab, col) in enumerate([("SAFE", GREEN), ("UNSAFE", RED), ("TIMEOUT", AMBER)]):
         yy = y + i * 23
         rbox(d, (vx, yy, vx + vw, yy + 20), col, r=6)
         T(d, (vx + vw / 2, yy + 10), lab, 12, True, fill="white", anchor="mm")
     arrow(d, (xs[2] + bw + 2, y + bh / 2), (vx - 2, y + bh / 2), TEAL)
     # linha inferior: casos + rota ilimitada
-    y2 = y + bh + 10
-    T(d, (4, y2), "7 casos:", 12, True)
-    T(d, (62, y2), "MLP/QNN · kernels GEMM · agente neuro-simbólico · PID sob caos ·", 11.5)
-    T(d, (62, y2 + 15), "FFN de GPT-2 e LLaMA-7B · política RL · Cart-Pole DDPG (malha fechada)", 11.5)
+    y2 = y + bh + 8
+    T(d, (4, y2), "7 casos:", 12.5, True)
+    T(d, (66, y2), "MLP/QNN · kernels GEMM · agente neuro-simbólico · PID sob caos", 12)
+    T(d, (66, y2 + 16), "FFN de GPT-2 e LLaMA-7B · política RL · Cart-Pole DDPG acoplado", 12)
     y3 = y2 + 36
-    rbox(d, (4, y3, W - 4, y3 + 46), "#fff6ea", ORANGE)
+    rbox(d, (4, y3, W - 4, y3 + 44), "#fff6ea", ORANGE)
     T(d, (12, y3 + 8), "Prova ilimitada (para todo t):", 12.5, True)
-    T(d, (12, y3 + 27), "Verilog → Yosys (904 242 portas AND, 65 latches) → AIGER → ABC IC3/PDR", 11.5)
-    y4 = y3 + 54
-    T(d, (4, y4), "SAFE = prova no domínio · UNSAFE = contraexemplo reproduzido · TIMEOUT = indeciso", 10.5, fill=GREY)
+    T(d, (12, y3 + 27), "Verilog → Yosys (904 242 portas AND, 65 latches) → AIGER → ABC IC3/PDR", 12)
+    y4 = y3 + 49
+    T(d, (4, y4), "SAFE = prova no domínio · UNSAFE = contraexemplo reproduzido · TIMEOUT = indeciso", 11.5, fill=GREY)
     im.save(path); return H
 
 CASOS = [
     ("1", "Redes neurais (MLP XOR, QNN; stub de Transformer)", [("SAFE", GREEN, "0,08 s"), ("UNSAFE", RED, "198 s, propriedade violada")]),
     ("2", "Kernels de inferência (GEMM com tiling, atenção)", [("SAFE", GREEN, "N≤3, 17 s"), ("INDECISO", AMBER, "N=4, >300 s")]),
-    ("3", "Agente neuro-simbólico: gera → verifica → corrige", [("UNSAFE→SAFE", GREEN, "2 iterações, <0,15 s")]),
+    ("3", "Agente neuro-simbólico (mock): gera → verifica → corrige", [("UNSAFE→SAFE", GREEN, "2 iterações, <0,15 s")]),
     ("4", "PID sob caos: ruído ±5 no sensor, 10 passos", [("SAFE", GREEN, "T < 150 °C, 217 s")]),
     ("5", "FFN de LLM: GPT-2 e LLaMA-7B (fatias 4×8, 4×16)", [("SAFE", GREEN, "0,24–20 s, abstração intervalar")]),
     ("6", "Política RL actor-critic: ação em [−1, 1]", [("UNSAFE", RED, "contraexemplo em 2,6 s")]),
-    ("7", "Cart-Pole DDPG Q8.8 em malha fechada", [("SAFE", GREEN, "|F| ≤ 10 N, 3,5 s"), ("INDECISO", AMBER, "direção, timeout 12 s")]),
+    ("7", "Cart-Pole DDPG Q8.8 em malha fechada (2 passos)", [("SAFE", GREEN, "|F| ≤ 10 N, 3,5 s"), ("UNSAFE", RED, "> 2,5 rad/s"), ("INDECISO", AMBER, "direção")]),
 ]
-def fig_scorecard(path, W=FULL_W, H=210):
+def fig_scorecard(path, W=FULL_W, H=218):
     im, d = canvas(W, H)
     cols, rows = 2, 4
     cw, ch = (W - 10) / cols, (H - 6) / rows
-    cells = CASOS + [("Σ", "12 harnesses reexecutados com log bruto", [("9 provados", GREEN, ""), ("3 contraexemplos", RED, ""), ("0 indecisos", GREY, "")])]
+    cells = CASOS + [("Σ", "Rodada de evidências: 12 harnesses, cada um com log bruto", [("9 provados", GREEN, ""), ("3 contraexemplos", RED, ""), ("0 indecisos", GREY, "")])]
     for i, (num, name, chips) in enumerate(cells):
         c, r = i % cols, i // cols
         x0, y0 = c * (cw + 10), r * ch
         x1, y1 = x0 + cw, y0 + ch - 6
         rbox(d, (x0, y0, x1, y1), "#f4fafa" if num != "Σ" else "#fff6ea", TEAL if num != "Σ" else ORANGE, r=7)
-        rbox(d, (x0 + 6, y0 + 7, x0 + 34, y0 + 35), TEAL if num != "Σ" else ORANGE, r=6)
-        T(d, (x0 + 20, y0 + 21), num, 14, True, fill="white", anchor="mm")
-        T(d, (x0 + 42, y0 + 15), name, 12.5, True, anchor="lm")
-        xx = x0 + 42
+        rbox(d, (x0 + 9, y0 + 8, x0 + 37, y0 + 36), TEAL if num != "Σ" else ORANGE, r=6)
+        T(d, (x0 + 23, y0 + 22), num, 14, True, fill="white", anchor="mm")
+        T(d, (x0 + 46, y0 + 16), name, 12.5, True, anchor="lm")
+        xx = x0 + 46
         for lab, col, sub in chips:
-            wlab = fnt(11 * S, True).getlength(lab) / S + 12
-            rbox(d, (xx, y0 + 28, xx + wlab, y0 + 46), col, r=5)
-            T(d, (xx + wlab / 2, y0 + 37), lab, 11, True, fill="white", anchor="mm")
+            wlab = fnt(11.5 * S, True).getlength(lab) / S + 12
+            rbox(d, (xx, y0 + 30, xx + wlab, y0 + 47), col, r=5)
+            T(d, (xx + wlab / 2, y0 + 38.5), lab, 11.5, True, fill="white", anchor="mm")
             xx += wlab + 5
             if sub:
-                T(d, (xx, y0 + 37), sub, 11.5, anchor="lm"); xx += fnt(11.5 * S).getlength(sub) / S + 12
+                T(d, (xx, y0 + 38.5), sub, 12, anchor="lm"); xx += fnt(12 * S).getlength(sub) / S + 12
     im.save(path); return H
 
-def fig_bmc_wall(path, W=COL_W, H=160):
+def fig_bmc_wall(path, W=COL_W, H=155):
     im, d = canvas(W, H)
-    T(d, (4, 3), "Tempo para decidir a malha fechada (s, escala log)", 12.5, True)
-    pitch = (H - 26 - 16) / 6
-    data = [("BMC K=1", 0.3, TEAL, "seguro até 1 passo"), ("BMC K=2 (interp.)", 3.0, "#9fd3d4", ""), ("BMC K=4", 909, TEAL, "seguro até 4, 383 MB"),
-            ("IC3 sintético", 0.37, GREEN, "provado p/ todo t"), ("IC3 ator real", 1802, RED, "não convergiu, 708 MB"), ("BMC ABC ator real", 901, AMBER, "5 frames, indeciso")]
-    x0, wmax, lo, hi = 118, 200, math.log10(0.1), math.log10(3000)
+    T(d, (4, 3), "Tempo para decidir a malha fechada (s, escala log)", 13, True)
+    pitch = (H - 26 - 18) / 5
+    data = [("ESBMC K=1, sintético", 0.3, TEAL, "seguro até 1 passo"), ("ESBMC K=4, sintético", 909, TEAL, "seguro até 4 passos"),
+            ("IC3 ABC, sintético", 0.37, GREEN, "provado p/ todo t"), ("IC3 ABC, ator real", 1802, RED, "não convergiu"), ("BMC ABC, ator real", 901, AMBER, "5 frames, indeciso")]
+    x0, wmax, lo, hi = 150, 150, math.log10(0.1), math.log10(3000)
     for i, (n, v, col, sub) in enumerate(data):
         y = 24 + i * pitch; bh = pitch - 5
         w = (math.log10(v) - lo) / (hi - lo) * wmax
-        T(d, (x0 - 6, y + bh / 2), n, 11, anchor="rm")
+        T(d, (x0 - 6, y + bh / 2), n, 12, anchor="rm")
         rbox(d, (x0, y, x0 + w, y + bh), col, r=4)
         lab = f"{v:g}".replace(".", ",") + " s"
-        T(d, (x0 + w + 5, y + bh / 2), lab, 11.5, True, anchor="lm")
-        if sub: T(d, (x0 + w + 5 + fnt(11.5 * S, True).getlength(lab) / S + 6, y + bh / 2), sub, 10, fill=GREY, anchor="lm")
-    T(d, (4, H - 12), "K=2 interpolado só para leitura; medidos: 0,3 s (K=1) e 909 s (K=4), rede sintética de 24 neurônios.", 9, fill=GREY)
+        T(d, (x0 + w + 5, y + bh / 2), lab, 12, True, anchor="lm")
+        if sub: T(d, (x0 + w + 5 + fnt(12 * S, True).getlength(lab) / S + 6, y + bh / 2), sub, 11, fill=GREY, anchor="lm")
+    T(d, (4, H - 13), "Sintético: 24 neurônios com batente. Real: ator DDPG, 904 242 portas AND.", 11, fill=GREY)
     im.save(path); return H
 
-def fig_q88(path, W=COL_W, H=160):
+def fig_q88(path, W=COL_W, H=155):
     im, d = canvas(W, H)
-    T(d, (4, 3), "Erro |Float32 − Q8.8| na saída (N), 10.000 estados", 12.5, True)
-    pitch = (H - 26 - 34) / 4
+    T(d, (4, 3), "Erro |Float32 − Q8.8| na saída (N), 10.000 estados", 13, True)
+    pitch = (H - 26 - 36) / 4
     data = [("Erro médio", 0.0778, TEAL), ("Percentil 95", 0.2262, GREEN), ("Percentil 99", 1.0927, AMBER), ("Erro máximo", 7.7589, RED)]
     x0, wmax, lo, hi = 100, 250, math.log10(0.05), math.log10(10)
     for i, (n, v, col) in enumerate(data):
         y = 24 + i * pitch; bh = pitch - 6
         w = (math.log10(v) - lo) / (hi - lo) * wmax
-        T(d, (x0 - 6, y + bh / 2), n, 11.5, anchor="rm")
+        T(d, (x0 - 6, y + bh / 2), n, 12, anchor="rm")
         rbox(d, (x0, y, x0 + w, y + bh), col, r=4)
-        T(d, (x0 + w + 6, y + bh / 2), f"{v:.4f}".replace(".", ",") + " N", 12, True, anchor="lm")
-    T(d, (4, H - 28), "Pior estado: +6,4308 N (Float32) → −1,3281 N (Q8.8): inversão de sinal.", 11, True, fill=RED)
-    T(d, (4, H - 13), "tanh aproximada: erro máx. 4,57 % do intervalo unitário.", 10, fill=GREY)
+        T(d, (x0 + w + 6, y + bh / 2), f"{v:.4f}".replace(".", ",") + " N", 12.5, True, anchor="lm")
+    T(d, (4, H - 30), "Pior estado: +6,4308 N (Float32) → −1,3281 N (Q8.8): inversão de sinal.", 12, True, fill=RED)
+    T(d, (4, H - 14), "tanh aproximada: erro máx. 4,57 % do intervalo unitário.", 11, fill=GREY)
     im.save(path); return H
 
 # ------------------------------------------------------------------ pptx helpers
 def write(shape, pars, size, align=PP_ALIGN.JUSTIFY, left=None, top=None, width=COL_W, height=None, gap=4, anchor=None):
     tf = shape.text_frame; tf.word_wrap = True; tf.auto_size = MSO_AUTO_SIZE.NONE
+    tf.margin_left = tf.margin_right = Emu(INS * PX); tf.margin_top = tf.margin_bottom = Emu(3 * PX)
     body = tf._txBody; ps = body.findall(A + "p")
     base = copy.deepcopy(ps[0])
     for ch in list(base):
@@ -283,7 +284,7 @@ T_TOP = 246; A_TOP = T_TOP + t_h + 2; Y0 = A_TOP + a_h + 8
 write(find_text("TÍTULO"), ["**" + TITULO + "**"], T_PT, PP_ALIGN.CENTER, left=76, top=T_TOP, width=932, height=t_h, gap=0)
 write(find_text("1Nome"), [("**" + t + "**") if b else t for t, b in AUTORES], A_PT, PP_ALIGN.CENTER, left=67, top=A_TOP, width=932, height=a_h, gap=0)
 
-BODY, CAP = 12.5, 12   # pt (modelo: minimo absoluto 12 pt)
+BODY, CAP = float(os.environ.get('BODY_PT', '12.5')), 12   # pt (modelo: minimo absoluto 12 pt)
 
 # ---- faixa A: introducao (esq) | metodologia (dir)
 yA = Y0
@@ -295,8 +296,9 @@ pic(pipe_png, XR, y_txt, COL_W)
 h_mcap = box_h(METOD_CAP, CAP, COL_W)
 h_metod = pipe_h + 4 + h_mcap
 write(BOX["INTRODUÇÃO"], INTRO, BODY, left=XL, top=y_txt, height=h_intro)
-write(BOX["METODOLOGIA"], METOD_CAP, CAP, left=XR, top=y_txt + pipe_h + 4, height=h_mcap)
+write(BOX["METODOLOGIA"], METOD_CAP, CAP, PP_ALIGN.LEFT, left=XR, top=y_txt + pipe_h + 4, height=h_mcap)
 yB = y_txt + max(h_intro, h_metod) + GAP
+print(f"[A] intro={h_intro:.0f} metod={h_metod:.0f} (pipe {pipe_h} + cap {h_mcap:.0f})")
 
 # ---- faixa B: resultados (largura total)
 place_header(G["RESULTADOS E DISCUSSÕES"], XL, yB, FULL_W)
@@ -304,14 +306,15 @@ y = yB + HDR_H + HDR_GAP
 sc_png = os.path.join(TMP, "fig2.png"); sc_h = fig_scorecard(sc_png)
 pic(sc_png, XL, y, FULL_W); y += sc_h + 2
 h_capA = box_h([RES_CAP_A], CAP, FULL_W)
-write(extra_boxes[0], [RES_CAP_A], CAP, left=XL, top=y, width=FULL_W, height=h_capA); y += h_capA + 4
+write(extra_boxes[0], [RES_CAP_A], CAP, PP_ALIGN.LEFT, left=XL, top=y, width=FULL_W, height=h_capA); y += h_capA + 4
 wall_png = os.path.join(TMP, "fig3.png"); wall_h = fig_bmc_wall(wall_png)
 q88_png = os.path.join(TMP, "fig4.png"); q88_h = fig_q88(q88_png)
 pic(wall_png, XL, y, COL_W); pic(q88_png, XR, y, COL_W); y += max(wall_h, q88_h) + 2
 h_capB, h_capC = box_h([RES_CAP_B], CAP, COL_W), box_h([RES_CAP_C], CAP, COL_W)
-write(extra_boxes[1], [RES_CAP_B], CAP, left=XL, top=y, height=h_capB)
-write(BOX["RESULTADOS E DISCUSSÕES"], [RES_CAP_C] + [""] * 0, CAP, left=XR, top=y, height=h_capC)
+write(extra_boxes[1], [RES_CAP_B], CAP, PP_ALIGN.LEFT, left=XL, top=y, height=h_capB)
+write(BOX["RESULTADOS E DISCUSSÕES"], [RES_CAP_C], CAP, PP_ALIGN.LEFT, left=XR, top=y, height=h_capC)
 y += max(h_capB, h_capC) + 2
+print(f"[B] scorecard={sc_h} capA={h_capA:.0f} charts={max(wall_h, q88_h)} capB={h_capB:.0f} capC={h_capC:.0f}")
 yC = y + GAP
 
 # ---- faixa C: conclusao + agradecimentos (esq) | referencias + QR (dir)
@@ -326,13 +329,14 @@ write(BOX["AGRADECIMENTOS"], AGRAD, CAP, left=XL, top=y_ag + HDR_H + HDR_GAP, he
 left_end = y_ag + HDR_H + HDR_GAP + h_ag
 
 place_header(G["REFERÊNCIAS"], XR, yC)
-h_refs = box_h(REFS, CAP, COL_W, gap=2)
-write(BOX["REFERÊNCIAS"], REFS, CAP, PP_ALIGN.LEFT, left=XR, top=y_txt, height=h_refs, gap=2)
+h_refs = box_h(REFS, CAP, COL_W, gap=0)
+write(BOX["REFERÊNCIAS"], REFS, CAP, PP_ALIGN.LEFT, left=XR, top=y_txt, height=h_refs, gap=0)
 refs_end = y_txt + h_refs
+print(f"[C] concl={h_concl:.0f} agrad={h_ag:.0f} refs={h_refs:.0f}")
 
 # QR 250x250 no canto inferior direito, acima do limite das logos
 QR_SZ = 250
-qr_y = 1600; qr_x = XR + COL_W - QR_SZ   # ao lado das logos do rodape, como no modelo; base em 1850 (margem de 60 px)
+qr_y = 1610; qr_x = XR + COL_W - QR_SZ   # ao lado das logos do rodape, como no modelo; base em 1858 (margem de 60 px)
 if os.path.exists(QR):
     from pptx.dml.color import RGBColor
     from pptx.enum.shapes import MSO_SHAPE
@@ -348,8 +352,12 @@ else:
 overflow = max(left_end, refs_end) - BOTTOM
 clash = refs_end - (qr_y - 8)
 print(f"titulo {T_PT} pt x{t_lines} | corpo {BODY} pt | faixas: A={yA:.0f} B={yB:.0f} C={yC:.0f} | fim esq {left_end:.0f} / refs {refs_end:.0f} / QR {qr_y} | limite {BOTTOM}")
-if overflow > 0: sys.exit(f"ESTOURO: conteudo passa {overflow:.0f}px do limite")
-if clash > 0: sys.exit(f"CONFLITO: referencias invadem o QR por {clash:.0f}px")
+if overflow > 0 or clash > 0:
+    if BODY > 12:                      # cai para o minimo do modelo e tenta de novo
+        print(f"nao coube a {BODY} pt (estouro {overflow:.0f}px, conflito {clash:.0f}px); tentando 12 pt")
+        os.execvpe(sys.executable, [sys.executable, os.path.abspath(__file__)], {**os.environ, "BODY_PT": "12"})
+    if overflow > 0: sys.exit(f"ESTOURO: conteudo passa {overflow:.0f}px do limite")
+    sys.exit(f"CONFLITO: referencias invadem o QR por {clash:.0f}px")
 
 prs.save(SAIDA_PPTX)
 subprocess.run(["soffice", "--headless", "--convert-to", "pdf", "--outdir", TMP, SAIDA_PPTX], check=True, capture_output=True)
