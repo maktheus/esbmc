@@ -53,7 +53,7 @@ set_text(P[0], "VERIFICAÇÃO FORMAL DE SISTEMAS DE INTELIGÊNCIA ARTIFICIAL GEN
 set_text(P[1], "Matheus Serrão Uchôa")
 set_text(P[3], "matheus.uchoa@ufam.edu.br")
 set_text(P[17], "Iury Valente de Bessa")
-set_text(P[19], "[e-mail institucional do orientador]")
+set_text(P[19], "iurybessa@ufam.edu.br")
 for i in range(4, 16): P[i]._p.getparent().remove(P[i]._p)
 # (os parágrafos 4–15 são a linha em branco e os coautores 1–3)
 
