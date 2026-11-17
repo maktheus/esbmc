@@ -58,7 +58,7 @@ for i in range(4, 16): P[i]._p.getparent().remove(P[i]._p)
 # (os parágrafos 4–15 são a linha em branco e os coautores 1–3)
 
 RESUMO = ("Controladores neurais são cada vez mais usados em sistemas de controle, mas bom desempenho em simulação não garante comportamento "
- "correto em todos os estados admitidos, sobretudo com aritmética de precisão reduzida. Faltam evidências formais rastreáveis que associem "
+ "correto em todos os estados admitidos, sobretudo com aritmética de precisão reduzida. São escassas as evidências formais rastreáveis que associem "
  "quantização, domínio de entradas e horizonte de verificação ao veredicto. Pergunta-se que garantias o ESBMC oferece a um controlador "
  "DDPG quantizado em ponto fixo Q8.8. Propõe-se um fluxo que converte os pesos para Q8.8, gera harnesses em C, verifica propriedades com "
  "o ESBMC e o solver Z3 e reproduz contraexemplos no simulador do Cart-Pole. Em 10.000 estados, o erro médio entre Float32 e Q8.8 foi de "
