@@ -152,7 +152,7 @@ def fig_pipeline(path, W=COL_W, H=190):
     T(d, (12, y3 + 8), "Prova ilimitada (para todo t):", 12.5, True)
     T(d, (12, y3 + 27), "Verilog → Yosys (904 242 portas AND, 65 latches) → AIGER → ABC IC3/PDR", 11.5)
     y4 = y3 + 54
-    T(d, (4, y4), "SAFE = prova no domínio e horizonte · UNSAFE = contraexemplo reproduzido · TIMEOUT = indeciso", 10.5, fill=GREY)
+    T(d, (4, y4), "SAFE = prova no domínio · UNSAFE = contraexemplo reproduzido · TIMEOUT = indeciso", 10.5, fill=GREY)
     im.save(path); return H
 
 CASOS = [
